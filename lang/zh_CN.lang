@@ -1,0 +1,115 @@
+CustomQuests.dialog=欢迎使用CustomQuests。\n模组作者CuiZhenhang。
+CustomQuests.help=/cq cleardata <player: target>\n/cq edit <player: target> <enabled: boolean>
+
+Quests Book=任务书
+Quests Editor Book=任务编辑书
+
+Quests=任务
+Team=团队
+Settings=设置
+Exit=退出
+Reward=奖励
+Warn=警告
+Editor=编辑
+Inventory=背包
+Selection=选择
+
+Connection Timeout=连接超时
+You are on this team: =您在此团队中：
+You didn't join any team.=你没有加入任何团队。
+Quit the team=退出团队
+Create a team=创建团队
+Join a team=加入团队
+Invitation Password=邀请码
+Sorry, you must join a team first.=对不起，你必须先加入一个团队。
+Are you sure to quit the team?=确定要退出团队吗？
+You can't quit the team.=你不能退出该团队。
+Create=创建
+Please enter your team'name.=请输入您的团队名称。
+Failed: Please do not enter nothing.=失败：请不要什么都不输入。
+Failed: Text too long.=失败：文本过长。
+Failed: Please do not enter space or line break.=失败：请不要输入空格或换行符。
+Failed: The team already exists.=失败：团队已经存在。
+Join=加入
+Please enter the Invitation Password.=请输入邀请码。
+Succeed to join the team=加入团队成功
+Fail to join the team=加入团队失败
+
+GUI type: =GUI类型：
+Small=小
+Standard=标准
+Big=大
+
+Confirm=确定
+Cancel=取消
+
+Task completed: =任务已完成：
+You got this: =你领取到了：
+
+Parent Quests=父任务
+Sub Quests=子任务
+Quests Type: =任务类型：
+Reward Type: =奖励类型：
+name: =名称：
+id: =id：
+data: =数据值：
+any=任意
+count: =数量：
+enchant: =附魔：
+energy: =能量：
+extra: =额外值：
+probability: =概率：
+Select your reward=选择你的奖励
+exp: =经验值：
+level: =等级：
+Please enable RecipeViewer!=请启用RecipeViewer！
+Please update RecipeViewer!=请更新RecipeViewer！
+Recipe not found=配方未发现
+Recipe=配方
+
+Sorry, you don't have op.=对不起，您没有op。
+
+Are you sure to reload data?=确定要重新加载数据吗？
+Requests are much too frequent, you can do it again after 10 seconds.=请求频繁，您可以在10秒后再次操作。
+Are you sure to delete it?=确定要删除它吗？
+This operation is irreversible!=该操作不可逆！
+Are you sure to choose this item?=确定要选择这个物品吗？
+Edit source=编辑源
+Create chapter=创建章节
+Create quest=创建任务
+You are not an editor!=您不是编辑者！
+Editor mode isn't enabled!=编辑模式未开启！
+You can only edit the source 'Default'=您只能编辑源“Default”
+Type in the name of the new chapter=请输入新章节的name
+Failed: The chapter already exists.=失败：章节已经存在。
+Please select a chapter first.=请先选择一个章节。
+Type in the name of the new quest=请输入新任务的name
+Failed: The quest already exists.=失败：任务已经存在。
+
+undefined=未定义
+Please enter string:=请输入字符串：
+Please enter number:=请输入数字：
+Not a number=不是数字
+Out of range=超过范围
+Current item=当前物品
+Please choose an item.=请选择一个物品。
+bitmap: =位图：
+Create=新建
+Create a translation=新建翻译
+Two-letter language code=2字母长的语言代码
+Current language: =当前语言：
+
+editor.source.display_name=显示名称
+editor.source.background=背景
+editor.chapter.display_name=显示名称
+editor.cahpter.icon=图标
+editor.quest.value=值
+editor.quest.x=x位置
+editor.quest.y=y位置
+editor.quest.size=大小
+editor.quest.father=父任务
+editor.quest.icon=图标
+editor.quest.icon_locked=未解锁时图标
+editor.quest.icon_finished=已完成时图标
+editor.quest.hidden=未解锁时隐藏
+editor.quest.info=更多信息

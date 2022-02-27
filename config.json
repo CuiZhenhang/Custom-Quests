@@ -1,0 +1,14 @@
+{
+  "enabled":true,
+  "setting":{
+    "UIsize":1,
+    "padding":60
+  },
+  "save":{
+    "path": "custom/",
+    "dev": false
+  },
+  "server":{
+    "enableEditing": true
+  }
+}
