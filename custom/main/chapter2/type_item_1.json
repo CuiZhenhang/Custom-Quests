@@ -1,0 +1,47 @@
+{
+    "type": "quest",
+    "name": "type:item_1",
+    "x": 300,
+    "y": 130,
+    "size": 60,
+    "father": [
+        "start"
+    ],
+    "icon": {
+        "id": 291
+    },
+    "info": {
+        "display_name": {
+            "en": "Type 1: item (extra)",
+            "zh": "类型1：item (extra)"
+        },
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [
+            {
+                "type": "item",
+                "id": 291,
+                "data": 0,
+                "count": 1,
+                "extra": [
+                    {
+                        "type": "Name",
+                        "value": "AWA"
+                    },
+                    {
+                        "type": "Enchant",
+                        "key": 17,
+                        "value": 3
+                    }
+                ]
+            }
+        ],
+        "text": {
+            "en": "In this quest, you will receive a stone hoe \nthat is enchanted Unbreaking 3 \nand named \"AWA\".",
+            "zh": "在本任务中，你将领取到一把\n带有耐久三附魔、名为“AWA”的石锄。"
+        }
+    }
+}

@@ -1,0 +1,30 @@
+{
+    "type": "quest",
+    "name": "type:exp",
+    "x": 300,
+    "y": 370,
+    "size": 60,
+    "father": [
+        "start"
+    ],
+    "icon": {
+        "bitmap": "quest_exp_0"
+    },
+    "info": {
+        "display_name": {
+            "en": "Type 4: exp",
+            "zh": "类型4：exp"
+        },
+        "input": [
+            {
+                "type": "exp",
+                "value": 100
+            }
+        ],
+        "output": [],
+        "text": {
+            "en": "Experience value is greater than or \nequal to the quest value can complete it.",
+            "zh": "经验值大于等于任务值即可完成。"
+        }
+    }
+}

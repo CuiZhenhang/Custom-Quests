@@ -1,0 +1,43 @@
+{
+    "type": "quest",
+    "name": "type:select_item",
+    "x": 300,
+    "y": 290,
+    "size": 60,
+    "father": [
+        "start"
+    ],
+    "icon": {
+        "id": 291
+    },
+    "info": {
+        "display_name": {
+            "en": "Type 3: select_item",
+            "zh": "类型3：select_item"
+        },
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [
+            {
+                "type": "select_item",
+                "items": [
+                    {
+                        "id": 291,
+                        "count": 1
+                    },
+                    {
+                        "id": 280,
+                        "count": 2
+                    }
+                ]
+            }
+        ],
+        "text": {
+            "en": "In this quest, you can choose to receive \n a stone hoe or two wooden sticks.",
+            "zh": "在本任务中，你可以选择领取到一把石锄\n或两根木棍。"
+        }
+    }
+}

@@ -1,0 +1,34 @@
+{
+    "type": "quest",
+    "name": "type:level",
+    "x": 300,
+    "y": 450,
+    "size": 60,
+    "father": [
+        "start"
+    ],
+    "icon": {
+        "bitmap": "quest_exp_1"
+    },
+    "info": {
+        "display_name": {
+            "en": "Type 5: level",
+            "zh": "类型5：level"
+        },
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [
+            {
+                "type": "level",
+                "value": 1
+            }
+        ],
+        "text": {
+            "en": "In this quest, you will gain one level \nexperience.",
+            "zh": "在本任务中，你将获得1级经验。"
+        }
+    }
+}

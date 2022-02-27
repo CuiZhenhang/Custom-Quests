@@ -1,0 +1,19 @@
+{
+    "main": [
+        {
+            "name": "Chapter1",
+            "display_name": {
+                "en": "Chapter 1",
+                "zh": "第1章"
+            },
+            "icon": {"id": 1},
+            "quest": []
+        }
+    ],
+    "info": {
+        "display_name": {
+            "en": "name",
+            "zh": "名称"
+        }
+    }
+}

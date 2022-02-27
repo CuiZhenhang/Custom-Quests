@@ -1,0 +1,51 @@
+{
+    "type": "quest",
+    "name": "type:item_group",
+    "x": 300,
+    "y": 290,
+    "size": 60,
+    "father": [
+        "start"
+    ],
+    "icon": {
+        "id": 292
+    },
+    "info": {
+        "display_name": {
+            "en": "Type 3: item_group",
+            "zh": "类型3：item_group"
+        },
+        "input": [
+            {
+                "type": "item_group",
+                "items": [
+                    {
+                        "id": 290,
+                        "count": 1
+                    },
+                    {
+                        "id": 291,
+                        "count": 1
+                    },
+                    {
+                        "id": 292,
+                        "count": 1
+                    },
+                    {
+                        "id": 293,
+                        "count": 1
+                    },
+                    {
+                        "id": 294,
+                        "count": 1
+                    }
+                ]
+            }
+        ],
+        "output": [],
+        "text": {
+            "en": "In this quest, you need a hoe.",
+            "zh": "在本任务中，你需要一把锄头。"
+        }
+    }
+}

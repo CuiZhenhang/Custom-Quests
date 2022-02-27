@@ -1,0 +1,34 @@
+{
+    "type": "quest",
+    "name": "last",
+    "x": 800,
+    "y": 231.25,
+    "size": 100,
+    "icon": {
+        "bitmap": "accept"
+    },
+    "father": [
+        "type:item_0",
+        "type:item_1",
+        "type:random_item",
+        "type:select_item",
+        "type:exp",
+        "type:level"
+    ],
+    "info": {
+        "display_name": {
+            "en": "Finish",
+            "zh": "完成"
+        },
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [],
+        "text": {
+            "en": "Congratulations, you have completed \nmost of the Reward Type for this mod.",
+            "zh": "恭喜你，你已经完成了本模组大部分的奖励类型。"
+        }
+    }
+}

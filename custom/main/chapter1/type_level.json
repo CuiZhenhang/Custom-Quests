@@ -1,0 +1,30 @@
+{
+    "type": "quest",
+    "name": "type:level",
+    "x": 300,
+    "y": 450,
+    "size": 60,
+    "father": [
+        "start"
+    ],
+    "icon": {
+        "bitmap": "quest_exp_1"
+    },
+    "info": {
+        "display_name": {
+            "en": "Type 5: level",
+            "zh": "类型5：level"
+        },
+        "input": [
+            {
+                "type": "level",
+                "value": 2
+            }
+        ],
+        "output": [],
+        "text": {
+            "en": "Level is greater than or equal to \nthe quest value can complete it.",
+            "zh": "等级大于等于任务值即可完成。"
+        }
+    }
+}
