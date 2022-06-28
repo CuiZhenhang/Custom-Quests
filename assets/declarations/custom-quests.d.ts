@@ -231,7 +231,6 @@ declare interface globalFunc {
 declare interface TranAPI {
 	translation: {[language: string]: {[str: string]: string}};
     language: string;
-    getKeys: () => {[fileName: string]: string};
     intTranslation: () => void;
     addTranslation: (str: string, params: {[language: string]: string}) => void;
     translate: (str: string) => string;
@@ -422,6 +421,7 @@ declare interface Desc {
 declare interface CustomQuestsAPI {
 	version: ["alpha"|"beta"|"release", number, number, number?];
 	dir: string;
+	QuestsUI_bitmap: {[key: string]: string};
 	globalFunc: globalFunc;
 	TranAPI: TranAPI;
 	System: System;

@@ -5,10 +5,7 @@
     "padding":60
   },
   "save":{
-    "path": "custom/",
-    "dev": false
-  },
-  "server":{
-    "enableEditing": true
+    "path":"custom/",
+    "dev":false
   }
 }
