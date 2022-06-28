@@ -2,20 +2,20 @@
 
 /** @type { Utils } */
 const Utils = {
-    voidFunc() {},
+    voidFunc () {},
     log (message, type, hasAlert) {
         const msg = '<Custom Quests> ' + message
         if (hasAlert) alert(msg)
         Logger.Log(msg, type)
     },
-    randomString() {
+    randomString () {
         return ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx').replace(/[xy]/g, function (c) {
             const r = Math.random() * 16 | 0
             const v = c === 'x' ? r : (r & 0x3 | 0x8)
             return v.toString(16)
-        }) + '_'
+        })
     },
-    isDefined(length, arr) {
+    isDefined (length, arr) {
         for (const i = 0; i < length; i++) {
             if (arr[i] === void 0) return false
         }
@@ -27,6 +27,9 @@ const Utils = {
         return keys.some(function (key) {
             return obj[key] !== void 0
         })
+    },
+    deepCopy (obj) {
+        return JSON.parse(JSON.stringify(obj))
     },
     debounce (func, delay, func2, ths) {
         if(typeof func !== 'function') return func
@@ -45,7 +48,7 @@ const Utils = {
             }
         }
     },
-    transferIdFromJson(id, onServer) {
+    transferIdFromJson (id, onServer) {
         if (!id) return ItemID.missing_item
         if (typeof id === 'number') {
             return onServer ? id : Network.serverToLocalId(id)
@@ -81,25 +84,25 @@ const Utils = {
         })
         return idFromItem
     })(),
-    transferIdFromItem(id) {
+    transferIdFromItem (id) {
         if (typeof id !== 'number') return '0'
         return this.idFromItem[id] || String(id)
     },
     extraType: {},
-    setExtraTypeCb(type, { fromJson, fromItem, isPassed }) {
+    setExtraTypeCb (type, { fromJson, fromItem, isPassed }) {
         if (typeof type !== 'string' || !type) return
         if (typeof this.extraType[type] !== 'object') this.extraType[type] = {}
         if (typeof fromJson === 'function') this.extraType[type].fromJson = fromJson
         if (typeof fromItem === 'function') this.extraType[type].fromItem = fromItem
         if (typeof isPassed === 'function') this.extraType[type].isPassed = isPassed
     },
-    getExtraTypeCb(type, from) {
+    getExtraTypeCb (type, from) {
         if (typeof type !== 'string' || !type) return
         if (typeof from !== 'string') return
         if (typeof this.extraType[type] !== 'object') return this.voidFunc
         return this.extraType[type][from] || this.voidFunc
     },
-    transferItemFromJson(itemJson, onServer) {
+    transferItemFromJson (itemJson, onServer) {
         if (typeof itemJson !== 'object') return {}
         const that = this
         const item = {
@@ -121,7 +124,7 @@ const Utils = {
         }
         return item
     },
-    transferItemFromItem(item) {
+    transferItemFromItem (item) {
         if (typeof item !== 'object') return {}
         const itemJson = {
             id: this.transferIdFromItem(item.id),
@@ -140,7 +143,7 @@ const Utils = {
         }
         return itemJson
     },
-    isItemExtraPassed(item, extraJsonArray) {
+    isItemExtraPassed (item, extraJsonArray) {
         if (typeof item !== 'object') return false
         if (typeof extraJsonArray !== 'object') return false
         if (!item.extra) item.extra = new ItemExtraData()
@@ -159,7 +162,7 @@ const Utils = {
         }
         return passed
     },
-    readQuestsData(path) {
+    readContents (path) {
         if (typeof path !== 'string') return {}
         const that = this
         try {
@@ -197,26 +200,11 @@ const Utils = {
             } else {
                 that.log('Failed to ReadPath:\nThere is no files: ' + path, 'WARN', true)
             }
-            return {}
         } catch (err) {
             that.log('Error in readQuestsData:\n' + err, 'ERROR', true)
-            return {}
         }
-    },
-    packetHelper: (function () {
-        return function () {
-            const packetList = {}
-            this.addPacket = function (name, func) {
-                if (typeof func !== 'function') return
-                packetList[name] = func
-            }
-            this.callPacket = function (name, args) {
-                if (typeof packetList[name] !== 'function') return
-                if (!Array.isArray(args)) args = []
-                packetList[name].apply(null, args)
-            }
-        }
-    })()
+        return {}
+    }
 }
 
 Utils.setExtraTypeCb('name', {

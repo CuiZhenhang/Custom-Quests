@@ -11,7 +11,7 @@ ModAPI.registerAPI('CustomQuestsAPI', {
     version: '2.0.0-alpha.0.1',
     TranAPI: TranAPI,
     Utils: Utils,
-    /** @type { (cmd: string): any } */
+    /** @type { (cmd: string): unknown } */
     requireGlobal: function (cmd) { return eval(cmd) }
 })
 Logger.Log('The API of Custom Quests is named CustomQuestsAPI.', 'API')

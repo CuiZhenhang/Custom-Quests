@@ -27,20 +27,35 @@ const Setting = (function () {
     return Setting
 })()
 
-const Store = {
-    saved: {
-        bookGived: {},
-        team: {},
-        data: {}
-    },
-    cache: {
-        playerLoaded: {}
-    },
-    localCache: {
-        team: '',
-        isAdmin: false
+/** @type { Store } */
+const Store = (function () {
+    /** @type { Store } */
+    const DEFAULT = {
+        saved: {
+            bookGived: {},
+            team: {},
+            data: {},
+            admin: {},
+            editor: {}
+        },
+        cache: {
+            playerLoaded: {}
+        },
+        localCache: {
+            data: {},
+            team: {},
+            isAdmin: false,
+            isEditor: false
+        }
     }
-}
+    Callback.addCallback('LevelLeft', function () {
+        const obj = Utils.deepCopy(DEFAULT)
+        for (const key in obj) {
+            Store[key] = obj[key]
+        }
+    })
+    return JSON.parse(JSON.stringify(DEFAULT))
+})()
 Saver.addSavesScope('CustomQuests-v2', function (scope) {
     if (typeof scope !== 'object') return
     Store.saved = scope
