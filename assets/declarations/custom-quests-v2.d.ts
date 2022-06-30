@@ -10,6 +10,7 @@ declare namespace CQTypes {
     type teamId = string
     type inputId = string
     type outputId = string
+    type invalidId = saveId & teamId & inputId & outputId
 
     type TextJson = string | {[lang: string]: string}
     interface ExtraJson {type: string, [key: string]: unknown}
@@ -30,7 +31,7 @@ declare namespace CQTypes {
 
         interface InputJson_group extends IOJsonBase {
             type: 'group'
-            list: InputJson[]
+            list: Array<Ref<InputJson>>
         }
         interface InputJson_check extends IOJsonBase {
             type: 'check'
@@ -58,13 +59,13 @@ declare namespace CQTypes {
         interface OutputJson_random extends IOJsonBase {
             type: 'random'
             list: Array<{
-                output: OutputJson
+                output: Ref<OutputJson>
                 weigth: number
             }>
         }
         interface OutputJson_select extends IOJsonBase {
             type: 'select'
-            list: OutputJson[]
+            list: Array<Ref<OutputJson>>
         }
         interface OutputJson_item extends ItemJson, IOJsonBase {
             type: 'item'
@@ -113,8 +114,8 @@ declare namespace CQTypes {
         ]>
         hidden?: boolean
         inner: {
-            input: IOTypes.InputJson[]
-            output: IOTypes.OutputJson[]
+            input: Array<Ref<IOTypes.InputJson>>
+            output: Array<Ref<IOTypes.OutputJson>>
             name: TextJson
             text: TextJson
         }
@@ -128,11 +129,11 @@ declare namespace CQTypes {
     }
 
     interface ChapterJson {
+        quest: Array<QuestJson | QuestJsonElement>
         id: chapterId
         name: TextJson
         icon: Ref<IconJson>
-        quest: Array<QuestJson | QuestJsonElement>
-        background?: bitmap
+        background?: [bitmap: bitmap, ratdio?: number]
         ref?: {[refId: refId]: unknown}
     }
 
@@ -145,6 +146,11 @@ declare namespace CQTypes {
             name: string
             base64: string
         }>
+        config?: {
+            saveOnly?: 'player' | 'team' | 'both' | 'either'
+            textMessage?: boolean
+            guiMessage?: boolean
+        }
         ref?: {[refId: refId]: unknown}
     }
 
@@ -153,6 +159,7 @@ declare namespace CQTypes {
     }
 
     interface ResolvedQuestJson {
+        type: QuestJson['type']
         pos: [x: number, y: number]
         size: number
         icon: [locked: Ref<IconJson>, unlocked: Ref<IconJson>, finished: Ref<IconJson>]
@@ -163,17 +170,16 @@ declare namespace CQTypes {
     }
 
     interface ResolvedChapterJson {
-        name: CQTypes.ChapterJson['name']
-        icon: CQTypes.ChapterJson['icon']
         quest: {[questId: questId]: ResolvedQuestJson | QuestJsonElement}
-        background?: CQTypes.ChapterJson['background']
+        name: ChapterJson['name']
+        icon: ChapterJson['icon']
+        background?: ChapterJson['background']
     }
 
     interface ResolvedMainJson {
         chapter: {[chapterId: chapterId]: ResolvedChapterJson}
-        name: CQTypes.MainJson['name']
-        background?: CQTypes.MainJson['background']
-        menu?: CQTypes.MainJson['menu']
+        name: MainJson['name']
+        menu?: MainJson['menu']
     }
 
     interface AllResolvedMainJson {
@@ -193,7 +199,6 @@ declare namespace CQTypes {
         name: string
         players: {[player: number]: playerState}
         settingTeam: {}
-        settingPlayer: {[player: number]: {}}
     }
 
     enum InputState {
@@ -251,8 +256,8 @@ declare namespace CQTypes {
 
     interface IOTypeToolsCb {
         getPlayerList?: (online?: boolean) => Array<number>
-        getState?: () => {state: CQTypes.InputState, [key: string]: unknown}
-        setState?: (state: {state: CQTypes.InputState, [key: string]: unknown}) => void
+        getState?: () => {state: InputState, [key: string]: unknown}
+        setState?: (extraInfo: {[key: string]: unknown}, state: {state: InputState, [key: string]: unknown}) => void
     }
 
     interface InputTypeCb {
@@ -270,12 +275,12 @@ declare namespace CQTypes {
             inventory: ReturnType<Utils['getSortInventory']>
             inventoryExtra: ReturnType<Utils['getExtraInventory']>
         }) => void
+        resolveJson?: (inputJson: IOTypes.IOJsonBase, refsArray: Array<{[refId: refId]: unknown}>) => Nullable<IOTypes.InputJson>
     }
 
     interface InputTypeConfig {
         allowRepeat?: boolean
         allowGroup?: boolean
-        operatorOnly?: Operator['type'] | 'both' | 'neither'
     }
 
     interface OutputTypeCb {
@@ -290,11 +295,12 @@ declare namespace CQTypes {
         onEdit?: (...params: unknown[]) => unknown
         onReceive?: (outputJson: IOTypes.OutputJson, toolsCb: IOTypeToolsCb, cache: {[key: string]: unknown}, extraInfo: {
             operator: Operator
-            extraInfo: unknown
+            [key: string]: unknown
         }) => void
         onFastReceive?: (outputJson: IOTypes.OutputJson, toolsCb: IOTypeToolsCb, cache: {[key: string]: unknown}, extraInfo: {
             operator: Operator
         }) => void
+        resolveJson?: (inputJson: IOTypes.IOJsonBase, refsArray: Array<{[refId: refId]: unknown}>) => Nullable<IOTypes.OutputJson>
     }
 
     interface OutputTypeConfig {
@@ -306,14 +312,18 @@ declare namespace CQTypes {
 
 interface Store {
     saved: {
-        players: {[player: number]: {
-            saveId: CQTypes.saveId
-            bookGived?: boolean
-            isAdmin?: boolean
-            isEditor?: boolean
-        }}
+        players: {
+            [player: number]: {
+                saveId: CQTypes.saveId
+                teamId: CQTypes.teamId
+                bookGived: boolean
+                isAdmin: boolean
+                isEditor: boolean
+            }
+        }
         team: {[teamId: CQTypes.teamId]: CQTypes.team}
         data: {[saveId: CQTypes.saveId]: CQTypes.SaveData}
+        playerList: {[saveId: CQTypes.saveId]: Array<number>}
     }
     cache: {
         playerLoaded: {[player: number]: boolean}
@@ -342,8 +352,9 @@ interface TranAPI {
 interface Utils {
     voidFunc (): void
     log (message: string, type: string, hasAlert?: boolean): void
-    getUUID (): string
+    getRandomString (): string
     isDefined (length: number, arr: unknown[]): boolean
+    isObject (obj: object): boolean
     hasKeyOfKeys (obj: {[key: string]: unknown}, keys: string[]): boolean
     deepCopy <T = object>(obj: T): T
     debounce <T = Function>(func: T, wait: number, func2?: T, ths?: unknown): T
@@ -360,7 +371,8 @@ interface Utils {
     transferItemFromItem (item: ItemInstance): CQTypes.ItemJson
     isItemExtraPassed (item: ItemInstance, extraJsonArray: CQTypes.ExtraJson[] | CQTypes.ExtraJson): boolean
     readContents (path: string): CQTypes.MainJson | {}
-    solveRefs <T = unknown>(value: CQTypes.Ref<T>, refsArray: Array<{[refId: CQTypes.refId]: unknown}>): T
+    resolveRefs <T = unknown>(value: CQTypes.Ref<T>, refsArray: Array<{[refId: CQTypes.refId]: unknown}>): T
+    copyTextJson (textJson: unknown): CQTypes.TextJson
     getInput (params: {text?: string, hint?: string; title?: string, button?: string}, cb: (keyword: string) => void): void
     dialog (params: {text: string; title?: string, button?: string}, cb: () => void): void
     getInventory (player: number): Array<ItemInstance>
@@ -369,45 +381,53 @@ interface Utils {
 }
 
 interface IOTypeTools {
-    inputTypeCb: {
+    inputType: {
         [type: string]: {
             cb: CQTypes.InputTypeCb
             config: CQTypes.InputTypeConfig
         }
     }
-    setInputTypeCb (type: string, inputTypeCb: CQTypes.InputTypeCb, config?: CQTypes.InputTypeConfig): void
+    setInputType (type: string, inputTypeCb: CQTypes.InputTypeCb, config?: CQTypes.InputTypeConfig): void
+    getInputTypeCb (type: string): CQTypes.InputTypeCb
+    getInputTypeConfig (type: string): Nullable<CQTypes.InputTypeConfig>
     inputObject: {
         [inputId: CQTypes.inputId]: {
             cache: {[key: string]: unknown}
             json: CQTypes.IOTypes.InputJson
             toolsCb: CQTypes.IOTypeToolsCb
+            onUnload?: () => void
         }
     }
     typedInputList: {[type: string]: Array<CQTypes.inputId>}
     getAllInputByType (type: string | Array<string>): Array<CQTypes.inputId>
-    loadInput (inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsCb): CQTypes.inputId
+    loadInput (inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsCb, onUnload?: () => void): CQTypes.inputId
+    isInputLoaded (inputId: CQTypes.inputId): boolean
     unloadInput (inputId: CQTypes.inputId): void
     callInputTypeCb (inputId: CQTypes.inputId, method: 'getIcon', extraInfo: Parameters<CQTypes.InputTypeCb['getIcon']>[3]): ReturnType<CQTypes.InputTypeCb['getIcon']>
     callInputTypeCb (inputId: CQTypes.inputId, method: 'getDesc', extraInfo: Parameters<CQTypes.InputTypeCb['getDesc']>[3]): ReturnType<CQTypes.InputTypeCb['getDesc']>
     callInputTypeCb (inputId: CQTypes.inputId, method: 'onEdit', extraInfo: Parameters<CQTypes.InputTypeCb['onEdit']>[3]): ReturnType<CQTypes.InputTypeCb['onEdit']>
     callInputTypeCb (inputId: CQTypes.inputId, method: 'onTick', extraInfo: Parameters<CQTypes.InputTypeCb['onTick']>[3]): ReturnType<CQTypes.InputTypeCb['onTick']>
-    outputTypeCb: {
+    outputType: {
         [type: string]: {
             cb: CQTypes.OutputTypeCb
             config: CQTypes.OutputTypeConfig
         }
     }
-    setOutputTypeCb (type: string, outputTypeCb: CQTypes.OutputTypeCb, config?: CQTypes.OutputTypeConfig): void
+    setOutputType (type: string, outputTypeCb: CQTypes.OutputTypeCb, config?: CQTypes.OutputTypeConfig): void
+    getOutputTypeCb (type: string): CQTypes.OutputTypeCb
+    getOutputTypeConfig (type: string): Nullable<CQTypes.OutputTypeConfig>
     outputObject: {
         [outputId: CQTypes.outputId]: {
             cache: {[key: string]: unknown}
             json: CQTypes.IOTypes.OutputJson
             toolsCb: CQTypes.IOTypeToolsCb
+            onUnload?: () => void
         }
     }
     typedOutputList: {[type: string]: Array<CQTypes.inputId>}
     getAllOutputByType (type: string | Array<string>): Array<CQTypes.outputId>
-    loadOutput (outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsCb): CQTypes.outputId
+    loadOutput (outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsCb, onUnload?: () => void): CQTypes.outputId
+    isOutputLoaded (outputId: CQTypes.outputId): boolean
     unloadOutput (outputId: CQTypes.outputId): void
     callOutTypeCb (outputId: CQTypes.outputId, method: 'onTick', extraInfo: Parameters<CQTypes.OutputTypeCb['getIcon']>[3]): ReturnType<CQTypes.OutputTypeCb['getIcon']>
     callOutTypeCb (outputId: CQTypes.outputId, method: 'getDesc', extraInfo: Parameters<CQTypes.OutputTypeCb['getDesc']>[3]): ReturnType<CQTypes.OutputTypeCb['getDesc']>
@@ -417,16 +437,19 @@ interface IOTypeTools {
 }
 
 interface System {
-    resolveJson (json: CQTypes.AllMainJson): CQTypes.AllResolvedMainJson
+    resolveJson (json: CQTypes.AllMainJson): {
+        json: CQTypes.AllResolvedMainJson
+        config: {[sourceId: CQTypes.sourceId]: CQTypes.MainJson['config']}
+        bitmaps: CQTypes.MainJson['bitmaps']
+    }
     isExist (json: CQTypes.AllResolvedMainJson, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): boolean
-    getQuestJson (json: CQTypes.AllResolvedMainJson, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.ResolvedQuestJson
+    getQuestJson (json: CQTypes.AllResolvedMainJson, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): Nullable<CQTypes.ResolvedQuestJson | CQTypes.QuestJsonElement>
     getParent (json: CQTypes.AllResolvedMainJson, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): Array<CQTypes.PathArray>
     getChild (json: CQTypes.AllResolvedMainJson, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): Array<CQTypes.PathArray>
     getInputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): {state: CQTypes.InputState, [key: string]: unknown}
     getOutputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): {stata: CQTypes.OutputState, [key: string]: unknown}
-    getQuestInputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestInputState
-    getQuestOutputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestOutputState
-    getPlayersState (team: CQTypes.team): CQTypes.team['players']
+    getQuestInputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestInputState
+    getQuestOutputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestOutputState
 }
 
 interface ServerSystem {
@@ -436,35 +459,41 @@ interface ServerSystem {
             [sourceId: CQTypes.sourceId]: {
                 [chapterId: CQTypes.chapterId]: {
                     [questId: CQTypes.questId]: {
-                        input: Array<CQTypes.inputId>
-                        output: Array<CQTypes.outputId>
+                        input?: Array<Nullable<CQTypes.inputId>>
+                        output?: Array<Nullable<CQTypes.outputId>>
                     }
                 }
             }
         }
     }
-    getSaveId (player: number): CQTypes.saveId
-    getSaveId (team: CQTypes.team): CQTypes.saveId
-    getSaveData (saveId: CQTypes.saveId): CQTypes.SaveData
+    invalidSaveId: CQTypes.saveId
+    getSaveId (target: number | CQTypes.team): CQTypes.saveId
     getPlayerList (saveId: CQTypes.saveId, online?: boolean): Array<number>
+    getSaveData (saveId: CQTypes.saveId): CQTypes.SaveData
+    unloadAllLoadedQuest (saveId: CQTypes.saveId): void
     loadQuest (sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, saveId: CQTypes.saveId): void
     loadAllQuest (saveId: CQTypes.saveId): void
-    reloadQuest (sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, saveId: CQTypes.saveId): void
-    setInputState (sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number, operator: CQTypes.Operator, extraInfo: unknown, saveId: CQTypes.saveId): void
-    setOutputState (sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number, operator: CQTypes.Operator, extraInfo: unknown, saveId: CQTypes.saveId): void
-    receiveAllQuest (sourceId: CQTypes.sourceId, operator: CQTypes.Operator, saveId: CQTypes.saveId): void
-    getTeam (player: number): CQTypes.team
+    setInputState (sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number, saveId: CQTypes.saveId,
+        extraInfo: {[key: string]: unknown}, inputState: CQTypes.InputState): void
+    setOutputState (sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number, saveId: CQTypes.saveId,
+        extraInfo: {[key: string]: unknown}, outputState: CQTypes.OutputState): void
+    receiveAllQuest (sourceId: CQTypes.sourceId, extraInfo: {[key: string]: unknown}, saveId: CQTypes.saveId): void
+    getTeam (player: number): Nullable<CQTypes.team>
+    createTeam (player: number, bitmap: CQTypes.team['bitmap'], name: CQTypes.team['name'], setting: CQTypes.team['settingTeam']): void
     setTeam (player: number, teamId: CQTypes.teamId): void
-    open (player: number, sourceId: CQTypes.sourceId, ismenu?: boolean): void
+    setTeamPlayerState (teamId: CQTypes.teamId, player: number, state: CQTypes.playerState): void
+    open (player: number, sourceId: CQTypes.sourceId, isMenu?: boolean): void
 }
 
 interface ClientSystem {
-    open (sourceId: CQTypes.sourceId, ismenu?: boolean): void
+    open (sourceId: CQTypes.sourceId, isMenu?: boolean): void
 
 }
 
 interface CustomQuestsAPI {
     version: `${number}.${number}.${number}-${string}`
+    invalidId: CQTypes.invalidId
+    Store: Store
     TranAPI: TranAPI
     Utils: Utils
     IOTypeTools: IOTypeTools
@@ -479,15 +508,10 @@ declare namespace ModAPI {
 }
 
 declare namespace Callback {
-    function addCallback(name: 'CustomQuests.onTeamChanged', func: onTeamChangedFunction): void
     function addCallback(name: 'CustomQuests.onInputStateChanged', func: onInputStateChangedFunction): void
     function addCallback(name: 'CustomQuests.onOutputStateChanged', func: onOutputStateChangedFunction): void
     function addCallback(name: 'CustomQuests.onQuestInputStateChanged', func: onQuestInputStateChangedFunction): void
     function addCallback(name: 'CustomQuests.onQuestOutputStateChanged', func: onQuestOutputStateChangedFunction): void
-
-    interface onTeamChangedFunction {
-        (player: number, newTeamId: CQTypes.teamId, oldTeamId: CQTypes.teamId): void
-    }
 
     interface onInputStateChangedFunction {
         (inputId: CQTypes.inputId, newState: {state: CQTypes.InputState, [key: string]: unknown}, oldState: {state: CQTypes.InputState, [key: string]: unknown}): void
