@@ -5,13 +5,13 @@ IMPORT('ChargeItem')
 const Color = android.graphics.Color
 const Setting = (function () {
     const Setting = {
-        UIsize: __config__.getNumber('setting.UIsize').floatValue(),
+        UiSize: __config__.getNumber('setting.ui_size').floatValue(),
         padding: __config__.getNumber('setting.padding').floatValue(),
         path: __config__.getString('save.path'),
         dev: __config__.getBool('save.dev')
     }
-    if (Setting.UIsize % 1 !== 0 || Setting.UIsize < 0 || Setting.UIsize > 2) {
-        __config__.set('setting.UIsize', Setting.UIsize = 1)
+    if (Setting.UiSize % 1 !== 0 || Setting.UiSize < 0 || Setting.UiSize > 2) {
+        __config__.set('setting.ui_size', Setting.UiSize = 1)
         __config__.save()
     }
     if (typeof Setting.padding !== 'number') {
@@ -27,23 +27,29 @@ const Setting = (function () {
     return Setting
 })()
 
+/** @type { CQTypes.invalidId } */
+const InvalidId = 'invalid'
+
 /** @type { Store } */
 const Store = (function () {
     /** @type { Store } */
     const DEFAULT = {
         saved: {
-            bookGived: {},
+            players: {},
             team: {},
             data: {},
-            admin: {},
-            editor: {}
+            playerList: {}
         },
         cache: {
-            playerLoaded: {}
+            playerLoaded: {},
+            resolvedJson: null
         },
         localCache: {
-            data: {},
-            team: {},
+            resolvedJson: null,
+            dataPlayer: null,
+            dataTeam: null,
+            saveId: InvalidId,
+            team: null,
             isAdmin: false,
             isEditor: false
         }

@@ -61,13 +61,13 @@ const TranAPI = {
             return ''
         }
     },
-    t (str, source, chapter, quest, type) {
+    t (str, sourceId, chapterId, questId, type) {
         if (typeof str === 'string') return str
-        let name = source || ''
-        if (chapter) name += '.' + chapter
-        if (quest) name += '.' + quest
+        let name = sourceId || ''
+        if (chapterId) name += '.' + chapterId
+        if (questId) name += '.' + questId
         if (type) name += '.' + type
         return this.translate(str) || name
     }
 }
-TranAPI.intTranslation();
+TranAPI.intTranslation()

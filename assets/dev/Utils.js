@@ -8,12 +8,10 @@ const Utils = {
         if (hasAlert) alert(msg)
         Logger.Log(msg, type)
     },
-    randomString () {
-        return ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx').replace(/[xy]/g, function (c) {
-            const r = Math.random() * 16 | 0
-            const v = c === 'x' ? r : (r & 0x3 | 0x8)
-            return v.toString(16)
-        })
+    getRandomString () {
+        const uuid = java.util.UUID.randomUUID().toString()
+        const num = Math.floor(Math.random() * 1e6).toString()
+        return uuid + '-' + num
     },
     isDefined (length, arr) {
         for (const i = 0; i < length; i++) {
@@ -21,14 +19,20 @@ const Utils = {
         }
         return true
     },
+    isObject (obj) {
+        if (typeof obj !== 'object') return false
+        if (obj === null) return false
+        return true
+    },
     hasKeyOfKeys (obj, keys) {
-        if(typeof obj !== 'object') return false
+        if(this.isObject(obj)) return false
         if(!Array.isArray(keys)) return false
         return keys.some(function (key) {
             return obj[key] !== void 0
         })
     },
     deepCopy (obj) {
+        if (!this.isObject(obj)) return obj
         return JSON.parse(JSON.stringify(obj))
     },
     debounce (func, delay, func2, ths) {
@@ -46,6 +50,18 @@ const Utils = {
                     return func2.apply(ths, arguments)
                 }
             }
+        }
+    },
+    operate (a, operator, b, dflt) {
+        switch (operator) {
+            case '<': return a < b
+            case '>': return a > b
+            case '=': return a === b
+            case '<=': return a <= b
+            case '>=': return a >= b
+            case '==': return a === b
+            case '!=': return a !== b
+            default: return Boolean(dflt)
         }
     },
     transferIdFromJson (id, onServer) {
@@ -91,7 +107,7 @@ const Utils = {
     extraType: {},
     setExtraTypeCb (type, { fromJson, fromItem, isPassed }) {
         if (typeof type !== 'string' || !type) return
-        if (typeof this.extraType[type] !== 'object') this.extraType[type] = {}
+        if (!this.isObject(this.extraType[type])) this.extraType[type] = {}
         if (typeof fromJson === 'function') this.extraType[type].fromJson = fromJson
         if (typeof fromItem === 'function') this.extraType[type].fromItem = fromItem
         if (typeof isPassed === 'function') this.extraType[type].isPassed = isPassed
@@ -99,11 +115,11 @@ const Utils = {
     getExtraTypeCb (type, from) {
         if (typeof type !== 'string' || !type) return
         if (typeof from !== 'string') return
-        if (typeof this.extraType[type] !== 'object') return this.voidFunc
+        if (!this.isObject(this.extraType[type])) return this.voidFunc
         return this.extraType[type][from] || this.voidFunc
     },
     transferItemFromJson (itemJson, onServer) {
-        if (typeof itemJson !== 'object') return {}
+        if (!this.isObject(itemJson)) return {}
         const that = this
         const item = {
             id: this.transferIdFromJson(itemJson.id, onServer),
@@ -111,11 +127,11 @@ const Utils = {
             data: itemJson.data || 0,
             extra: null
         }
-        if (typeof itemJson.extra === 'object') {
+        if (this.isObject(itemJson.extra)) {
             item.extra = new ItemExtraData()
             if (Array.isArray(itemJson.extra)) {
                 itemJson.extra.forEach(function (extraJson) {
-                    if (typeof extraJson !== 'object') return
+                    if (!that.isObject(extraJson)) return
                     that.getExtraTypeCb(extraJson.type, 'fromJson')(item, extraJson, onServer)
                 })
             } else {
@@ -125,7 +141,7 @@ const Utils = {
         return item
     },
     transferItemFromItem (item) {
-        if (typeof item !== 'object') return {}
+        if (!this.isObject(item)) return {}
         const itemJson = {
             id: this.transferIdFromItem(item.id),
             count: item.count || 1,
@@ -144,14 +160,14 @@ const Utils = {
         return itemJson
     },
     isItemExtraPassed (item, extraJsonArray) {
-        if (typeof item !== 'object') return false
-        if (typeof extraJsonArray !== 'object') return false
+        if (!this.isObject(item)) return false
+        if (!this.isObject(extraJsonArray)) return false
         if (!item.extra) item.extra = new ItemExtraData()
         const that = this
         let passed = true
         if (Array.isArray(extraJsonArray)) {
             extraJsonArray.every(function (extraJson) {
-                if (typeof extraJson !== 'object') return true
+                if (!that.isObject(extraJson)) return true
                 const cb = that.getExtraTypeCb(extraJson.type, 'isPassed')
                 if (cb === that.voidFunc) return true
                 return passed = passed && cb(item, extraJson)
@@ -204,6 +220,117 @@ const Utils = {
             that.log('Error in readQuestsData:\n' + err, 'ERROR', true)
         }
         return {}
+    },
+    resolveRefs (value, refsArray) {
+        if (typeof value !== 'string') return value
+        if (!value.match(/^ref:/i)) return value
+        const that = this
+        const refId = value.replace(/^ref:/i, '')
+        let ret = value
+        refsArray.some(function (refs) {
+            if (!that.isObject(refs)) return false
+            if (typeof refs[refId] !== 'undefined' && refs[refId] !== null) {
+                ret = refs[refId]
+                return true
+            }
+            return false
+        })
+        return ret
+    },
+    copyTextJson (textJson) {
+        if (typeof textJson === 'string') return textJson
+        if (Utils.isObject(textJson)) {
+            const ret = {}
+            for (const lang in textJson) {
+                ret[lang] = String(textJson[lang])
+            }
+            return ret
+        }
+        return ''
+    },
+    getInput ({text, hint, title, button}, cb){
+        UI.getContext().runOnUiThread(new java.lang.Runnable({
+            run () {
+                try {
+                    const editText = new android.widget.EditText(UI.getContext())
+                    editText.setHint(hint || '')
+                    editText.setSingleLine(true)
+                    if(typeof text == 'string') editText.setText(text)
+                    new android.app.AlertDialog.Builder(UI.getContext())
+                        .setTitle(title || '')
+                        .setView(editText)
+                        .setPositiveButton(
+                            button || TranAPI.translate('Utils.dialog.confirm'),
+                            new android.content.DialogInterface.OnClickListener({
+                                onClick: Utils.Debounce(function () {
+                                    if (typeof cb === 'function') {
+                                        cb(editText.getText().toString() + '')
+                                    }
+                                }, 500)
+                            })
+                        )
+                        .setNegativeButton(TranAPI.translate('Utils.dialog.cancel'), null)
+                        .show()
+                } catch (err) {}
+            }
+        }))
+    },
+    dialog ({text, title, button}, cb){
+        UI.getContext().runOnUiThread(new java.lang.Runnable({
+            run () {
+                try {
+                    new android.app.AlertDialog.Builder(UI.getContext())
+                        .setTitle(title || '')
+                        .setMessage(text)
+                        .setPositiveButton(
+                            button || TranAPI.translate('Utils.dialog.confirm'),
+                            new android.content.DialogInterface.OnClickListener({
+                                onClick: Utils.Debounce(function () {
+                                    if(typeof cb === 'function') cb()
+                                }, 500)
+                            })
+                        )
+                        .setNegativeButton(TranAPI.translate('Utils.dialog.cancel'), null)
+                        .show()
+                } catch (err) {}
+            }
+        }))
+    },
+    getInventory (player) {
+		const inventory = []
+		const actor = new PlayerActor(player)
+		for (const i = 0; i < 36; i++) {
+			inventory[i] = actor.getInventorySlot(i)
+		}
+		return inventory
+    },
+    getSortInventory (inventory) {
+		const sortInventory = {}
+		inventory.forEach(function (item) {
+			if (item.id === 0) return
+            if (sortInventory[item.id + ':' + item.data]) {
+                sortInventory[item.id + ':' + item.data] += item.count
+                if(item.data !== -1) sortInventory[item.id + ':-1'] += item.count
+            } else {
+                sortInventory[item.id + ':' + item.data] = item.count
+                sortInventory[item.id + ':-1'] = item.count
+            }
+		})
+		return sortInventory
+    },
+    getExtraInventory (inventory) {
+        const extraInventory = {}
+        inventory.forEach(function (item) {
+            if (!item.extra || item.extra.isEmpty()) return
+            if (extraInventory[item.id + ':' + item.data]) {
+                extraInventory[item.id + ':' + item.data].push(item)
+                if(item.data !== -1) extraInventory[item.id + ':-1'].push(item)
+            } else {
+                extraInventory[item.id + ':' + item.data] = [item]
+                extraInventory[item.id + ':-1'] = [item]
+            }
+        })
+        return extraInventory
     }
 }
 
@@ -224,7 +351,7 @@ Utils.setExtraTypeCb('enchant', {
     fromJson: function (item, extraJson, onServer) {
         if(!Array.isArray(extraJson.array)) return
         extraJson.array.forEach(function (obj) {
-            if (typeof obj !== 'object') return
+            if (!Utils.isObject(obj)) return
             if (typeof obj.type !== 'number') return
             if (typeof obj.level !== 'number') return
             item.extra.addEnchant(obj.type, obj.level)
@@ -247,20 +374,11 @@ Utils.setExtraTypeCb('enchant', {
         if(!Array.isArray(extraJson.array)) return true
         const enchants = item.extra.getEnchants()
         return extraJson.array.every(function (obj) {
-            if (typeof obj !== 'object') return true
+            if (!Utils.isObject(obj)) return true
             if (typeof obj.type !== 'number') return true
             if (typeof obj.level !== 'number') obj.level = 0
             if (typeof obj.operator !== 'string') obj.operator = '>='
-            switch (obj.operator) {
-                case '<': return enchants[obj.type] < obj.level
-                case '>': return enchants[obj.type] > obj.level
-                case '=': return enchants[obj.type] === obj.level
-                case '<=': return enchants[obj.type] <= obj.level
-                case '>=': return enchants[obj.type] >= obj.level
-                case '==': return enchants[obj.type] === obj.level
-                case '!=': return enchants[obj.type] !== obj.level
-                default: return true
-            }
+            return Utils.operate(Number(enchants[obj.type]), obj.operator, obj.level, true)
         })
     }
 })
@@ -271,7 +389,7 @@ Utils.setExtraTypeCb('energy', {
     },
     fromItem: function (item, extraJson) {
         const energyData = ChargeItemRegistry.getItemData(item.id)
-        if (typeof energyData !== 'object') return true
+        if (!Utils.isObject(energyData)) return true
         const energy = ChargeItemRegistry.getEnergyStored(item, energyData.energy)
         if (typeof energy !== 'number') return true
         extraJson.energy = energy
@@ -280,15 +398,7 @@ Utils.setExtraTypeCb('energy', {
     isPassed: function(item, extraJson) {
         const energy = item.extra.getInt('energy')
         if (typeof extraJson.operator !== 'string') extraJson.operator = '>='
-        switch (obj.operator) {
-            case '<': return energy < extraJson.energy
-            case '>': return energy > extraJson.energy
-            case '=': return energy === extraJson.energy
-            case '<=': return energy <= extraJson.energy
-            case '>=': return energy >= extraJson.energy
-            case '==': return energy === extraJson.energy
-            case '!=': return energy !== extraJson.energy
-            default: return true
-        }
+        if (typeof extraJson.energy !== 'number') extraJson.energy = 0
+        return Utils.operate(energy, extraJson.operator, extraJson.energy, true)
     }
 })
