@@ -30,6 +30,38 @@ const Setting = (function () {
 /** @type { CQTypes.invalidId } */
 const InvalidId = 'invalid'
 
+/** @type { EnumObject } */
+const EnumObject = {
+    playerState: {
+        absent: 0,
+        member: 1,
+        admin: 2,
+        owner: 3
+    },
+    inputState: {
+        unfinished: 0,
+        finished: 1,
+        repeat_unfinished: 2
+    },
+    outputState: {
+        unreceived: 0,
+        received: 1,
+        repeat_unreceived: 2
+    },
+    questInputState: {
+        locked: -1,
+        unfinished: 0,
+        finished: 1,
+        repeat_unfinished: 2
+    },
+    questOutputState: {
+        locked: -1,
+        unreceived: 0,
+        received: 1,
+        repeat_unreceived: 2
+    }
+}
+
 /** @type { Store } */
 const Store = (function () {
     /** @type { Store } */
@@ -38,7 +70,8 @@ const Store = (function () {
             players: {},
             team: {},
             data: {},
-            playerList: {}
+            playerList: {},
+            exist: {}
         },
         cache: {
             playerLoaded: {},
@@ -46,6 +79,7 @@ const Store = (function () {
         },
         localCache: {
             resolvedJson: null,
+            jsonConfig: null,
             dataPlayer: null,
             dataTeam: null,
             saveId: InvalidId,
@@ -56,15 +90,23 @@ const Store = (function () {
     }
     Callback.addCallback('LevelLeft', function () {
         const obj = Utils.deepCopy(DEFAULT)
+        for (const key in Store) {
+            Store[key] = null
+        }
         for (const key in obj) {
             Store[key] = obj[key]
         }
     })
     return JSON.parse(JSON.stringify(DEFAULT))
 })()
+
 Saver.addSavesScope('CustomQuests-v2', function (scope) {
     if (typeof scope !== 'object') return
     Store.saved = scope
 }, function () {
     return Store.saved
+})
+
+Callback.addCallback('ServerPlayerLeft', function (player) {
+    Store.cache.playerLoaded[player] = null
 })

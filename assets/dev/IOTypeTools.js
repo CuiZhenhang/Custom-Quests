@@ -14,14 +14,17 @@ const IOTypeTools = {
                 }
             }
         }
-        [
+        const methods = [
             'onLoad', 'onUnload',
             'getIcon', 'getDesc',
             'onEdit', 'onTick',
             'resolveJson'
-        ].forEach((method) => {
+        ]
+        methods.forEach((method) => {
             if (typeof inputTypeCb[method] === 'function') {
                 that.inputType[type].cb[method] = inputTypeCb[method]
+            } else if (inputTypeCb[method] === null) {
+                that.inputType[type].cb[method] = null
             }
         })
         if (Utils.isObject(config)) {
@@ -64,6 +67,9 @@ const IOTypeTools = {
         return ret
     },
     loadInput (inputJson, toolsCb, onUnload) {
+        if (!Utils.isObject(inputJson)) return
+        if (!Utils.isObject(toolsCb)) toolsCb = {}
+        inputJson = Utils.deepCopy(inputJson)
         const type = inputJson.type
         const inputType = this.inputType[type]
         if (!Utils.isObject(inputType)) return
@@ -81,6 +87,7 @@ const IOTypeTools = {
         }
     },
     isInputLoaded (inputId) {
+        if (typeof inputId !== 'string') return false
         if (inputId === InvalidId) return false
         const inputObject = this.inputObject[inputId]
         return Utils.isObject(inputObject)
@@ -113,6 +120,19 @@ const IOTypeTools = {
         }
         return null
     },
+    getPlayerListByInputId (inputId, online) {
+        if (!this.isInputLoaded(inputId)) return null
+        const inputObject = this.inputObject[inputId]
+        if (typeof inputObject.toolsCb.getPlayerList === 'function') {
+            return inputObject.toolsCb.getPlayerList(Boolean(online))
+        }
+        return []
+    },
+    getInputJsonByInputId (inputId) {
+        if (!this.isInputLoaded(inputId)) return null
+        const inputObject = this.inputObject[inputId]
+        return Utils.deepCopy(inputObject.json)
+    },
     outputType: {},
     setOutputType (type, outputTypeCb, config) {
         const that = this
@@ -126,14 +146,17 @@ const IOTypeTools = {
                 }
             }
         }
-        [
+        const methods = [
             'onLoad', 'onUnload',
             'getIcon', 'getDesc',
             'onEdit', 'onReceive',
             'onFastReceive', 'resolveJson'
-        ].forEach((method) => {
+        ]
+        methods.forEach((method) => {
             if (typeof outputTypeCb[method] === 'function') {
                 that.outputType[type].cb[method] = outputTypeCb[method]
+            } else if (outputTypeCb[method] === null) {
+                that.outputType[type].cb[method] = null
             }
         })
         if (Utils.isObject(config)) {
@@ -176,6 +199,9 @@ const IOTypeTools = {
         return ret
     },
     loadOutput (outputJson, toolsCb, onUnload) {
+        if (!Utils.isObject(outputJson)) return
+        if (!Utils.isObject(toolsCb)) toolsCb = {}
+        outputJson = Utils.deepCopy(outputJson)
         const type = outputJson.type
         const outputType = this.outputType[type]
         if (!Utils.isObject(outputType)) return
@@ -193,6 +219,7 @@ const IOTypeTools = {
         }
     },
     isOutputLoaded (outputId) {
+        if (typeof outputId !== 'string') return false
         if (outputId === InvalidId) return false
         const outputObject = this.outputObject[outputId]
         return Utils.isObject(outputObject)
@@ -224,10 +251,58 @@ const IOTypeTools = {
             return outputType.cb[method](outputObject.json, outputObject.toolsCb, outputObject.cache, extraInfo)
         }
         return null
+    },
+    getPlayerListByOutputId (outputId, online) {
+        if (!this.isOutputLoaded(outputId)) return null
+        const outputObject = this.outputObject[outputId]
+        if (typeof outputObject.toolsCb.getPlayerList === 'function') {
+            return outputObject.toolsCb.getPlayerList(Boolean(online))
+        }
+        return []
+    },
+    getOutputJsonByOutputId (outputId) {
+        if (!this.isOutputLoaded(outputId)) return null
+        const outputObject = this.outputObject[outputId]
+        return Utils.deepCopy(outputObject.json)
     }
 }
 
+Callback.addCallback('LocalTick', function () {
+    if (Math.random() * 10 < 1 && !Network.inRemoteWorld()) {
+        try {
+            const playerList = Network.getConnectedPlayers()
+            const playerInventory = {}
+            for (let i = 0; i < playerList.length; i++) {
+                const player = playerList[i]
+                const inventory = Utils.getInventory(player)
+                const sortInventory = Utils.getSortInventory(inventory)
+                const extraInventory = Utils.getExtraInventory(inventory)
+                playerInventory[player] = {
+                    player: player,
+                    sortInventory: sortInventory,
+                    extraInventory: extraInventory
+                }
+            }
+            for (const type in IOTypeTools.typedInputList) {
+                if (typeof IOTypeTools.getInputTypeCb(type).onTick !== 'function') continue
+                IOTypeTools.typedInputList[type].forEach(function (inputId) {
+                    const playerInventoryArray = []
+                    IOTypeTools.getPlayerListByInputId(inputId, true).forEach(function (player) {
+                        playerInventoryArray.push(playerInventory[player])
+                    })
+                    IOTypeTools.callInputTypeCb(inputId, 'onTick', {
+                        playerInventory: playerInventoryArray
+                    })
+                })
+            }
+        } catch (err) {
+            Utils.log('Error in Callback \'ServerPlayerTick\':\n' + err, 'ERROR', true)
+        }
+    }
+})
+
 Callback.addCallback('LevelLeft', function () {
+    if (Network.inRemoteWorld()) return
     for (const type in IOTypeTools.typedInputList) {
         IOTypeTools.typedInputList[type].forEach(function (inputId) {
             IOTypeTools.unloadOutput(inputId)

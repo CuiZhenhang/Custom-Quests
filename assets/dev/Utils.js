@@ -105,12 +105,19 @@ const Utils = {
         return this.idFromItem[id] || String(id)
     },
     extraType: {},
-    setExtraTypeCb (type, { fromJson, fromItem, isPassed }) {
+    setExtraTypeCb (type, extraTypeCb) {
         if (typeof type !== 'string' || !type) return
+        if (!this.isObject(extraTypeCb)) return
         if (!this.isObject(this.extraType[type])) this.extraType[type] = {}
-        if (typeof fromJson === 'function') this.extraType[type].fromJson = fromJson
-        if (typeof fromItem === 'function') this.extraType[type].fromItem = fromItem
-        if (typeof isPassed === 'function') this.extraType[type].isPassed = isPassed
+        const that = this
+        const methods = ['fromJson', 'fromItem', 'isPassed']
+        methods.forEach(function (method) {
+            if (typeof extraTypeCb[method] === 'function') {
+                that.extraType[type][method] = extraTypeCb[method]
+            } else if (extraTypeCb[method] === null) {
+                that.extraType[type][method] = null
+            }
+        })
     },
     getExtraTypeCb (type, from) {
         if (typeof type !== 'string' || !type) return
@@ -190,7 +197,7 @@ const Utils = {
                             try {
                                 mainJson.main[indexChapter] = FileTools.ReadJSON(path + pathChapter) || {}
                             } catch (err) {
-                                that.log('Error in readQuestsData:\n' + err, 'ERROR')
+                                that.log('Error in readContents:\n' + err, 'ERROR')
                                 mainJson.main[indexChapter] = {}
                             }
                         }
@@ -201,7 +208,7 @@ const Utils = {
                                     try {
                                         chapterJson.quest[indexQuest] = FileTools.ReadJSON(path + pathQuest) || {}
                                     } catch (err) {
-                                        that.log('Error in readQuestsData:\n' + err, 'ERROR')
+                                        that.log('Error in readContents:\n' + err, 'ERROR')
                                         chapterJson.quest[indexQuest] = {}
                                     }
                                 }
@@ -214,10 +221,10 @@ const Utils = {
                 const mainJson = FileTools.ReadJSON(path + 'CustomQuests.json')
                 if (mainJson.main) return mainJson
             } else {
-                that.log('Failed to ReadPath:\nThere is no files: ' + path, 'WARN', true)
+                that.log('Failed to read contents:\nThere is no files: ' + path, 'WARN', true)
             }
         } catch (err) {
-            that.log('Error in readQuestsData:\n' + err, 'ERROR', true)
+            that.log('Error in readContents:\n' + err, 'ERROR', true)
         }
         return {}
     },
@@ -237,7 +244,15 @@ const Utils = {
         })
         return ret
     },
-    copyTextJson (textJson) {
+    resolveBitmap (bitmap, bitmapNameObject) {
+        if (typeof bitmap !== 'string') return null
+        if (!this.isObject(bitmapNameObject)) return bitmap
+        if (bitmapNameObject[bitmap]) {
+            return 'cq_custom_bitmap:' + bitmap
+        }
+        return bitmap
+    },
+    resolveTextJson (textJson) {
         if (typeof textJson === 'string') return textJson
         if (Utils.isObject(textJson)) {
             const ret = {}
@@ -248,6 +263,21 @@ const Utils = {
         }
         return ''
     },
+    putTextureSourceFromBase64: (function () {
+        const TextureSource = new com.zhekasmirnov.innercore.api.mod.ui.TextureSource()
+        /** @type { Utils['putTextureSourceFromBase64'] } */
+        return function (name, encodedString) {
+            if (typeof name !== 'string') return
+            if (typeof encodedString !== 'string') return
+            try {
+                const encodeByte = android.util.Base64.decode(encodedString, 0)
+                const bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
+                TextureSource.put(name, bitmap)
+            } catch (err) {
+                this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
+            }
+        }
+    })(),
     getInput ({text, hint, title, button}, cb){
         UI.getContext().runOnUiThread(new java.lang.Runnable({
             run () {

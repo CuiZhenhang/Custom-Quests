@@ -62,12 +62,12 @@ const TranAPI = {
         }
     },
     t (str, sourceId, chapterId, questId, type) {
-        if (typeof str === 'string') return str
+        if (typeof str === 'string') return str.replace(/\\n/g, '\n')
         let name = sourceId || ''
         if (chapterId) name += '.' + chapterId
         if (questId) name += '.' + questId
         if (type) name += '.' + type
-        return this.translate(str) || name
+        return this.translate(str).replace(/\\n/g, '\n') || name
     }
 }
 TranAPI.intTranslation()
