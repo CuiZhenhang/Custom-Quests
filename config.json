@@ -1,11 +1,11 @@
 {
-  "enabled":true,
-  "setting":{
-    "UIsize":1,
-    "padding":60
+  "enabled": true,
+  "setting": {
+    "ui_size": 1,
+    "padding": 60
   },
-  "save":{
-    "path":"custom/",
-    "dev":false
+  "save": {
+    "path": "custom/",
+    "dev": false
   }
 }
