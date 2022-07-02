@@ -52,7 +52,7 @@ const Utils = {
             }
         }
     },
-    operate (a, operator, b, dflt) {
+    operate (a, operator, b, defaultValue) {
         switch (operator) {
             case '<': return a < b
             case '>': return a > b
@@ -61,13 +61,13 @@ const Utils = {
             case '>=': return a >= b
             case '==': return a === b
             case '!=': return a !== b
-            default: return Boolean(dflt)
+            default: return Boolean(defaultValue)
         }
     },
-    transferIdFromJson (id, onServer) {
+    transferIdFromJson (id) {
         if (!id) return ItemID.missing_item
         if (typeof id === 'number') {
-            return onServer ? id : Network.serverToLocalId(id)
+            return Network.inRemoteWorld() ? Network.serverToLocalId(id) : id
         }
         if (typeof id !== 'string') {
             return ItemID.missing_item
@@ -125,11 +125,11 @@ const Utils = {
         if (!this.isObject(this.extraType[type])) return this.voidFunc
         return this.extraType[type][from] || this.voidFunc
     },
-    transferItemFromJson (itemJson, onServer) {
+    transferItemFromJson (itemJson) {
         if (!this.isObject(itemJson)) return {}
         const that = this
         const item = {
-            id: this.transferIdFromJson(itemJson.id, onServer),
+            id: this.transferIdFromJson(itemJson.id),
             count: itemJson.count || 1,
             data: itemJson.data || 0,
             extra: null
@@ -139,10 +139,10 @@ const Utils = {
             if (Array.isArray(itemJson.extra)) {
                 itemJson.extra.forEach(function (extraJson) {
                     if (!that.isObject(extraJson)) return
-                    that.getExtraTypeCb(extraJson.type, 'fromJson')(item, extraJson, onServer)
+                    that.getExtraTypeCb(extraJson.type, 'fromJson')(item, extraJson)
                 })
             } else {
-                this.getExtraTypeCb(itemJson.extra.type, 'fromJson')(item, itemJson.extra, onServer)
+                this.getExtraTypeCb(itemJson.extra.type, 'fromJson')(item, itemJson.extra)
             }
         }
         return item
@@ -365,7 +365,7 @@ const Utils = {
 }
 
 Utils.setExtraTypeCb('name', {
-    fromJson: function (item, extraJson, onServer) {
+    fromJson: function (item, extraJson) {
         item.extra.setCustomName(extraJson.name)
     },
     fromItem: function (item, extraJson) {
@@ -378,7 +378,7 @@ Utils.setExtraTypeCb('name', {
 })
 
 Utils.setExtraTypeCb('enchant', {
-    fromJson: function (item, extraJson, onServer) {
+    fromJson: function (item, extraJson) {
         if(!Array.isArray(extraJson.array)) return
         extraJson.array.forEach(function (obj) {
             if (!Utils.isObject(obj)) return
@@ -414,7 +414,7 @@ Utils.setExtraTypeCb('enchant', {
 })
 
 Utils.setExtraTypeCb('energy', {
-    fromJson: function (item, extraJson, onServer) {
+    fromJson: function (item, extraJson) {
         ChargeItemRegistry.setEnergyStored(item, extraJson.energy)
     },
     fromItem: function (item, extraJson) {

@@ -7,8 +7,9 @@ const Setting = (function () {
     const Setting = {
         UiSize: __config__.getNumber('setting.ui_size').floatValue(),
         padding: __config__.getNumber('setting.padding').floatValue(),
-        path: __config__.getString('save.path'),
-        dev: __config__.getBool('save.dev')
+        path: __config__.getString('contents.path'),
+        dev: __config__.getBool('contents.dev'),
+        saveOnlyPlayer: __config__.getBool('save.only_player')
     }
     if (Setting.UiSize % 1 !== 0 || Setting.UiSize < 0 || Setting.UiSize > 2) {
         __config__.set('setting.ui_size', Setting.UiSize = 1)
@@ -75,20 +76,18 @@ const Store = (function () {
         },
         cache: {
             playerLoaded: {},
-            resolvedJson: null
+            playerList: {}
         },
         localCache: {
             resolvedJson: null,
             jsonConfig: null,
-            dataPlayer: null,
-            dataTeam: null,
-            saveId: InvalidId,
+            saveData: null,
             team: null,
             isAdmin: false,
             isEditor: false
         }
     }
-    Callback.addCallback('LevelLeft', function () {
+    Callback.addCallback('LevelSelected', function () {
         const obj = Utils.deepCopy(DEFAULT)
         for (const key in Store) {
             Store[key] = null
@@ -104,9 +103,9 @@ Saver.addSavesScope('CustomQuests-v2', function (scope) {
     if (typeof scope !== 'object') return
     Store.saved = scope
 }, function () {
-    return Store.saved
-})
-
-Callback.addCallback('ServerPlayerLeft', function (player) {
-    Store.cache.playerLoaded[player] = null
+    const str = JSON.stringify(Store.saved, function (key, value) {
+        if (value === null) return undefined
+        return value
+    })
+    return JSON.parse(str)
 })

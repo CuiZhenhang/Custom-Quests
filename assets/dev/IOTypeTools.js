@@ -112,6 +112,7 @@ const IOTypeTools = {
     },
     callInputTypeCb (inputId, method, extraInfo) {
         if (!this.isInputLoaded(inputId)) return null
+        if (!Utils.isObject(extraInfo)) extraInfo = {}
         const inputObject = this.inputObject[inputId]
         const type = inputObject.json.type
         const inputType = this.inputType[type]
@@ -141,8 +142,7 @@ const IOTypeTools = {
                 cb: {},
                 config: {
                     allowGroup: false,
-                    allowRepeat: false,
-                    operatorOnly: 'player'
+                    allowRepeat: false
                 }
             }
         }
@@ -244,6 +244,7 @@ const IOTypeTools = {
     },
     callOutputTypeCb (outputId, method, extraInfo) {
         if (!this.isOutputLoaded(outputId)) return null
+        if (!Utils.isObject(extraInfo)) extraInfo = {}
         const outputObject = this.outputObject[outputId]
         const type = outputObject.json.type
         const outputType = this.outputType[type]
@@ -268,6 +269,7 @@ const IOTypeTools = {
 }
 
 Callback.addCallback('LocalTick', function () {
+    /* 0.5s */
     if (Math.random() * 10 < 1 && !Network.inRemoteWorld()) {
         try {
             const playerList = Network.getConnectedPlayers()
@@ -296,7 +298,7 @@ Callback.addCallback('LocalTick', function () {
                 })
             }
         } catch (err) {
-            Utils.log('Error in Callback \'ServerPlayerTick\':\n' + err, 'ERROR', true)
+            Utils.log('Error in Callback \'LocalTick\' (IOTypeTools.js):\n' + err, 'ERROR', true)
         }
     }
 })

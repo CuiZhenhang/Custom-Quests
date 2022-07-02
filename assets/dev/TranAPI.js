@@ -2,42 +2,8 @@
 
 /** @type { TranAPI } */
 const TranAPI = {
-    translation: {},
     lang: 'en',
-    intTranslation () {
-        const languages = {}
-        const QB = {
-            default: {},
-            admin: {},
-            editor: {},
-            missing: {}
-        }
-        const files = FileTools.GetListOfFiles(__dir__ + '/lang/', 'lang')
-        for (const index in files) {
-            const name = files[index].getName()
-            languages[name] = name.split('_')[0]
-        }
-        for (const name in languages) {
-            const lang = languages[name]
-            const translations = FileTools.ReadKeyValueFile(__dir__ + '/lang/' + name, '=')
-            if (!this.translation[lang]) this.translation[lang] = {}
-
-            for (const str in translations) {
-                str = str.replace(/\\n/g, '\n')
-                this.translation[lang][str] = translations[str].replace(/\\n/g, '\n')
-            }
-            if (translations['item.quest_book.name']) QB.default[lang] = translations['item.quest_book.name'].replace(/\\n/g, '\n')
-            if (translations['item.quest_book_admin.name']) QB.admin[lang] = translations['item.quest_book_admin.name'].replace(/\\n/g, '\n')
-            if (translations['item.quest_book_editor.name']) QB.editor[lang] = translations['item.quest_book_editor.name'].replace(/\\n/g, '\n')
-            if (translations['item.missing_item.name']) QB.missing[lang] = translations['item.missing_item.name'].replace(/\\n/g, '\n')
-            Translation.addTranslation('CustomQuests.lang', {[lang]: lang})
-        }
-        this.lang = Translation.translate('CustomQuests.lang') || 'en'
-        Translation.addTranslation('Quests Book', QB.default)
-        Translation.addTranslation('Quests Admin Book', QB.admin)
-        Translation.addTranslation('Quests Editor Book', QB.editor)
-        Translation.addTranslation('Missing Item', QB.missing)
-    },
+    translation: {},
     addTranslation (str, params) {
         for (const lang in params) {
             if (typeof params[lang] === 'string') {
@@ -70,4 +36,38 @@ const TranAPI = {
         return this.translate(str).replace(/\\n/g, '\n') || name
     }
 }
-TranAPI.intTranslation()
+
+; (function intTranslation () {
+    const languages = {}
+    const QB = {
+        default: {},
+        admin: {},
+        editor: {},
+        missing: {}
+    }
+    const files = FileTools.GetListOfFiles(__dir__ + '/lang/', 'lang')
+    for (const index in files) {
+        const name = files[index].getName()
+        languages[name] = name.split('_')[0]
+    }
+    for (const name in languages) {
+        const lang = languages[name]
+        const translations = FileTools.ReadKeyValueFile(__dir__ + '/lang/' + name, '=')
+        if (!TranAPI.translation[lang]) TranAPI.translation[lang] = {}
+
+        for (const str in translations) {
+            str = str.replace(/\\n/g, '\n')
+            TranAPI.translation[lang][str] = translations[str].replace(/\\n/g, '\n')
+        }
+        if (translations['item.quest_book.name']) QB.default[lang] = translations['item.quest_book.name'].replace(/\\n/g, '\n')
+        if (translations['item.quest_book_admin.name']) QB.admin[lang] = translations['item.quest_book_admin.name'].replace(/\\n/g, '\n')
+        if (translations['item.quest_book_editor.name']) QB.editor[lang] = translations['item.quest_book_editor.name'].replace(/\\n/g, '\n')
+        if (translations['item.missing_item.name']) QB.missing[lang] = translations['item.missing_item.name'].replace(/\\n/g, '\n')
+        Translation.addTranslation('CustomQuests.lang', {[lang]: lang})
+    }
+    TranAPI.lang = Translation.translate('CustomQuests.lang') || 'en'
+    Translation.addTranslation('Quests Book', QB.default)
+    Translation.addTranslation('Quests Admin Book', QB.admin)
+    Translation.addTranslation('Quests Editor Book', QB.editor)
+    Translation.addTranslation('Missing Item', QB.missing)
+})()
