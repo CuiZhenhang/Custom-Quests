@@ -5,6 +5,9 @@
     "padding": 60
   },
   "save": {
+    "only_player": false
+  },
+  "contents": {
     "path": "custom/",
     "dev": false
   }
