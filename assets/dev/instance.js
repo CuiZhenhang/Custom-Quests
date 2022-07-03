@@ -1,3 +1,5 @@
+/// <reference path='./Interaction.js'/>
+
 IDRegistry.genItemID('quest_book')
 Item.createItem('quest_book', 'Quests Book', { name: 'quest_book' }, { stack: 1 })
 Recipes.addShapeless({ id: ItemID.quest_book, count: 1, data: 0 }, [

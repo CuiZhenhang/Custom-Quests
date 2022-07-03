@@ -15,10 +15,9 @@ const IOTypeTools = {
             }
         }
         const methods = [
-            'onLoad', 'onUnload',
-            'getIcon', 'getDesc',
-            'onEdit', 'onTick',
-            'resolveJson'
+            'resolveJson', 'onPacket',
+            'onLoad', 'onUnload', 'onTick',
+            'getIcon', 'getDesc', 'onEdit'
         ]
         methods.forEach((method) => {
             if (typeof inputTypeCb[method] === 'function') {
@@ -73,7 +72,7 @@ const IOTypeTools = {
         const type = inputJson.type
         const inputType = this.inputType[type]
         if (!Utils.isObject(inputType)) return
-        const inputId = Utils.getRandomString()
+        const inputId = Utils.getUUID()
         if (!Array.isArray(this.typedInputList[type])) this.typedInputList[type] = []
         this.typedInputList[type].push(inputId)
         this.inputObject[inputId] = {
@@ -106,13 +105,15 @@ const IOTypeTools = {
         this.inputObject[inputId] = null
         const list = this.typedInputList[type]
         const index = list.indexOf(inputId)
-        if (index !== -1) {
-            list.splice(index, 1)
-        }
+        if (index >= 0) list.splice(index, 1)
     },
     callInputTypeCb (inputId, method, extraInfo) {
         if (!this.isInputLoaded(inputId)) return null
         if (!Utils.isObject(extraInfo)) extraInfo = {}
+        const methods = [
+            'onPacket', 'onTick'
+        ]
+        if (methods.indexOf(method) < 0) return
         const inputObject = this.inputObject[inputId]
         const type = inputObject.json.type
         const inputType = this.inputType[type]
@@ -147,10 +148,9 @@ const IOTypeTools = {
             }
         }
         const methods = [
-            'onLoad', 'onUnload',
-            'getIcon', 'getDesc',
-            'onEdit', 'onReceive',
-            'onFastReceive', 'resolveJson'
+            'resolveJson', 'onPacket',
+            'onLoad', 'onUnload', 'onReceive',
+            'getIcon', 'getDesc', 'onEdit'
         ]
         methods.forEach((method) => {
             if (typeof outputTypeCb[method] === 'function') {
@@ -205,7 +205,7 @@ const IOTypeTools = {
         const type = outputJson.type
         const outputType = this.outputType[type]
         if (!Utils.isObject(outputType)) return
-        const outputId = Utils.getRandomString()
+        const outputId = Utils.getUUID()
         if (!Array.isArray(this.typedOutputList[type])) this.typedOutputList[type] = []
         this.typedOutputList[type].push(outputId)
         this.outputObject[outputId] = {
@@ -238,13 +238,15 @@ const IOTypeTools = {
         this.outputObject[outputId] = null
         const list = this.typedOutputList[type]
         const index = list.indexOf(outputId)
-        if (index !== -1) {
-            list.splice(index, 1)
-        }
+        if (index >= 0) list.splice(index, 1)
     },
     callOutputTypeCb (outputId, method, extraInfo) {
         if (!this.isOutputLoaded(outputId)) return null
         if (!Utils.isObject(extraInfo)) extraInfo = {}
+        const methods = [
+            'onPacket', 'onReceive'
+        ]
+        if (methods.indexOf(method) < 0) return
         const outputObject = this.outputObject[outputId]
         const type = outputObject.json.type
         const outputType = this.outputType[type]

@@ -8,10 +8,20 @@ const Utils = {
         if (hasAlert) alert(msg)
         Logger.Log(msg, type)
     },
-    getRandomString () {
-        const uuid = java.util.UUID.randomUUID().toString()
-        const num = Math.floor(Math.random() * 1e6).toString()
-        return uuid + '-' + num
+    getUUID () {
+        return String(java.util.UUID.randomUUID().toString())
+    },
+    md5 (str) {
+        if (typeof str !== 'string') return
+        try {
+            const jStr = new java.lang.String(str)
+            const secretBytes = java.security.MessageDigest.getInstance('md5').digest(jStr.getBytes('UTF8'))
+            const ret = new java.math.BigInteger(1, secretBytes).toString(16)
+            return String(ret)
+        } catch (err) {
+            this.log('Error in md5 (Utils.js):\n' + err, 'ERROR', false)
+            return str
+        }
     },
     isDefined (length, arr) {
         for (const i = 0; i < length; i++) {

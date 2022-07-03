@@ -1,5 +1,6 @@
 /// <reference path='../declarations/custom-quests-v2.d.ts'/>
 /// <reference path='../lib/ChargeItem.js'/>
+/// <reference path='./share.js'/>
 
 IMPORT('ChargeItem')
 const Color = android.graphics.Color
@@ -83,8 +84,7 @@ const Store = (function () {
             jsonConfig: null,
             saveData: null,
             team: null,
-            isAdmin: false,
-            isEditor: false
+            isAdmin: false
         }
     }
     Callback.addCallback('LevelSelected', function () {

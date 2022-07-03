@@ -6,6 +6,6 @@ System.js
 network.js
 ServerSystem.js
 ClientSystem.js
-interaction.js
+Interaction.js
 instance.js
 share.js

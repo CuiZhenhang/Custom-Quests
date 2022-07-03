@@ -126,11 +126,6 @@ const System = {
             const resolvedMainJson = {}
             resolvedMainJson.chapter = {}
             resolvedMainJson.name = Utils.resolveTextJson(mainJson.name)
-            resolvedMainJson.menu = Utils.deepCopy(mainJson.menu)
-            if (Array.isArray(resolvedMainJson.menu) && typeof resolvedMainJson.menu[0] === 'string') {
-                resolvedMainJson.menu = Utils.resolveBitmap(resolvedMainJson.menu, bitmapNameObject)
-                if (typeof resolvedMainJson.menu[1] !== 'number') resolvedMainJson.menu[1] = null
-            } else resolvedMainJson.menu = null
             let background = Utils.deepCopy(mainJson.background)
             if (Array.isArray(background) && typeof background[0] === 'string') {
                 background[0] = Utils.resolveBitmap(background[0], bitmapNameObject)
@@ -146,6 +141,7 @@ const System = {
                 resolvedMainJson.chapter[chapterId] = resolvedChapterJson
                 resolvedChapterJson.quest = {}
                 resolvedChapterJson.name = Utils.resolveTextJson(chapterJson.name)
+                resolvedChapterJson.description = Utils.resolveTextJson(chapterJson.description)
                 resolvedChapterJson.icon = Utils.deepCopy(Utils.resolveRefs(chapterJson.icon, refsArray))
                 if (!Utils.isObject(resolvedChapterJson.icon)) resolvedChapterJson.icon = {}
                 resolvedChapterJson.background = Utils.deepCopy(chapterJson.background)

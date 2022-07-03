@@ -1,3 +1,5 @@
+/// <reference path='./instance.js'/>
+
 ModAPI.registerAPI('CustomQuestsAPI', {
     version: '2.0.0-alpha.1',
     invalidId: InvalidId,

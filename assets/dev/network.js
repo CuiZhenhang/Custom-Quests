@@ -1,8 +1,63 @@
 /// <reference path='./System.js'/>
 
 // Server
-Network.addServerPacket('CustomQuests.Server.', function (client, packetData) {
+Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, packetData) {
+    if (packetData.type !== 'input' && packetData.type !== 'output') return
+    if (typeof packetData.sourceId !== 'string') return
+    if (typeof packetData.chapterId !== 'string') return
+    if (typeof packetData.questId !== 'string') return
+    if (typeof packetData.index !== 'number') return
+    if (!Utils.isObject(packetData.data)) return
+    const saveId = ServerSystem.getSaveId(client.getPlayerUid())
+    if (!ServerSystem.isSaveIdValid(saveId)) return
+    const loadedQuest = ServerSystem.getLoadedQuest(saveId, packetData.sourceId, packetData.chapterId, packetData.questId)
+    if (packetData.type === 'input') {
+        if (!Array.isArray(loadedQuest.input)) return
+        const inputId = loadedQuest.input[packetData.index]
+        if (!IOTypeTools.isInputLoaded(inputId)) return
+        IOTypeTools.callInputTypeCb(inputId, 'onPacket', {
+            client: client,
+            packetData: packetData.data
+        })
+    } else if (packetData.type === 'output') {
+        if (!Array.isArray(loadedQuest.output)) return
+        const outputId = loadedQuest.output[packetData.index]
+        if (!IOTypeTools.isOutputLoaded(outputId)) return
+        IOTypeTools.callOutputTypeCb(outputId, 'onPacket', {
+            client: client,
+            packetData: packetData.data
+        })
+    }
+})
 
+Network.addServerPacket('CustomQuests.Server.teamTools', function (client, packetData) {
+    if (typeof packetData.type !== 'string') return
+    switch(packetData.type) {
+        case 'getList': {
+
+            break
+        }
+        case 'create': {
+
+            break
+        }
+        case 'join': {
+
+            break
+        }
+        case 'exit': {
+
+            break
+        }
+        case 'setState': {
+
+            break
+        }
+        case 'delete': {
+
+            break
+        }
+    }
 })
 
 // Client
@@ -50,8 +105,9 @@ Network.addClientPacket('CustomQuests.Client.setLocalCache', function (packetDat
     if (Utils.isObject(packetData.team) || packetData.team === null) {
         Store.localCache.team = packetData.team
     }
-    if (typeof packetData.isAdmin === 'boolean') Store.localCache.isAdmin = packetData.isAdmin
-    if (typeof packetData.isEditor === 'boolean') Store.localCache.isEditor = packetData.isEditor
+    if (typeof packetData.isAdmin === 'boolean') {
+        Store.localCache.isAdmin = packetData.isAdmin
+    }
 })
 
 Network.addClientPacket('CustomQuests.Client.setInputState', function (packetData) {
