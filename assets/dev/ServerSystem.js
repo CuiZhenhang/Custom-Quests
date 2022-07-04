@@ -16,7 +16,7 @@ const ServerSystem = {
     json: {},
     resolvedJson: (function () {
         Callback.addCallback('PostLoaded', function () {
-            ServerSystem.resolvedJson = System.resolveJson(ServerSystem.json)
+            ServerSystem.resolvedJson = System.resolveJson(ServerSystem.json).json
         })
         return null
     })(),
@@ -77,7 +77,7 @@ const ServerSystem = {
                 Store.cache.playerLoaded[player] = true
                 if (obj.player.indexOf(player) <= -1) obj.player.push(player)
                 try {
-                    const client = Network.getClientForPlayer(player)
+                    let client = Network.getClientForPlayer(player)
                     obj.client.add(client)
                 } catch (err) {
                     Utils.log('Error in setPlayerLoaded (ServerSystem.js):\n' + err, 'ERROR', false)
@@ -88,7 +88,7 @@ const ServerSystem = {
                 const index = obj.player.indexOf(player)
                 if (index >= 0) obj.player.splice(index, 1)
                 try {
-                    const client = Network.getClientForPlayer(player)
+                    let client = Network.getClientForPlayer(player)
                     obj.client.remove(client)
                 } catch (err) {
                     Utils.log('Error in setPlayerLoaded (ServerSystem.js):\n' + err, 'ERROR', false)
@@ -140,11 +140,11 @@ const ServerSystem = {
         if (!this.isSaveIdValid(saveId)) return
         const loadedQuest = this.loadedQuest[saveId]
         if (!Utils.isObject(loadedQuest)) return
-        for (const sourceId in loadedQuest) {
+        for (let sourceId in loadedQuest) {
             const mainLoadedQuest = loadedQuest[sourceId]
-            for (const chapterId in mainLoadedQuest) {
+            for (let chapterId in mainLoadedQuest) {
                 const chapterLoadedQuest = mainLoadedQuest[chapterId]
-                for (const questId in chapterLoadedQuest) {
+                for (let questId in chapterLoadedQuest) {
                     const questLoadedQuest = chapterLoadedQuest[questId]
                     if (Array.isArray(questLoadedQuest.input)) {
                         questLoadedQuest.input.forEach(function (inputId) {
@@ -232,7 +232,7 @@ const ServerSystem = {
         const outputBak = []
         questJson.inner.output.forEach(function (outputJson, index) {
             if (System.getOutputState(saveData, sourceId, chapterId, questId, index).state === EnumObject.outputState.received) return
-            if (IOTypeTools.isOutputLoaded(output[index])) return
+            if (IOTypeTools.isOutputLoaded(questLoadedQuest.output[index])) return
             questLoadedQuest.output[index] = outputBak[index] = IOTypeTools.loadOutput(outputJson, {
                 getPlayerList: getPlayerList,
                 getState: System.getOutputState.bind(System, saveData, sourceId, chapterId, questId, index),
@@ -240,15 +240,15 @@ const ServerSystem = {
             }, $ServerSystem_onUnload.bind(null, questLoadedQuest.output, outputBak, index))
         })
     },
-    loadAllQuest (saveId) {
+    loadAllQuest (saveId, isRelaod) {
         if (!this.isSaveIdValid(saveId)) return
-        this.unloadAllLoadedQuest(saveId)
+        if (isRelaod) this.unloadAllLoadedQuest(saveId)
         const json = this.resolvedJson
-        for (const sourceId in json) {
+        for (let sourceId in json) {
             const mainJson = json[sourceId]
-            for (const chapterId in mainJson.chapter) {
+            for (let chapterId in mainJson.chapter) {
                 const chapterJson = mainJson.chapter[chapterId]
-                for (const questId in chapterJson.quest) {
+                for (let questId in chapterJson.quest) {
                     this.loadQuest(saveId, sourceId, chapterId, questId)
                 }
             }
@@ -257,7 +257,7 @@ const ServerSystem = {
     setInputState (saveId, sourceId, chapterId, questId, index, extraInfo, inputStateObject) {
         if (!this.isSaveIdValid(saveId)) return
         if (!Utils.isObject(extraInfo)) extraInfo = {}
-        const questJson = System.getQuestJson(that.resolvedJson, sourceId, chapterId, questId)
+        const questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!Utils.isObject(questJson)) return
         if (questJson.type !== 'quest') return
         const saveData = this.getSaveData(saveId)
@@ -354,7 +354,7 @@ const ServerSystem = {
     setOutputState (saveId, sourceId, chapterId, questId, index, extraInfo, outputStateObject) {
         if (!this.isSaveIdValid(saveId)) return
         if (!Utils.isObject(extraInfo)) extraInfo = {}
-        const questJson = System.getQuestJson(that.resolvedJson, sourceId, chapterId, questId)
+        const questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!Utils.isObject(questJson)) return
         if (questJson.type !== 'quest') return
         const saveData = this.getSaveData(saveId)
@@ -432,9 +432,9 @@ const ServerSystem = {
         const loadedQuest = this.loadedQuest[saveId]
         if (!Utils.isObject(loadedQuest)) return
         const mainLoadedQuest = loadedQuest[sourceId]
-        for (const chapterId in mainLoadedQuest) {
+        for (let chapterId in mainLoadedQuest) {
             const chapterLoadedQuest = mainLoadedQuest[chapterId]
-            for (const questId in chapterLoadedQuest) {
+            for (let questId in chapterLoadedQuest) {
                 const questLoadedQuest = chapterLoadedQuest[questId]
                 if (Array.isArray(questLoadedQuest.output)) {
                     questLoadedQuest.output.forEach(function (outputId) {
@@ -506,7 +506,7 @@ const ServerSystem = {
     getTeam (target) {
         let teamId
         if (typeof target === 'number') {
-            const obj = Store.saved.players[player]
+            const obj = Store.saved.players[target]
             if (!Utils.isObject(obj)) return null
             teamId = obj.teamId
         } else if (typeof target === 'string') {
@@ -550,7 +550,7 @@ const ServerSystem = {
         if (state === EnumObject.playerState.absent) {
             // exit team
             const list = []
-            for (const iPlayer in team.players) {
+            for (let iPlayer in team.players) {
                 if (team.players[iPlayer] >= EnumObject.playerState.member) {
                     list.push(Number(iPlayer))
                 }
@@ -570,7 +570,7 @@ const ServerSystem = {
     },
     getTeamList () {
         const list = []
-        for (const teamId in Store.saved.team) {
+        for (let teamId in Store.saved.team) {
             if (!Utils.isObject(Store.saved.team[teamId])) continue
             list.push({
                 teamId: teamId,

@@ -57,7 +57,7 @@ Network.addServerPacket('CustomQuests.Server.teamTools', function (client, packe
         }
         case 'setState': {
             if (typeof packetData.state !== 'number') return
-            const team = ServerSystem.getTeam(player)
+            let team = ServerSystem.getTeam(player)
             if (!Utils.isObject(team)) return
             ServerSystem.setPlayerStateForTeam(team.id, player, packetData.state)
             ServerSystem.updateTeam(team.id)
@@ -66,7 +66,7 @@ Network.addServerPacket('CustomQuests.Server.teamTools', function (client, packe
         case 'delete': {
             let teamId = packetData.teamId
             if (typeof teamId !== 'string') {
-                const team = ServerSystem.getTeam(player)
+                let team = ServerSystem.getTeam(player)
                 if (!Utils.isObject(team)) return
                 teamId = team.id
             }
@@ -106,7 +106,7 @@ Network.addClientPacket('CustomQuests.Client.resolveJson', function (packetData)
     const obj = System.resolveJson(packetData.json)
     Store.localCache.resolvedJson = obj.json
     Store.localCache.jsonConfig = obj.config
-    packetData.bitmaps.forEach(function (bitmapObject) {
+    if (Array.isArray(packetData.bitmaps)) packetData.bitmaps.forEach(function (bitmapObject) {
         if (!Utils.isObject(bitmapObject)) return
         if (typeof bitmapObject.name !== 'string') return
         if (typeof bitmapObject.base64 !== 'string') return
@@ -136,9 +136,12 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
     if (typeof packetData.index !== 'number') return
     if (!Utils.isObject(packetData.extraInfo)) return
     if (!Utils.isObject(packetData.inputStateObject)) return
-    System.setInputState(Store.localCache.resolvedJson, Store.localCache.saveData,
-        packetData.sourceId, packetData.chapterId, packetData.questId, packetData.index,
-        packetData.inputStateObject, {
+    const sourceId = packetData.sourceId
+    const chapterId = packetData.chapterId
+    const questId = packetData.questId
+    const index = packetData.index
+    const extraInfo = packetData.extraInfo
+    System.setInputState(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId, index, packetData.inputStateObject, {
             onInputStateChanged (newInputStateObject, oldInputStateObject) {
                 try {
                     Callback.invokeCallback('CustomQuests.onInputStateChangedLocal',
@@ -164,7 +167,6 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                 }
             },
             onQuestOutputStateChanged (newQuestOutputState, oldQuestOutputState) {
-                that.loadQuest(saveId, sourceId, chapterId, questId)
                 try {
                     Callback.invokeCallback('CustomQuests.onQuestOutputStateChangedLocal',
                         [sourceId, chapterId, questId],
@@ -197,9 +199,12 @@ Network.addClientPacket('CustomQuests.Client.setOutputState', function (packetDa
     if (typeof packetData.index !== 'number') return
     if (!Utils.isObject(packetData.extraInfo)) return
     if (!Utils.isObject(packetData.outputStateObject)) return
-    System.setOutputState(Store.localCache.resolvedJson, Store.localCache.saveData,
-        packetData.sourceId, packetData.chapterId, packetData.questId, packetData.index,
-        packetData.inputStateObject, {
+    const sourceId = packetData.sourceId
+    const chapterId = packetData.chapterId
+    const questId = packetData.questId
+    const index = packetData.index
+    const extraInfo = packetData.extraInfo
+    System.setOutputState(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId, index, packetData.outputStateObject, {
             onOutputStateChanged (newOutputStateObject, oldOutputStateObject) {
                 try {
                     Callback.invokeCallback('CustomQuests.onOutputStateChangedLocal',

@@ -1,0 +1,26 @@
+{
+    "type": "quest",
+    "id": "type_check",
+    "pos": [300, 50],
+    "size": 60,
+    "icon": {
+        "bitmap": ["task_check", "task_check", "task_check"]
+    },
+    "parent": [
+        "start"
+    ],
+    "inner": {
+        "input": [{
+            "type": "check"
+        }],
+        "output": [],
+        "name": {
+            "en": "Type 1: check",
+            "zh": "类型1：check"
+        },
+        "text": {
+            "en": "After the quest is unlocked, click the check quest once to complete it.",
+            "zh": "在任务解锁后，点击一次check任务即可完成。"
+        }
+    }
+}

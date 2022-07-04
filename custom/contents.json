@@ -1,0 +1,25 @@
+{
+    "name": {
+        "en": "Example",
+        "zh": "样例"
+    },
+    "main": [
+        "main/chapter1.json",
+        "main/chapter2.json",
+        {
+            "id": "chapter3",
+            "name": {
+                "en": "Chapter 3",
+                "zh": "第3章"
+            },
+            "description": {
+                "en": "Description of Chapter 3",
+                "zh": "第3章的介绍"
+            },
+            "icon": {
+                "id": 1
+            },
+            "quest": []
+        }
+    ]
+}

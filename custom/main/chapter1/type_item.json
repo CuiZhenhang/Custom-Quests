@@ -1,0 +1,47 @@
+{
+    "type": "quest",
+    "id": "type_item",
+    "pos": [300, 130],
+    "size": 60,
+    "icon": {
+        "id": "vblock:planks"
+    },
+    "parent": [
+        "start"
+    ],
+    "info": {
+        "input": [
+            {
+                "type": "item",
+                "id": "vblock:planks",
+                "count": 20
+            },
+            {
+                "type": "item",
+                "id": "VanillaBlockID.planks",
+                "data": 0,
+                "count": 40
+            },
+            {
+                "type": "item",
+                "id": 5,
+                "data": 0,
+                "count": 60
+            },
+            {
+                "type": "item",
+                "id": 5,
+                "count": 80
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "Type 2: item",
+            "zh": "类型2：item"
+        },
+        "text": {
+            "en": "",
+            "zh": ""
+        }
+    }
+}

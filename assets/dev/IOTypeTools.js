@@ -19,7 +19,7 @@ const IOTypeTools = {
             'onLoad', 'onUnload', 'onTick',
             'getIcon', 'getDesc', 'onEdit'
         ]
-        methods.forEach((method) => {
+        methods.forEach(function (method) {
             if (typeof inputTypeCb[method] === 'function') {
                 that.inputType[type].cb[method] = inputTypeCb[method]
             } else if (inputTypeCb[method] === null) {
@@ -39,7 +39,7 @@ const IOTypeTools = {
         const obj = this.inputType[type]
         if (!Utils.isObject(obj)) return {}
         const cb = {}
-        for (const method in obj.cb) {
+        for (let method in obj.cb) {
             cb[method] = obj.cb[method]
         }
         return cb
@@ -63,12 +63,14 @@ const IOTypeTools = {
         return ret
     },
     loadInput (inputJson, toolsCb, onUnload) {
-        if (!Utils.isObject(inputJson)) return
-        if (!Utils.isObject(toolsCb)) toolsCb = {}
+        if (!Utils.isObject(inputJson)) return InvalidId
+        if (!Utils.isObject(toolsCb)) return InvalidId
+        if (typeof toolsCb.getState !== 'function') return InvalidId
+        if (toolsCb.getState().state === EnumObject.inputState.finished) return InvalidId
         inputJson = Utils.deepCopy(inputJson)
         const type = inputJson.type
         const inputType = this.inputType[type]
-        if (!Utils.isObject(inputType)) return
+        if (!Utils.isObject(inputType)) return InvalidId
         const inputId = Utils.getUUID()
         if (!Array.isArray(this.typedInputList[type])) this.typedInputList[type] = []
         this.typedInputList[type].push(inputId)
@@ -81,6 +83,7 @@ const IOTypeTools = {
         if (typeof inputType.cb.onLoad === 'function') {
             inputType.cb.onLoad(inputJson, toolsCb, this.inputObject[inputId].cache)
         }
+        return inputId
     },
     isInputLoaded (inputId) {
         if (typeof inputId !== 'string') return false
@@ -149,7 +152,7 @@ const IOTypeTools = {
             'onLoad', 'onUnload', 'onReceive',
             'getIcon', 'getDesc', 'onEdit'
         ]
-        methods.forEach((method) => {
+        methods.forEach(function (method) {
             if (typeof outputTypeCb[method] === 'function') {
                 that.outputType[type].cb[method] = outputTypeCb[method]
             } else if (outputTypeCb[method] === null) {
@@ -169,19 +172,19 @@ const IOTypeTools = {
         const obj = this.outputType[type]
         if (!Utils.isObject(obj)) return {}
         const cb = {}
-        for (const method in obj.cb) {
+        for (let method in obj.cb) {
             cb[method] = obj.cb[method]
         }
         return cb
     },
-    getOutputTypeCb (type) {
+    getOutputTypeConfig (type) {
         const obj = this.outputType[type]
         if (!Utils.isObject(obj)) return null
         return Utils.deepCopy(obj.config)
     },
     outputObject: {},
     typedOutputList: {},
-    getAllOutputByType () {
+    getAllOutputByType (type) {
         const that = this
         if (typeof type === 'string') type = [type]
         let ret = []
@@ -193,12 +196,14 @@ const IOTypeTools = {
         return ret
     },
     loadOutput (outputJson, toolsCb, onUnload) {
-        if (!Utils.isObject(outputJson)) return
-        if (!Utils.isObject(toolsCb)) toolsCb = {}
+        if (!Utils.isObject(outputJson)) return InvalidId
+        if (!Utils.isObject(toolsCb)) return InvalidId
+        if (typeof toolsCb.getState !== 'function') return InvalidId
+        if (toolsCb.getState().state === EnumObject.outputState.received) return InvalidId
         outputJson = Utils.deepCopy(outputJson)
         const type = outputJson.type
         const outputType = this.outputType[type]
-        if (!Utils.isObject(outputType)) return
+        if (!Utils.isObject(outputType)) return InvalidId
         const outputId = Utils.getUUID()
         if (!Array.isArray(this.typedOutputList[type])) this.typedOutputList[type] = []
         this.typedOutputList[type].push(outputId)
@@ -211,6 +216,7 @@ const IOTypeTools = {
         if (typeof outputType.cb.onLoad === 'function') {
             outputType.cb.onLoad(outputJson, toolsCb, this.outputObject[outputId].cache)
         }
+        return outputId
     },
     isOutputLoaded (outputId) {
         if (typeof outputId !== 'string') return false
@@ -277,11 +283,11 @@ Callback.addCallback('LocalTick', function () {
                 const extraInventory = Utils.getExtraInventory(inventory)
                 playerInventory[player] = {
                     player: player,
-                    sortInventory: sortInventory,
-                    extraInventory: extraInventory
+                    sort: sortInventory,
+                    extra: extraInventory
                 }
             }
-            for (const type in IOTypeTools.typedInputList) {
+            for (let type in IOTypeTools.typedInputList) {
                 if (typeof IOTypeTools.getInputTypeCb(type).onTick !== 'function') continue
                 IOTypeTools.typedInputList[type].forEach(function (inputId) {
                     const playerInventoryArray = []
@@ -301,13 +307,13 @@ Callback.addCallback('LocalTick', function () {
 
 Callback.addCallback('LevelLeft', function () {
     if (Network.inRemoteWorld()) return
-    for (const type in IOTypeTools.typedInputList) {
+    for (let type in IOTypeTools.typedInputList) {
         IOTypeTools.typedInputList[type].forEach(function (inputId) {
             IOTypeTools.unloadOutput(inputId)
         })
     }
     IOTypeTools.inputObject = {}
-    for (const type in IOTypeTools.typedOutputList) {
+    for (let type in IOTypeTools.typedOutputList) {
         IOTypeTools.typedOutputList[type].forEach(function (outputId) {
             IOTypeTools.unloadOutput(outputId)
         })

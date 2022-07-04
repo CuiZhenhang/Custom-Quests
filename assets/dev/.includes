@@ -7,5 +7,7 @@ network.js
 ServerSystem.js
 ClientSystem.js
 Interaction.js
+input/*.js
+output/*.js
 instance.js
 share.js

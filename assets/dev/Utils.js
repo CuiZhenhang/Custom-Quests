@@ -70,7 +70,7 @@ const Utils = {
             return BlockID[id.replace(/^block[a-z]*(:|.)/i, '')] || ItemID.missing_item
         }
         if (id.match(/^v[a-z]*item[a-z]*(:|.)/i)) {
-            return VanillaItemID[id.replace(/^v[a-z]*item[a-z]*(:|.)/i), ''] || ItemID.missing_item
+            return VanillaItemID[id.replace(/^v[a-z]*item[a-z]*(:|.)/i, '')] || ItemID.missing_item
         }
         if (id.match(/^v[a-z]*block[a-z]*(:|.)/i)) {
             return VanillaBlockID[id.replace(/^v[a-z]*block[a-z]*(:|.)/i, '')] || ItemID.missing_item
@@ -82,10 +82,10 @@ const Utils = {
         Callback.addCallback('PostLoaded', function () {
             new java.lang.Thread(new java.lang.Runnable({
                 run() {
-                    for (const name in VanillaItemID) idFromItem[VanillaItemID[name]] = 'vitem:' + name
-                    for (const name in VanillaBlockID) idFromItem[VanillaBlockID[name]] = 'vblock:' + name
-                    for (const name in ItemID) idFromItem[ItemID[name]] = 'item:' + name
-                    for (const name in BlockID) idFromItem[BlockID[name]] = 'block:' + name
+                    for (let name in VanillaItemID) idFromItem[VanillaItemID[name]] = 'vitem:' + name
+                    for (let name in VanillaBlockID) idFromItem[VanillaBlockID[name]] = 'vblock:' + name
+                    for (let name in ItemID) idFromItem[ItemID[name]] = 'item:' + name
+                    for (let name in BlockID) idFromItem[BlockID[name]] = 'block:' + name
                 }
             })).start()
         })
@@ -148,7 +148,7 @@ const Utils = {
         }
         if (item.extra && !item.extra.isEmpty()) {
             itemJson.extra = []
-            for (const type in this.extraType) {
+            for (let type in this.extraType) {
                 if (typeof this.extraType[type].fromItem !== 'function') continue
                 const extraJson = { type: type }
                 if (this.extraType[type].fromItem(item, extraJson)) continue
@@ -174,7 +174,7 @@ const Utils = {
             const cb = that.getExtraTypeCb(extraJsonArray.type, 'isPassed')
             if (cb !== that.voidFunc) passed = passed && cb(item, extraJsonArray)
         }
-        return passed
+        return Boolean(passed)
     },
     readContents (path) {
         if (typeof path !== 'string') return {}
@@ -182,7 +182,7 @@ const Utils = {
         const that = this
         try {
             if (FileTools.isExists(path + 'contents.json')) {
-                const mainJson = FileTools.ReadJSON(path + 'contents.json')
+                let mainJson = FileTools.ReadJSON(path + 'contents.json')
                 if (mainJson.main) {
                     mainJson.main.forEach(function (pathChapter, indexChapter) {
                         if (typeof pathChapter === 'string') {
@@ -210,7 +210,7 @@ const Utils = {
                     return mainJson
                 }
             } else if (FileTools.isExists(path + 'CustomQuests.json')) {
-                const mainJson = FileTools.ReadJSON(path + 'CustomQuests.json')
+                let mainJson = FileTools.ReadJSON(path + 'CustomQuests.json')
                 if (mainJson.main) return mainJson
             } else {
                 that.log('Failed to read contents:\nThere is no files: ' + path, 'WARN', true)
@@ -248,7 +248,7 @@ const Utils = {
         if (typeof textJson === 'string') return textJson
         if (Utils.isObject(textJson)) {
             const ret = {}
-            for (const lang in textJson) {
+            for (let lang in textJson) {
                 ret[lang] = String(textJson[lang])
             }
             return ret
@@ -256,18 +256,18 @@ const Utils = {
         return ''
     },
     putTextureSourceFromBase64: (function () {
-        const TextureSource = new com.zhekasmirnov.innercore.api.mod.ui.TextureSource()
+        // const TextureSource = new com.zhekasmirnov.innercore.api.mod.ui.TextureSource()
         /** @type { Utils['putTextureSourceFromBase64'] } */
         return function (name, encodedString) {
-            if (typeof name !== 'string') return
-            if (typeof encodedString !== 'string') return
-            try {
-                const encodeByte = android.util.Base64.decode(encodedString, 0)
-                const bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
-                TextureSource.put(name, bitmap)
-            } catch (err) {
-                this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
-            }
+            // if (typeof name !== 'string') return
+            // if (typeof encodedString !== 'string') return
+            // try {
+            //     const encodeByte = android.util.Base64.decode(encodedString, 0)
+            //     const bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
+            //     TextureSource.put(name, bitmap)
+            // } catch (err) {
+            //     this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
+            // }
         }
     })(),
     getInput ({text, hint, title, button}, cb){
@@ -284,7 +284,7 @@ const Utils = {
                         .setPositiveButton(
                             button || TranAPI.translate('Utils.dialog.confirm'),
                             new android.content.DialogInterface.OnClickListener({
-                                onClick: Utils.Debounce(function () {
+                                onClick: Utils.debounce(function () {
                                     if (typeof cb === 'function') {
                                         cb(editText.getText().toString() + '')
                                     }
@@ -307,7 +307,7 @@ const Utils = {
                         .setPositiveButton(
                             button || TranAPI.translate('Utils.dialog.confirm'),
                             new android.content.DialogInterface.OnClickListener({
-                                onClick: Utils.Debounce(function () {
+                                onClick: Utils.debounce(function () {
                                     if(typeof cb === 'function') cb()
                                 }, 500)
                             })
@@ -321,7 +321,7 @@ const Utils = {
     getInventory (player) {
 		const inventory = []
 		const actor = new PlayerActor(player)
-		for (const i = 0; i < 36; i++) {
+		for (let i = 0; i < 36; i++) {
 			inventory[i] = actor.getInventorySlot(i)
 		}
 		return inventory
@@ -383,7 +383,7 @@ Utils.setExtraTypeCb('enchant', {
         if (item.extra.getEnchantCount() <= 0) return true
         extraJson.array = []
         const enchants = item.extra.getEnchants()
-        for (const id in enchants) {
+        for (let id in enchants) {
             if (enchants[id] <= 0) continue
             extraJson.array.push({
                 type: id,

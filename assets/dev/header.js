@@ -3,7 +3,6 @@
 /// <reference path='./share.js'/>
 
 IMPORT('ChargeItem')
-const Color = android.graphics.Color
 const Setting = (function () {
     const Setting = {
         UiSize: __config__.getNumber('setting.ui_size').floatValue(),
@@ -90,10 +89,10 @@ const Store = (function () {
     }
     Callback.addCallback('LevelSelected', function () {
         const obj = Utils.deepCopy(DEFAULT)
-        for (const key in Store) {
+        for (let key in Store) {
             Store[key] = null
         }
-        for (const key in obj) {
+        for (let key in obj) {
             Store[key] = obj[key]
         }
     })
@@ -101,7 +100,7 @@ const Store = (function () {
 })()
 
 Saver.addSavesScope('CustomQuests-v2', function (scope) {
-    if (typeof scope !== 'object') return
+    if (!Utils.isObject(scope)) return
     Store.saved = scope
 }, function () {
     const str = JSON.stringify(Store.saved, function (key, value) {

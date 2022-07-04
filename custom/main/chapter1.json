@@ -1,0 +1,40 @@
+{
+    "id": "Chapter1",
+    "name": {
+        "en": "Chapter 1: Quest Type",
+        "zh": "第一章：任务类型"
+    },
+    "icon": {
+        "id": 2
+    },
+    "quest": [{
+        "type": "quest",
+        "id": "item",
+        "pos": [100, 100],
+        "size": 100,
+        "icon": {
+            "id": "vblock:planks"
+        },
+        "info": {
+            "input": [{
+                "type": "item",
+                "id": "vblock:planks",
+                "count": 20
+            }],
+            "output": [{
+                "type": "item",
+                "id": "vitem:diamond",
+                "count": 3,
+                "autoReceive": true
+            }],
+            "name": {
+                "en": "item",
+                "zh": "物品"
+            },
+            "text": {
+                "en": "",
+                "zh": ""
+            }
+        }
+    }]
+}

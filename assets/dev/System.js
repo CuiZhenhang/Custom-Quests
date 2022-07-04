@@ -4,7 +4,7 @@
 const System = {
     resolveJson: (function () {
         /**
-         * @param { CQTypes.IOTypes.IOJsonBase } inputJson 
+         * @param { CQTypes.IOTypes.InputJsonBase } inputJson 
          * @param { Array<{[refId: CQTypes.refId]: unknown}> } refsArray 
          * @param { {[bitmapName: string]: boolean} } bitmapNameObject 
          * @returns { CQTypes.IOTypes.InputJson } 
@@ -21,7 +21,7 @@ const System = {
         }
 
         /**
-         * @param { CQTypes.IOTypes.IOJsonBase } outputJson 
+         * @param { CQTypes.IOTypes.OutputJsonBase } outputJson 
          * @param { Array<{[refId: CQTypes.refId]: unknown}> } refsArray 
          * @param { {[bitmapName: string]: boolean} } bitmapNameObject 
          * @returns { CQTypes.IOTypes.OutputJson } 
@@ -71,7 +71,7 @@ const System = {
             this.setValue = function (nodeId, dis) {
                 const node = getNode(nodeId)
                 value[node] = dis
-                queue.push(node)
+                queue.value[queue.tail++] = node
             }
             /** @type { (nodeId: string) => number } */
             this.getValue = function (nodeId) {
@@ -126,6 +126,7 @@ const System = {
             const resolvedMainJson = {}
             resolvedMainJson.chapter = {}
             resolvedMainJson.name = Utils.resolveTextJson(mainJson.name)
+            if (Array.isArray(mainJson.group)) resolvedMainJson.group = mainJson.group
             let background = Utils.deepCopy(mainJson.background)
             if (Array.isArray(background) && typeof background[0] === 'string') {
                 background[0] = Utils.resolveBitmap(background[0], bitmapNameObject)
@@ -259,7 +260,7 @@ const System = {
                     graph.x.bfs(function (nodeValue, edgeDis) { return nodeValue + edgeDis })
                     graph.y.bfs(function (nodeValue, edgeDis) { return nodeValue + edgeDis })
                     graph.size.bfs(function (nodeValue, edgeDis) { return nodeValue * edgeDis })
-                    for (const questId in resolvedChapterJson.quest) {
+                    for (let questId in resolvedChapterJson.quest) {
                         const resolvedQuestJson = resolvedChapterJson.quest[questId]
                         if (resolvedQuestJson.type !== 'quest') continue
                         resolvedQuestJson.pos[0] = graph.x.getValue(questId) || 0
@@ -288,7 +289,7 @@ const System = {
             /** @type { ChildObject } */
             const childObject = {}
             let bitmaps = []
-            for (const sourceId in json) {
+            for (let sourceId in json) {
                 if (!Utils.isObject(json[sourceId])) continue
                 const obj = resolveMainJson(json[sourceId], sourceId)
                 if (!Utils.isObject(obj)) continue
@@ -299,19 +300,19 @@ const System = {
                 if (Array.isArray(obj.bitmaps)) {
                     bitmaps = bitmaps.concat(obj.bitmaps)
                 }
-                for (const sourceId2 in obj.childObject) {
+                for (let sourceId2 in obj.childObject) {
                     if (!Utils.isObject(childObject[sourceId2])) {
                         childObject[sourceId2] = obj.childObject[sourceId2]
                         continue
                     }
-                    const mainChildObject = obj.childObject[sourceId2]
-                    for (const chapterId in mainChildObject) {
+                    let mainChildObject = obj.childObject[sourceId2]
+                    for (let chapterId in mainChildObject) {
                         if (!Utils.isObject(childObject[sourceId2][chapterId])) {
                             childObject[sourceId2][chapterId] = mainChildObject[chapterId]
                             continue
                         }
-                        const chapterChildObject = mainChildObject[chapterId]
-                        for (const questId in chapterChildObject) {
+                        let chapterChildObject = mainChildObject[chapterId]
+                        for (let questId in chapterChildObject) {
                             if (!Array.isArray(childObject[sourceId2][chapterId][questId])) {
                                 childObject[sourceId2][chapterId][questId] = chapterChildObject[questId]
                                 continue
@@ -321,13 +322,13 @@ const System = {
                     }
                 }
             }
-            for (const sourceId in childObject) {
+            for (let sourceId in childObject) {
                 if (!Utils.isObject(resolvedJson[sourceId])) continue
-                const mainChildObject = childObject[sourceId]
-                for (const chapterId in mainChildObject) {
+                let mainChildObject = childObject[sourceId]
+                for (let chapterId in mainChildObject) {
                     if (!Utils.isObject(resolvedJson[sourceId].chapter[chapterId])) continue
-                    const chapterChildObject = mainChildObject[chapterId]
-                    for (const questId in chapterChildObject) {
+                    let chapterChildObject = mainChildObject[chapterId]
+                    for (let questId in chapterChildObject) {
                         if (!Utils.isObject(resolvedJson[sourceId].chapter[chapterId].quest[questId])) continue
                         const resolvedQuestJson = resolvedJson[sourceId].chapter[chapterId].quest[questId]
                         if (resolvedQuestJson.type !== 'quest') continue
@@ -351,10 +352,10 @@ const System = {
         if (!Utils.isObject(json)) return null
         if (!Utils.isObject(json[sourceId])) return null
         const mainJson = json[sourceId]
-        if (!Utils.isObject(mainJson[chapterId])) return null
-        const chapterJson = mainJson[chapterId]
-        if (!Utils.isObject(chapterJson[questId])) return null
-        return chapterJson[questId]
+        if (!Utils.isObject(mainJson.chapter[chapterId])) return null
+        const chapterJson = mainJson.chapter[chapterId]
+        if (!Utils.isObject(chapterJson.quest[questId])) return null
+        return chapterJson.quest[questId]
     },
     getParent (json, sourceId, chapterId, questId) {
         const questJson = this.getQuestJson(json, sourceId, chapterId, questId)
@@ -410,7 +411,7 @@ const System = {
     getQuestOutputState (json, data, sourceId, chapterId, questId) {
         let DEFAULT = EnumObject.questOutputState.locked
         const inputState = this.getQuestInputState(json, data, sourceId, chapterId, questId)
-        if (inputState >= EnumObject.questInputState.unfinished) {
+        if (inputState >= EnumObject.questInputState.finished) {
             DEFAULT = EnumObject.questOutputState.unreceived
         }
         if (!Utils.isObject(data)) return DEFAULT

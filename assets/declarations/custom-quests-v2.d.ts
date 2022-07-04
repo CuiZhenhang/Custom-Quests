@@ -34,6 +34,8 @@ declare namespace CQTypes {
         }
         interface InputJson_item extends ItemJson, InputJsonBase {
             type: 'item'
+            submit?: boolean
+            bitmap?: bitmap
         }
         interface InputJson_exp extends InputJsonBase {
             type: 'exp'
@@ -71,6 +73,7 @@ declare namespace CQTypes {
         }
         interface OutputJson_item extends ItemJson, InputJsonBase {
             type: 'item'
+            bitmap?: bitmap
         }
         interface OutputJson_exp extends OutputJsonBase {
             type: 'exp'
@@ -144,6 +147,10 @@ declare namespace CQTypes {
     interface MainJson {
         name: TextJson
         main: ChapterJson[]
+        group?: Array<{
+            name: TextJson
+            array: chapterId[]
+        }>
         background?: [bitmap: bitmap, ratdio?: number]
         bitmaps?: Array<{
             name: string
@@ -188,6 +195,10 @@ declare namespace CQTypes {
     interface ResolvedMainJson {
         chapter: {[chapterId: chapterId]: ResolvedChapterJson}
         name: MainJson['name']
+        group?: Array<{
+            name: TextJson
+            array: chapterId[]
+        }>
     }
 
     interface AllResolvedMainJson {
@@ -266,13 +277,13 @@ declare namespace CQTypes {
     }
 
     interface IOTypeToolsCb <T = InputStateObject | OutputStateObject>{
-        getPlayerList?: (online?: boolean) => Array<number>
-        getState?: () => T
+        getState: () => T
         setState?: (extraInfo: object, stateObject: T) => void
+        getPlayerList?: (online?: boolean) => Array<number>
     }
 
     interface IOTypeToolsLocalCb <T = InputStateObject | OutputStateObject>{
-        getState?: () => T
+        getState: () => T
         sendPacket?: (packetData: object) => void
     }
 
@@ -457,7 +468,7 @@ interface Utils {
     dialog (params: {text: string; title?: string, button?: string}, cb: () => void): void
     getInventory (player: number): Array<ItemInstance>
     getSortInventory (inventory: Array<ItemInstance>): {[idData: `${number}:${number}`]: number}
-    getExtraInventory (inventory: Array<ItemInstance>): {[idData: `${number}:${number}`]: ItemInstance}
+    getExtraInventory (inventory: Array<ItemInstance>): {[idData: `${number}:${number}`]: Array<ItemInstance>}
 }
 
 interface IOTypeTools {
@@ -480,13 +491,13 @@ interface IOTypeTools {
         [inputId: CQTypes.inputId]: {
             cache: {[key: string]: unknown}
             json: CQTypes.IOTypes.InputJson
-            toolsCb: CQTypes.IOTypeToolsCb
+            toolsCb: CQTypes.IOTypeToolsCb<CQTypes.InputStateObject>
             onUnload?: () => void
         }
     }
     typedInputList: {[type: string]: Array<CQTypes.inputId>}
     getAllInputByType (type: string | Array<string>): Array<CQTypes.inputId>
-    loadInput (inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsCb, onUnload?: () => void): CQTypes.inputId
+    loadInput (inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.InputStateObject>, onUnload?: () => void): CQTypes.inputId
     isInputLoaded (inputId: CQTypes.inputId): boolean
     unloadInput (inputId: CQTypes.inputId): void
     callInputTypeCb (inputId: CQTypes.inputId, method: 'onPacket', extraInfo: Parameters<CQTypes.InputTypeCb['onPacket']>[3]): ReturnType<CQTypes.InputTypeCb['onPacket']>
@@ -512,13 +523,13 @@ interface IOTypeTools {
         [outputId: CQTypes.outputId]: {
             cache: {[key: string]: unknown}
             json: CQTypes.IOTypes.OutputJson
-            toolsCb: CQTypes.IOTypeToolsCb
+            toolsCb: CQTypes.IOTypeToolsCb<CQTypes.OutputStateObject>
             onUnload?: () => void
         }
     }
     typedOutputList: {[type: string]: Array<CQTypes.inputId>}
     getAllOutputByType (type: string | Array<string>): Array<CQTypes.outputId>
-    loadOutput (outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsCb, onUnload?: () => void): CQTypes.outputId
+    loadOutput (outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.OutputStateObject>, onUnload?: () => void): CQTypes.outputId
     isOutputLoaded (outputId: CQTypes.outputId): boolean
     unloadOutput (outputId: CQTypes.outputId): void
     callOutputTypeCb (outputId: CQTypes.outputId, method: 'onPacket', extraInfo: Parameters<CQTypes.OutputTypeCb['onPacket']>[3]): ReturnType<CQTypes.OutputTypeCb['onPacket']>
@@ -591,7 +602,7 @@ interface ServerSystem {
     loadInput (saveId: CQTypes.saveId, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): void
     loadOutput (saveId: CQTypes.saveId, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): void
     loadQuest (saveId: CQTypes.saveId, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): void
-    loadAllQuest (saveId: CQTypes.saveId): void
+    loadAllQuest (saveId: CQTypes.saveId, isReload?: boolean): void
     setInputState (saveId: CQTypes.saveId, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number,
         extraInfo: object, inputStateObject: CQTypes.InputStateObject): void
     setOutputState (saveId: CQTypes.saveId, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number,

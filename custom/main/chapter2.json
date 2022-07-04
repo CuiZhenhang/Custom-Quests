@@ -1,0 +1,13 @@
+{
+    "id": "Chapter2",
+    "name": {
+        "en": "Chapter 2: Reward Type",
+        "zh": "第二章：奖励类型"
+    },
+    "icon": {
+        "id": "item:quest_book"
+    },
+    "quest": [
+        
+    ]
+}

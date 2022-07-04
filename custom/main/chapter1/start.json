@@ -1,0 +1,23 @@
+{
+    "type": "quest",
+    "id": "start",
+    "pos": [20, 231.25],
+    "size": 100,
+    "icon": {
+        "id": "item:quest_book"
+    },
+    "inner": {
+        "input": [{
+            "type": "check"
+        }],
+        "output": [],
+        "name": {
+            "en": "Start",
+            "zh": "开始"
+        },
+        "text": {
+            "en": "Welcome to Custom Quests\\nThis chapter focuses on the Quest Type for this mod",
+            "zh": "欢迎使用Custom Quests\\n本章将主要介绍本模组的任务类型"
+        }
+    }
+}
