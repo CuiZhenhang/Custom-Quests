@@ -220,11 +220,13 @@ const System = {
                                 input: [],
                                 output: [],
                                 name: '',
-                                text: ''
+                                text: '',
+                                repeat: false
                             }
                             if (questJson.inner) {
                                 resolvedQuestJson.inner.name = Utils.resolveTextJson(questJson.inner.name)
                                 resolvedQuestJson.inner.text = Utils.resolveTextJson(questJson.inner.text)
+                                resolvedQuestJson.inner.repeat = Boolean(questJson.inner.repeat)
                                 if (Array.isArray(questJson.inner.input)) questJson.inner.input.forEach(function (inputJson, index) {
                                     const resolvedInputJson = resolveInputJson(
                                         Utils.deepCopy(Utils.resolveRefs(inputJson, refsArray)),
@@ -451,7 +453,7 @@ const System = {
         }
         let questInputState = questData.input[index].state
         for (let i = 0; i < questJson.inner.input.length; i++) {
-            const tempState = questData.input[index] || 0
+            const tempState = (questData.input[i] || {state: EnumObject.inputState.unfinished}).state
             if (tempState <= EnumObject.inputState.unfinished) {
                 questInputState = EnumObject.questInputState.unfinished
                 break
@@ -498,6 +500,27 @@ const System = {
                         }
                     }
                 })
+            } else if (oldQuestInputState >= EnumObject.questInputState.repeat_unfinished && questInputState === EnumObject.questInputState.finished) {
+                let repeat = false
+                for (let i = 0; i < questJson.inner.output.length; i++) {
+                    const config = IOTypeTools.getOutputTypeConfig(questJson.inner.output[i].type)
+                    if (!Utils.isObject(config)) continue
+                    if (!config.allowRepeat) continue
+                    if (!Utils.isObject(questData.output[i])) {
+                        questData.output[i] = {
+                            state: EnumObject.outputState.repeat_unreceived
+                        }
+                    }
+                    if (questData.outputState[i] !== EnumObject.outputState.received) continue
+                    questData.output[i].state = EnumObject.outputState.repeat_unreceived
+                    repeat = true
+                }
+                if (repeat) {
+                    questData.outputState = EnumObject.questOutputState.repeat_unreceived
+                    if (typeof cb.onQuestOutputStateChanged === 'function') {
+                        cb.onQuestOutputStateChanged(questData.outputState, EnumObject.questOutputState.locked)
+                    }
+                }
             }
         }
     },
@@ -531,7 +554,7 @@ const System = {
         }
         let questOutputState = questData.output[index].state
         for (let i = 0; i < questJson.inner.output.length; i++) {
-            const tempState = questData.output[index] || 0
+            const tempState = (questData.output[i] || {state: EnumObject.outputState.unreceived}).state
             if (tempState <= EnumObject.outputState.unreceived) {
                 questOutputState = EnumObject.questOutputState.unreceived
                 break

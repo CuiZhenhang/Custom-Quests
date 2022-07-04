@@ -23,23 +23,10 @@ const Utils = {
             return str
         }
     },
-    isDefined (length, arr) {
-        for (const i = 0; i < length; i++) {
-            if (arr[i] === void 0) return false
-        }
-        return true
-    },
     isObject (obj) {
         if (typeof obj !== 'object') return false
         if (obj === null) return false
         return true
-    },
-    hasKeyOfKeys (obj, keys) {
-        if(this.isObject(obj)) return false
-        if(!Array.isArray(keys)) return false
-        return keys.some(function (key) {
-            return obj[key] !== void 0
-        })
     },
     deepCopy (obj) {
         if (!this.isObject(obj)) return obj
@@ -51,15 +38,9 @@ const Utils = {
         let time = 0
         return function () {
             const now = Date.now()
-            if (now >= time) {
-                time = now + delay
-                return func.apply(ths, arguments)
-            } else {
-                time = now + delay
-                if(typeof func2 === 'function') {
-                    return func2.apply(ths, arguments)
-                }
-            }
+            time = now + delay
+            if (now >= time) return func.apply(ths, arguments)
+            if (typeof func2 === 'function') return func2.apply(ths, arguments)
         }
     },
     operate (a, operator, b, defaultValue) {
@@ -197,6 +178,7 @@ const Utils = {
     },
     readContents (path) {
         if (typeof path !== 'string') return {}
+        if (!path.endsWith('/')) path += '/'
         const that = this
         try {
             if (FileTools.isExists(path + 'contents.json')) {

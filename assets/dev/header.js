@@ -84,7 +84,8 @@ const Store = (function () {
             jsonConfig: null,
             saveData: null,
             team: null,
-            isAdmin: false
+            isAdmin: false,
+            teamList: []
         }
     }
     Callback.addCallback('LevelSelected', function () {

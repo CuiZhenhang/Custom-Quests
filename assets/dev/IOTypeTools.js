@@ -33,9 +33,6 @@ const IOTypeTools = {
             if (typeof config.allowRepeat === 'boolean') {
                 this.inputType[type].config.allowRepeat = config.allowRepeat
             }
-            if (typeof config.operatorOnly === 'string') {
-                this.inputType[type].config.operatorOnly = config.operatorOnly
-            }
         }
     },
     getInputTypeCb (type) {
@@ -165,9 +162,6 @@ const IOTypeTools = {
             }
             if (typeof config.allowRepeat === 'boolean') {
                 this.outputType[type].config.allowRepeat = config.allowRepeat
-            }
-            if (typeof config.operatorOnly === 'string') {
-                this.outputType[type].config.operatorOnly = config.operatorOnly
             }
         }
     },

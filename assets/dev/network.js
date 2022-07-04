@@ -31,30 +31,46 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
 })
 
 Network.addServerPacket('CustomQuests.Server.teamTools', function (client, packetData) {
+    let player = client.getPlayerUid()
+    if (typeof packetData.player === 'number') player = packetData.player
     if (typeof packetData.type !== 'string') return
     switch(packetData.type) {
         case 'getList': {
-
+            client.send('CustomQuests.Client.setLocalCache', {
+                teamList: ServerSystem.getTeamList()
+            })
             break
         }
         case 'create': {
-
+            if (!Utils.isObject(packetData.team)) return
+            ServerSystem.createTeam(player, packetData.team)
             break
         }
         case 'join': {
-
+            if (typeof packetData.teamId !== 'string') return
+            ServerSystem.setTeam(player, packetData.teamId)
             break
         }
         case 'exit': {
-
+            ServerSystem.setTeam(player, InvalidId)
             break
         }
         case 'setState': {
-
+            if (typeof packetData.state !== 'number') return
+            const team = ServerSystem.getTeam(player)
+            if (!Utils.isObject(team)) return
+            ServerSystem.setPlayerStateForTeam(team.id, player, packetData.state)
+            ServerSystem.updateTeam(team.id)
             break
         }
         case 'delete': {
-
+            let teamId = packetData.teamId
+            if (typeof teamId !== 'string') {
+                const team = ServerSystem.getTeam(player)
+                if (!Utils.isObject(team)) return
+                teamId = team.id
+            }
+            ServerSystem.deleteTeam(teamId)
             break
         }
     }
@@ -107,6 +123,9 @@ Network.addClientPacket('CustomQuests.Client.setLocalCache', function (packetDat
     }
     if (typeof packetData.isAdmin === 'boolean') {
         Store.localCache.isAdmin = packetData.isAdmin
+    }
+    if (Array.isArray(packetData.teamList)) {
+        Store.localCache.teamList = packetData.teamList
     }
 })
 

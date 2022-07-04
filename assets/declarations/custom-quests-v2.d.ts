@@ -20,35 +20,31 @@ declare namespace CQTypes {
     type Ref<T> = `ref:${string}` | T
 
     namespace IOTypes {
-        interface IOJsonBase {
+        interface InputJsonBase {
             type: string
-            repeat?: {
-                type: 'none' | 'time' | 'custom'
-                time?: number
-            }
             [key: string]: unknown
         }
 
-        interface InputJson_group extends IOJsonBase {
+        interface InputJson_group extends InputJsonBase {
             type: 'group'
             list: Array<Ref<InputJson>>
         }
-        interface InputJson_check extends IOJsonBase {
+        interface InputJson_check extends InputJsonBase {
             type: 'check'
         }
-        interface InputJson_item extends ItemJson, IOJsonBase {
+        interface InputJson_item extends ItemJson, InputJsonBase {
             type: 'item'
         }
-        interface InputJson_exp extends IOJsonBase {
+        interface InputJson_exp extends InputJsonBase {
             type: 'exp'
             value: number
         }
-        interface InputJson_level extends IOJsonBase {
+        interface InputJson_level extends InputJsonBase {
             type: 'level'
             value: number
         }
         type InputJson = (
-            IOJsonBase
+            InputJsonBase
             | InputJson_group
             | InputJson_check
             | InputJson_item
@@ -56,34 +52,40 @@ declare namespace CQTypes {
             | InputJson_level
         )
 
-        interface OutputJson_random extends IOJsonBase {
+        interface OutputJsonBase {
+            type: string
+            autoReceive?: boolean
+            [key: string]: unknown
+        }
+
+        interface OutputJson_random extends OutputJsonBase {
             type: 'random'
             list: Array<{
                 output: Ref<OutputJson>
                 weigth: number
             }>
         }
-        interface OutputJson_select extends IOJsonBase {
+        interface OutputJson_select extends OutputJsonBase {
             type: 'select'
             list: Array<Ref<OutputJson>>
         }
-        interface OutputJson_item extends ItemJson, IOJsonBase {
+        interface OutputJson_item extends ItemJson, InputJsonBase {
             type: 'item'
         }
-        interface OutputJson_exp extends IOJsonBase {
+        interface OutputJson_exp extends OutputJsonBase {
             type: 'exp'
             value: number
         }
-        interface OutputJson_level extends IOJsonBase {
+        interface OutputJson_level extends OutputJsonBase {
             type: 'level'
             value: number
         }
-        interface OutputJson_command extends IOJsonBase {
+        interface OutputJson_command extends OutputJsonBase {
             type: 'level'
             commands: string[]
         }
         type OutputJson = (
-            IOJsonBase
+            OutputJsonBase
             | OutputJson_random
             | OutputJson_select
             | OutputJson_item
@@ -118,6 +120,7 @@ declare namespace CQTypes {
             output: Array<Ref<IOTypes.OutputJson>>
             name: TextJson
             text: TextJson
+            repeat?: boolean
         }
         ref?: {[refId: refId]: unknown}
     }
@@ -129,18 +132,18 @@ declare namespace CQTypes {
     }
 
     interface ChapterJson {
-        quest: Array<QuestJson | QuestJsonElement>
         id: chapterId
         name: TextJson
         description: TextJson
         icon: Ref<IconJson>
+        quest: Array<QuestJson | QuestJsonElement>
         background?: [bitmap: bitmap, ratdio?: number]
         ref?: {[refId: refId]: unknown}
     }
 
     interface MainJson {
-        main: ChapterJson[]
         name: TextJson
+        main: ChapterJson[]
         background?: [bitmap: bitmap, ratdio?: number]
         bitmaps?: Array<{
             name: string
@@ -170,6 +173,7 @@ declare namespace CQTypes {
             output: Array<IOTypes.OutputJson>
             name: TextJson
             text: TextJson
+            repeat: boolean
         }
     }
 
@@ -276,7 +280,7 @@ declare namespace CQTypes {
      * Change the value of [[inputJson]] is not recommended
      */
     interface InputTypeCb {
-        resolveJson?: (inputJson: IOTypes.IOJsonBase, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<IOTypes.InputJson>
+        resolveJson?: (inputJson: IOTypes.InputJsonBase, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<IOTypes.InputJson>
         onLoad?: (inputJson: IOTypes.InputJson, toolsCb: IOTypeToolsCb<InputStateObject>, cache: {[key: string]: unknown}) => void
         onUnload?: (inputJson: IOTypes.InputJson, toolsCb: IOTypeToolsCb<InputStateObject>, cache: {[key: string]: unknown}) => void
         onPacket?: (inputJson: IOTypes.InputJson, toolsCb: IOTypeToolsCb<InputStateObject>, cache: {[key: string]: unknown}, extraInfo: {
@@ -308,10 +312,10 @@ declare namespace CQTypes {
      * Change the value of [[outputJson]] is not recommended
      */
     interface OutputTypeCb {
-        resolveJson?: (outputJson: IOTypes.IOJsonBase, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<IOTypes.OutputJson>
+        resolveJson?: (outputJson: IOTypes.OutputJsonBase, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<IOTypes.OutputJson>
         onLoad?: (outputJson: IOTypes.OutputJson, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: {[key: string]: unknown}) => void
         onUnload?: (outputJson: IOTypes.OutputJson, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: {[key: string]: unknown}) => void
-        onPacket?: (inputJson: IOTypes.InputJson, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: {[key: string]: unknown}, extraInfo: {
+        onPacket?: (outputJson: IOTypes.OutputJson, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: {[key: string]: unknown}, extraInfo: {
             client: NetworkClient
             packetData: object
         }) => void
@@ -403,6 +407,7 @@ interface Store {
         saveData: CQTypes.SaveData
         team: CQTypes.team
         isAdmin: boolean
+        teamList: ReturnType<ServerSystem['getTeamList']>
     }
 }
 
@@ -422,11 +427,9 @@ interface Utils {
     log (message: string, type: string, hasAlert?: boolean): void
     getUUID (): string
     md5 (str: string): string
-    isDefined (length: number, arr: unknown[]): boolean
     isObject (obj: object): boolean
-    hasKeyOfKeys (obj: {[key: string]: unknown}, keys: string[]): boolean
     deepCopy <T = object>(obj: T): T
-    debounce <T = Function>(func: T, wait: number, func2?: T, ths?: unknown): T
+    debounce <T extends any[], RT = any, TT = any>(func: (this: TT, ...args: T) => RT, wait: number, func2?: Nullable<(this: TT, ...args: T) => RT>, ths?: TT): (...args: T) => RT
     operate (a: number, operator: string, b: number, defaultValue?: boolean): boolean
     transferIdFromJson (id: CQTypes.ItemJson['id']): number
     /**
@@ -535,14 +538,14 @@ interface System {
     getParent (json: CQTypes.AllResolvedMainJson, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): Array<CQTypes.PathArray>
     getChild (json: CQTypes.AllResolvedMainJson, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): Array<CQTypes.PathArray>
     getInputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): CQTypes.InputStateObject
-    getOutputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): {stata: CQTypes.OutputState, [key: string]: unknown}
+    getOutputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): CQTypes.OutputStateObject
     getQuestInputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestInputState
     getQuestOutputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestOutputState
     setInputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number,
         inputStateObject: CQTypes.InputStateObject, cb?: {
             onInputStateChanged?: (newInputStateObject: CQTypes.InputStateObject, oldInputStateObject: CQTypes.InputStateObject) => void
             onQuestInputStateChanged?: (newQuestInputState: CQTypes.QuestInputState, oldQuestInputState: CQTypes.QuestInputState) => void
-            onQuestOutputStateChanged?: (newQuestOutputState: CQTypes.QuestOutputState.unreceived, oldQuestOutputState: CQTypes.QuestOutputState.locked) => void
+            onQuestOutputStateChanged?: (newQuestOutputState: CQTypes.QuestOutputState.unreceived | CQTypes.QuestOutputState.repeat_unreceived, oldQuestOutputState: CQTypes.QuestOutputState.locked) => void
             onChildQuestInputStateChanged?: (pathArray: CQTypes.PathArray, newQuestInputState: CQTypes.QuestInputState.unfinished, oldQuestInputState: CQTypes.QuestInputState.locked) => void
         }): void
     setOutputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number,
@@ -608,6 +611,7 @@ interface ServerSystem {
      * Warn: this method itself does not call [[updateTeam]]
      */
     setPlayerStateForTeam (teamId: CQTypes.teamId, player: number, state: CQTypes.PlayerState): void
+    getTeamList (): Array<{teamId: CQTypes.teamId, bitmap: CQTypes.team['bitmap'], name: CQTypes.team['name']}>
 }
 
 interface ClientSystem {
@@ -639,11 +643,17 @@ declare namespace ModAPI {
 
 declare namespace Callback {
     function addCallback(name: 'CustomQuests.onInputStateChanged', func: onInputStateChangedFunction): void
+    /**
+     * Automatic changes caused by input changes do not trigger this callback
+     */
     function addCallback(name: 'CustomQuests.onOutputStateChanged', func: onOutputStateChangedFunction): void
     function addCallback(name: 'CustomQuests.onQuestInputStateChanged', func: onQuestInputStateChangedFunction): void
     function addCallback(name: 'CustomQuests.onQuestOutputStateChanged', func: onQuestOutputStateChangedFunction): void
 
     function addCallback(name: 'CustomQuests.onInputStateChangedLocal', func: onInputStateChangedLocalFunction): void
+    /**
+     * Automatic changes caused by input changes do not trigger this callback
+     */
     function addCallback(name: 'CustomQuests.onOutputStateChangedLocal', func: onOutputStateChangedLocalFunction): void
     function addCallback(name: 'CustomQuests.onQuestInputStateChangedLocal', func: onQuestInputStateChangedLocalFunction): void
     function addCallback(name: 'CustomQuests.onQuestOutputStateChangedLocal', func: onQuestOutputStateChangedLocalFunction): void
