@@ -4,7 +4,7 @@
 const Utils = {
     voidFunc () {},
     log (message, type, hasAlert) {
-        const msg = '<Custom Quests> ' + message
+        let msg = '<Custom Quests> ' + message
         if (hasAlert) alert(msg)
         Logger.Log(msg, type)
     },
@@ -14,9 +14,9 @@ const Utils = {
     md5 (str) {
         if (typeof str !== 'string') return
         try {
-            const jStr = new java.lang.String(str)
-            const secretBytes = java.security.MessageDigest.getInstance('md5').digest(jStr.getBytes('UTF8'))
-            const ret = new java.math.BigInteger(1, secretBytes).toString(16)
+            let jStr = new java.lang.String(str)
+            let secretBytes = java.security.MessageDigest.getInstance('md5').digest(jStr.getBytes('UTF8'))
+            let ret = new java.math.BigInteger(1, secretBytes).toString(16)
             return String(ret)
         } catch (err) {
             this.log('Error in md5 (Utils.js):\n' + err, 'ERROR', false)
@@ -37,7 +37,7 @@ const Utils = {
         if(typeof delay !== 'number' || isNaN(delay)) return func
         let time = 0
         return function () {
-            const now = Date.now()
+            let now = Date.now()
             time = now + delay
             if (now >= time) return func.apply(ths, arguments)
             if (typeof func2 === 'function') return func2.apply(ths, arguments)
@@ -60,9 +60,8 @@ const Utils = {
         if (typeof id === 'number') {
             return Network.inRemoteWorld() ? Network.serverToLocalId(id) : id
         }
-        if (typeof id !== 'string') {
-            return ItemID.missing_item
-        }
+        if (typeof id !== 'string') return ItemID.missing_item
+        if (!isNaN(Number(id))) return Number(id)
         if (id.match(/^item[a-z]*(:|.)/i)) {
             return ItemID[id.replace(/^item[a-z]*(:|.)/i, '')] || ItemID.missing_item
         }
@@ -78,10 +77,10 @@ const Utils = {
         return ItemID.missing_item
     },
     idFromItem: (function () {
-        const idFromItem = {}
+        let idFromItem = {}
         Callback.addCallback('PostLoaded', function () {
             new java.lang.Thread(new java.lang.Runnable({
-                run() {
+                run () {
                     for (let name in VanillaItemID) idFromItem[VanillaItemID[name]] = 'vitem:' + name
                     for (let name in VanillaBlockID) idFromItem[VanillaBlockID[name]] = 'vblock:' + name
                     for (let name in ItemID) idFromItem[ItemID[name]] = 'item:' + name
@@ -100,8 +99,8 @@ const Utils = {
         if (typeof type !== 'string' || !type) return
         if (!this.isObject(extraTypeCb)) return
         if (!this.isObject(this.extraType[type])) this.extraType[type] = {}
-        const that = this
-        const methods = ['fromJson', 'fromItem', 'isPassed']
+        let that = this
+        let methods = ['fromJson', 'fromItem', 'isPassed']
         methods.forEach(function (method) {
             if (typeof extraTypeCb[method] === 'function') {
                 that.extraType[type][method] = extraTypeCb[method]
@@ -118,8 +117,8 @@ const Utils = {
     },
     transferItemFromJson (itemJson) {
         if (!this.isObject(itemJson)) return {}
-        const that = this
-        const item = {
+        let that = this
+        let item = {
             id: this.transferIdFromJson(itemJson.id),
             count: itemJson.count || 1,
             data: itemJson.data || 0,
@@ -132,15 +131,13 @@ const Utils = {
                     if (!that.isObject(extraJson)) return
                     that.getExtraTypeCb(extraJson.type, 'fromJson')(item, extraJson)
                 })
-            } else {
-                this.getExtraTypeCb(itemJson.extra.type, 'fromJson')(item, itemJson.extra)
             }
         }
         return item
     },
     transferItemFromItem (item) {
         if (!this.isObject(item)) return {}
-        const itemJson = {
+        let itemJson = {
             id: this.transferIdFromItem(item.id),
             count: item.count || 1,
             data: item.data || 0,
@@ -150,7 +147,7 @@ const Utils = {
             itemJson.extra = []
             for (let type in this.extraType) {
                 if (typeof this.extraType[type].fromItem !== 'function') continue
-                const extraJson = { type: type }
+                let extraJson = { type: type }
                 if (this.extraType[type].fromItem(item, extraJson)) continue
                 itemJson.extra.push(extraJson)
             }
@@ -161,25 +158,22 @@ const Utils = {
         if (!this.isObject(item)) return false
         if (!this.isObject(extraJsonArray)) return false
         if (!item.extra) item.extra = new ItemExtraData()
-        const that = this
+        let that = this
         let passed = true
         if (Array.isArray(extraJsonArray)) {
             extraJsonArray.every(function (extraJson) {
                 if (!that.isObject(extraJson)) return true
-                const cb = that.getExtraTypeCb(extraJson.type, 'isPassed')
+                let cb = that.getExtraTypeCb(extraJson.type, 'isPassed')
                 if (cb === that.voidFunc) return true
                 return passed = passed && cb(item, extraJson)
             })
-        } else {
-            const cb = that.getExtraTypeCb(extraJsonArray.type, 'isPassed')
-            if (cb !== that.voidFunc) passed = passed && cb(item, extraJsonArray)
         }
         return Boolean(passed)
     },
     readContents (path) {
         if (typeof path !== 'string') return {}
         if (!path.endsWith('/')) path += '/'
-        const that = this
+        let that = this
         try {
             if (FileTools.isExists(path + 'contents.json')) {
                 let mainJson = FileTools.ReadJSON(path + 'contents.json')
@@ -193,7 +187,7 @@ const Utils = {
                                 mainJson.main[indexChapter] = {}
                             }
                         }
-                        const chapterJson = mainJson.main[indexChapter]
+                        let chapterJson = mainJson.main[indexChapter]
                         if (chapterJson.quest) {
                             chapterJson.quest.forEach(function (pathQuest, indexQuest) {
                                 if (typeof pathQuest === 'string') {
@@ -223,8 +217,8 @@ const Utils = {
     resolveRefs (value, refsArray) {
         if (typeof value !== 'string') return value
         if (!value.match(/^ref:/i)) return value
-        const that = this
-        const refId = value.replace(/^ref:/i, '')
+        let that = this
+        let refId = value.replace(/^ref:/i, '')
         let ret = value
         refsArray.some(function (refs) {
             if (!that.isObject(refs)) return false
@@ -247,7 +241,7 @@ const Utils = {
     resolveTextJson (textJson) {
         if (typeof textJson === 'string') return textJson
         if (Utils.isObject(textJson)) {
-            const ret = {}
+            let ret = {}
             for (let lang in textJson) {
                 ret[lang] = String(textJson[lang])
             }
@@ -256,14 +250,14 @@ const Utils = {
         return ''
     },
     putTextureSourceFromBase64: (function () {
-        // const TextureSource = new com.zhekasmirnov.innercore.api.mod.ui.TextureSource()
+        // let TextureSource = new com.zhekasmirnov.innercore.api.mod.ui.TextureSource()
         /** @type { Utils['putTextureSourceFromBase64'] } */
         return function (name, encodedString) {
             // if (typeof name !== 'string') return
             // if (typeof encodedString !== 'string') return
             // try {
-            //     const encodeByte = android.util.Base64.decode(encodedString, 0)
-            //     const bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
+            //     let encodeByte = android.util.Base64.decode(encodedString, 0)
+            //     let bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
             //     TextureSource.put(name, bitmap)
             // } catch (err) {
             //     this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
@@ -274,7 +268,7 @@ const Utils = {
         UI.getContext().runOnUiThread(new java.lang.Runnable({
             run () {
                 try {
-                    const editText = new android.widget.EditText(UI.getContext())
+                    let editText = new android.widget.EditText(UI.getContext())
                     editText.setHint(hint || '')
                     editText.setSingleLine(true)
                     if(typeof text == 'string') editText.setText(text)
@@ -319,15 +313,15 @@ const Utils = {
         }))
     },
     getInventory (player) {
-		const inventory = []
-		const actor = new PlayerActor(player)
+		let inventory = []
+		let actor = new PlayerActor(player)
 		for (let i = 0; i < 36; i++) {
 			inventory[i] = actor.getInventorySlot(i)
 		}
 		return inventory
     },
     getSortInventory (inventory) {
-		const sortInventory = {}
+		let sortInventory = {}
 		inventory.forEach(function (item) {
 			if (item.id === 0) return
             if (sortInventory[item.id + ':' + item.data]) {
@@ -341,7 +335,7 @@ const Utils = {
 		return sortInventory
     },
     getExtraInventory (inventory) {
-        const extraInventory = {}
+        let extraInventory = {}
         inventory.forEach(function (item) {
             if (!item.extra || item.extra.isEmpty()) return
             if (extraInventory[item.id + ':' + item.data]) {
@@ -382,7 +376,7 @@ Utils.setExtraTypeCb('enchant', {
     fromItem: function (item, extraJson) {
         if (item.extra.getEnchantCount() <= 0) return true
         extraJson.array = []
-        const enchants = item.extra.getEnchants()
+        let enchants = item.extra.getEnchants()
         for (let id in enchants) {
             if (enchants[id] <= 0) continue
             extraJson.array.push({
@@ -394,7 +388,7 @@ Utils.setExtraTypeCb('enchant', {
     },
     isPassed: function(item, extraJson) {
         if(!Array.isArray(extraJson.array)) return true
-        const enchants = item.extra.getEnchants()
+        let enchants = item.extra.getEnchants()
         return extraJson.array.every(function (obj) {
             if (!Utils.isObject(obj)) return true
             if (typeof obj.type !== 'number') return true
@@ -410,15 +404,15 @@ Utils.setExtraTypeCb('energy', {
         ChargeItemRegistry.setEnergyStored(item, extraJson.energy)
     },
     fromItem: function (item, extraJson) {
-        const energyData = ChargeItemRegistry.getItemData(item.id)
+        let energyData = ChargeItemRegistry.getItemData(item.id)
         if (!Utils.isObject(energyData)) return true
-        const energy = ChargeItemRegistry.getEnergyStored(item, energyData.energy)
+        let energy = ChargeItemRegistry.getEnergyStored(item, energyData.energy)
         if (typeof energy !== 'number') return true
         extraJson.energy = energy
         return false
     },
     isPassed: function(item, extraJson) {
-        const energy = item.extra.getInt('energy')
+        let energy = item.extra.getInt('energy')
         if (typeof extraJson.operator !== 'string') extraJson.operator = '>='
         if (typeof extraJson.energy !== 'number') extraJson.energy = 0
         return Utils.operate(energy, extraJson.operator, extraJson.energy, true)

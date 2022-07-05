@@ -15,7 +15,7 @@ IOTypeTools.setInputType('item', {
         cache.id = Utils.transferIdFromJson(inputJson.id)
         cache.key = cache.id + ':' + inputJson.data
         if (inputJson.submit) {
-            const count = toolsCb.getState().count || 0
+            let count = toolsCb.getState().count || 0
             if (count >= inputJson.count) {
                 toolsCb.setState({}, {
                     state: EnumObject.inputState.finished,
@@ -27,13 +27,13 @@ IOTypeTools.setInputType('item', {
     onPacket (inputJson, toolsCb, cache, extraInfo) {
         if (!inputJson.submit) return
         if (extraInfo.packetData.type !== 'submit') return
-        const extra = Array.isArray(inputJson.extra)
-        const player = extraInfo.client.getPlayerUid()
-        const actor = new PlayerActor(player)
-        const stateObj = toolsCb.getState()
+        let extra = Array.isArray(inputJson.extra)
+        let player = extraInfo.client.getPlayerUid()
+        let actor = new PlayerActor(player)
+        let stateObj = toolsCb.getState()
         let count = stateObj.count || 0
         for (let i = 0; i < 36; i++) {
-            const item = actor.getInventorySlot(i)
+            let item = actor.getInventorySlot(i)
             if (item.id !== cache.id) continue
             if (inputJson.data !== -1 && inputJson.data !== item.data) continue
             if (extra && !Utils.isItemExtraPassed(item, inputJson.extra)) continue
@@ -41,13 +41,13 @@ IOTypeTools.setInputType('item', {
                 count += item.count
                 actor.setInventorySlot(i, 0, 0, 0, null)
             } else {
-                const cost = inputJson.count - count
+                let cost = inputJson.count - count
                 count = inputJson.count
                 actor.setInventorySlot(i, item.id, item.count - cost, item.data, item.extra)
             }
         }
         if (count !== (stateObj.count || 0)) {
-            const finished = count >= inputJson.count
+            let finished = count >= inputJson.count
             toolsCb.setState({}, {
                 state: finished ? EnumObject.inputState.finished : stateObj.state,
                 count: count
@@ -60,7 +60,7 @@ IOTypeTools.setInputType('item', {
         if (Array.isArray(inputJson.extra)) {
             succ = extraInfo.playerInventory.some(function (obj) {
                 /** @type { ItemInstance[] } */
-                const items = obj.extra[cache.key]
+                let items = obj.extra[cache.key]
                 if (!Array.isArray(items)) return false
                 let passedCount = 0
                 succ = items.some(function (item) {
@@ -83,9 +83,9 @@ IOTypeTools.setInputType('item', {
         }
     },
     getIcon (inputJson, toolsCb, extraInfo) {
-        const submit = inputJson.submit
-        const pos = extraInfo.pos
-        const ret = {}
+        let submit = inputJson.submit
+        let pos = extraInfo.pos
+        let ret = {}
         ret[extraInfo.prefix + 'main'] = {
 			type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
             bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'clear',

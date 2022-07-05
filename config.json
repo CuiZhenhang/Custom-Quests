@@ -1,11 +1,7 @@
 {
   "enabled": true,
-  "setting": {
-    "ui_size": 1,
-    "padding": 60
-  },
   "save": {
-    "only_player": false
+    "for_team": false
   },
   "contents": {
     "path": "custom/",

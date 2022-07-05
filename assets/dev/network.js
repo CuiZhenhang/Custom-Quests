@@ -8,12 +8,12 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
     if (typeof packetData.questId !== 'string') return
     if (typeof packetData.index !== 'number') return
     if (!Utils.isObject(packetData.data)) return
-    const saveId = ServerSystem.getSaveId(client.getPlayerUid())
+    let saveId = ServerSystem.getSaveId(client.getPlayerUid())
     if (!ServerSystem.isSaveIdValid(saveId)) return
-    const loadedQuest = ServerSystem.getLoadedQuest(saveId, packetData.sourceId, packetData.chapterId, packetData.questId)
+    let loadedQuest = ServerSystem.getLoadedQuest(saveId, packetData.sourceId, packetData.chapterId, packetData.questId)
     if (packetData.type === 'input') {
         if (!Array.isArray(loadedQuest.input)) return
-        const inputId = loadedQuest.input[packetData.index]
+        let inputId = loadedQuest.input[packetData.index]
         if (!IOTypeTools.isInputLoaded(inputId)) return
         IOTypeTools.callInputTypeCb(inputId, 'onPacket', {
             client: client,
@@ -21,7 +21,7 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
         })
     } else if (packetData.type === 'output') {
         if (!Array.isArray(loadedQuest.output)) return
-        const outputId = loadedQuest.output[packetData.index]
+        let outputId = loadedQuest.output[packetData.index]
         if (!IOTypeTools.isOutputLoaded(outputId)) return
         IOTypeTools.callOutputTypeCb(outputId, 'onPacket', {
             client: client,
@@ -103,7 +103,7 @@ Network.addClientPacket('CustomQuests.Client.alert', function (packetData) {
 
 Network.addClientPacket('CustomQuests.Client.resolveJson', function (packetData) {
     if (!Utils.isObject(packetData.json)) return
-    const obj = System.resolveJson(packetData.json)
+    let obj = System.resolveJson(packetData.json)
     Store.localCache.resolvedJson = obj.json
     Store.localCache.jsonConfig = obj.config
     if (Array.isArray(packetData.bitmaps)) packetData.bitmaps.forEach(function (bitmapObject) {
@@ -136,11 +136,11 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
     if (typeof packetData.index !== 'number') return
     if (!Utils.isObject(packetData.extraInfo)) return
     if (!Utils.isObject(packetData.inputStateObject)) return
-    const sourceId = packetData.sourceId
-    const chapterId = packetData.chapterId
-    const questId = packetData.questId
-    const index = packetData.index
-    const extraInfo = packetData.extraInfo
+    let sourceId = packetData.sourceId
+    let chapterId = packetData.chapterId
+    let questId = packetData.questId
+    let index = packetData.index
+    let extraInfo = packetData.extraInfo
     System.setInputState(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId, index, packetData.inputStateObject, {
             onInputStateChanged (newInputStateObject, oldInputStateObject) {
                 try {
@@ -199,11 +199,11 @@ Network.addClientPacket('CustomQuests.Client.setOutputState', function (packetDa
     if (typeof packetData.index !== 'number') return
     if (!Utils.isObject(packetData.extraInfo)) return
     if (!Utils.isObject(packetData.outputStateObject)) return
-    const sourceId = packetData.sourceId
-    const chapterId = packetData.chapterId
-    const questId = packetData.questId
-    const index = packetData.index
-    const extraInfo = packetData.extraInfo
+    let sourceId = packetData.sourceId
+    let chapterId = packetData.chapterId
+    let questId = packetData.questId
+    let index = packetData.index
+    let extraInfo = packetData.extraInfo
     System.setOutputState(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId, index, packetData.outputStateObject, {
             onOutputStateChanged (newOutputStateObject, oldOutputStateObject) {
                 try {

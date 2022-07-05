@@ -20,7 +20,12 @@ const ServerSystem = {
         })
         return null
     })(),
-    loadedQuest: {},
+    loadedQuest: (function () {
+        Callback.addCallback('LevelSelected', function () {
+            ServerSystem.loadedQuest = {}
+        })
+        return {}
+    })(),
     addContents (sourceId, contents) {
         if (typeof sourceId !== 'string') return
         if (!Utils.isObject(contents)) return
@@ -29,7 +34,7 @@ const ServerSystem = {
     createSaveId (playerList) {
         if (!Array.isArray(playerList)) return
         if (playerList.length === 0) return
-        const saveId = Utils.getUUID()
+        let saveId = Utils.getUUID()
         Store.saved.playerList[saveId] = Utils.deepCopy(playerList)
         Store.saved.data[saveId] = {}
         Store.saved.exist[saveId] = true
@@ -37,14 +42,14 @@ const ServerSystem = {
     },
     getSaveId (target) {
         if (typeof target === 'number') {
-            const obj = Store.saved.players[target]
+            let obj = Store.saved.players[target]
             if (!Utils.isObject(obj)) return InvalidId
-            if (!Setting.saveOnlyPlayer) return this.getSaveId(obj.teamId)
+            if (Setting.saveForTeam) return this.getSaveId(obj.teamId)
             return obj.saveId
         } else if (typeof target === 'string') {
-            if (Setting.saveOnlyPlayer) return InvalidId
+            if (!Setting.saveForTeam) return InvalidId
             if (target === InvalidId) return InvalidId
-            const team = Store.saved.team[target]
+            let team = Store.saved.team[target]
             if (!Utils.isObject(team)) return InvalidId
             return team.saveId
         }
@@ -64,7 +69,7 @@ const ServerSystem = {
     setPlayerLoaded (player, loaded) {
         if (typeof player !== 'number') return
         if (typeof loaded !== 'boolean') loaded = Boolean(loaded)
-        const saveId = this.getSaveId(player)
+        let saveId = this.getSaveId(player)
         if (this.isSaveIdValid(saveId)) {
             if (!Utils.isObject(Store.cache.playerList[saveId])) {
                 Store.cache.playerList[saveId] = {
@@ -72,7 +77,7 @@ const ServerSystem = {
                     client: new NetworkConnectedClientList()
                 }
             }
-            const obj = Store.cache.playerList[saveId]
+            let obj = Store.cache.playerList[saveId]
             if (loaded) {
                 Store.cache.playerLoaded[player] = true
                 if (obj.player.indexOf(player) <= -1) obj.player.push(player)
@@ -85,7 +90,7 @@ const ServerSystem = {
                 this.loadAllQuest(saveId)
             } else {
                 Store.cache.playerLoaded[player] = false
-                const index = obj.player.indexOf(player)
+                let index = obj.player.indexOf(player)
                 if (index >= 0) obj.player.splice(index, 1)
                 try {
                     let client = Network.getClientForPlayer(player)
@@ -108,7 +113,7 @@ const ServerSystem = {
     getPlayerList (saveId, online) {
         if (!this.isSaveIdValid(saveId)) return []
         if (online) {
-            const obj = Store.cache.playerList[saveId]
+            let obj = Store.cache.playerList[saveId]
             if (!Utils.isObject(obj)) return []
             return Utils.deepCopy(obj.player)
         } else {
@@ -117,7 +122,7 @@ const ServerSystem = {
     },
     getConnectedClientList (saveId) {
         if (!this.isSaveIdValid(saveId)) return null
-        const obj = Store.cache.playerList[saveId]
+        let obj = Store.cache.playerList[saveId]
         if (!Utils.isObject(obj)) return null
         return obj.client
     },
@@ -128,34 +133,34 @@ const ServerSystem = {
     getLoadedQuest (saveId, sourceId, chapterId, questId) {
         if (!this.isSaveIdValid(saveId)) return {}
         if (!Utils.isObject(this.loadedQuest[saveId])) this.loadedQuest[saveId] = {}
-        const loadedQuest = this.loadedQuest[saveId]
+        let loadedQuest = this.loadedQuest[saveId]
         if (!Utils.isObject(loadedQuest[sourceId])) loadedQuest[sourceId] = {}
-        const mainLoadedQuest = loadedQuest[sourceId]
+        let mainLoadedQuest = loadedQuest[sourceId]
         if (!Utils.isObject(mainLoadedQuest[chapterId])) mainLoadedQuest[chapterId] = {}
-        const chapterLoadedQuest = mainLoadedQuest[chapterId]
+        let chapterLoadedQuest = mainLoadedQuest[chapterId]
         if (!Utils.isObject(chapterLoadedQuest[questId])) chapterLoadedQuest[questId] = {}
         return chapterLoadedQuest[questId]
     },
     unloadAllLoadedQuest (saveId) {
         if (!this.isSaveIdValid(saveId)) return
-        const loadedQuest = this.loadedQuest[saveId]
+        let loadedQuest = this.loadedQuest[saveId]
         if (!Utils.isObject(loadedQuest)) return
         for (let sourceId in loadedQuest) {
-            const mainLoadedQuest = loadedQuest[sourceId]
+            let mainLoadedQuest = loadedQuest[sourceId]
             for (let chapterId in mainLoadedQuest) {
-                const chapterLoadedQuest = mainLoadedQuest[chapterId]
+                let chapterLoadedQuest = mainLoadedQuest[chapterId]
                 for (let questId in chapterLoadedQuest) {
-                    const questLoadedQuest = chapterLoadedQuest[questId]
+                    let questLoadedQuest = chapterLoadedQuest[questId]
                     if (Array.isArray(questLoadedQuest.input)) {
                         questLoadedQuest.input.forEach(function (inputId) {
-                            if (!IOTypeTools.isInputLoaded(inputId)) return
+                            if (!IOTypeTools.isInputIdLoaded(inputId)) return
                             IOTypeTools.unloadInput(inputId)
                         })
                         questLoadedQuest.input = null
                     }
                     if (Array.isArray(questLoadedQuest.output)) {
                         questLoadedQuest.output.forEach(function (outputId) {
-                            if (!IOTypeTools.isOutputLoaded(outputId)) return
+                            if (!IOTypeTools.isOutputIdLoaded(outputId)) return
                             IOTypeTools.unloadOutput(outputId)
                         })
                         questLoadedQuest.output = null
@@ -170,84 +175,89 @@ const ServerSystem = {
     },
     loadInput (saveId, sourceId, chapterId, questId, index) {
         if (!this.isSaveIdValid(saveId)) return
-        const questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
+        let questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!Utils.isObject(questJson)) return
         if (questJson.type !== 'quest') return
         if (index >= questJson.inner.input.length) return
-        const saveData = this.getSaveData(saveId)
+        let saveData = this.getSaveData(saveId)
         if (System.getQuestInputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questInputState.locked) return
         if (System.getInputState(saveData, sourceId, chapterId, questId, index).state === EnumObject.inputState.finished) return
-        const questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
+        let questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
         if (!Array.isArray(questLoadedQuest.input)) questLoadedQuest.input = []
-        if (IOTypeTools.isInputLoaded(questLoadedQuest.input[index])) return
-        const inputBak = []
-        questLoadedQuest.input[index] = inputBak[index] = IOTypeTools.loadInput(questJson.inner.input[index], {
+        if (IOTypeTools.isInputIdLoaded(questLoadedQuest.input[index])) return
+        let inputBak = []
+        questLoadedQuest.input[index] = inputBak[index] = IOTypeTools.createInputId(questJson.inner.input[index], {
             getPlayerList: this.getPlayerList.bind(this, saveId),
             getState: System.getInputState.bind(System, saveData, sourceId, chapterId, questId, index),
             setState: this.setInputState.bind(this, saveId, sourceId, chapterId, questId, index)
         }, $ServerSystem_onUnload.bind(null, questLoadedQuest.input, inputBak, index))
+        IOTypeTools.loadInput(questLoadedQuest.input[index])
     },
     loadOutput (saveId, sourceId, chapterId, questId, index) {
         if (!this.isSaveIdValid(saveId)) return
-        const questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
+        let questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!Utils.isObject(questJson)) return
         if (questJson.type !== 'quest') return
         if (index >= questJson.inner.output.length) return
-        const saveData = this.getSaveData(saveId)
+        let saveData = this.getSaveData(saveId)
         if (System.getQuestOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questOutputState.locked) return
         if (System.getOutputState(saveData, sourceId, chapterId, questId, index).state === EnumObject.outputState.received) return
-        const questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
+        let questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
         if (!Array.isArray(questLoadedQuest.output)) questLoadedQuest.output = []
-        if (IOTypeTools.isOutputLoaded(questLoadedQuest.output[index])) return
-        const outputBak = []
-        questLoadedQuest.output[index] = outputBak[index] = IOTypeTools.loadOutput(questJson.inner.output[index], {
+        if (IOTypeTools.isOutputIdLoaded(questLoadedQuest.output[index])) return
+        let outputBak = []
+        questLoadedQuest.output[index] = outputBak[index] = IOTypeTools.createOutputId(questJson.inner.output[index], {
             getPlayerList: this.getPlayerList.bind(this, saveId),
             getState: System.getOutputState.bind(System, saveData, sourceId, chapterId, questId, index),
             setState: this.setOutputState.bind(this, saveId, sourceId, chapterId, questId, index)
         }, $ServerSystem_onUnload.bind(null, questLoadedQuest.output, outputBak, index))
+        IOTypeTools.loadOutput(questLoadedQuest.output[index])
     },
     loadQuest (saveId, sourceId, chapterId, questId) {
         if (!this.isSaveIdValid(saveId)) return
-        const questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
+        let questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!Utils.isObject(questJson)) return
         if (questJson.type !== 'quest') return
-        const saveData = this.getSaveData(saveId)
+        let saveData = this.getSaveData(saveId)
         if (System.getQuestInputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questInputState.locked) return
-        const that = this
-        const getPlayerList = this.getPlayerList.bind(this, saveId)
-        const questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
+        let that = this
+        let getPlayerList = this.getPlayerList.bind(this, saveId)
+        let questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
         if (!Array.isArray(questLoadedQuest.input)) questLoadedQuest.input = []
-        const inputBak = []
+        let inputBak = []
         questJson.inner.input.forEach(function (inputJson, index) {
             if (System.getInputState(saveData, sourceId, chapterId, questId, index).state === EnumObject.inputState.finished) return
-            if (IOTypeTools.isInputLoaded(questLoadedQuest.input[index])) return
-            questLoadedQuest.input[index] = inputBak[index] = IOTypeTools.loadInput(inputJson, {
+            if (IOTypeTools.isInputIdLoaded(questLoadedQuest.input[index])) return
+            questLoadedQuest.input[index] = inputBak[index] = IOTypeTools.createInputId(inputJson, {
                 getPlayerList: getPlayerList,
                 getState: System.getInputState.bind(System, saveData, sourceId, chapterId, questId, index),
                 setState: that.setInputState.bind(that, saveId, sourceId, chapterId, questId, index)
             }, $ServerSystem_onUnload.bind(null, questLoadedQuest.input, inputBak, index))
+            IOTypeTools.loadInput(questLoadedQuest.input[index])
         })
         if (System.getQuestOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questOutputState.locked) return
         if (!Array.isArray(questLoadedQuest.output)) questLoadedQuest.output = []
-        const outputBak = []
+        let outputBak = []
         questJson.inner.output.forEach(function (outputJson, index) {
             if (System.getOutputState(saveData, sourceId, chapterId, questId, index).state === EnumObject.outputState.received) return
-            if (IOTypeTools.isOutputLoaded(questLoadedQuest.output[index])) return
-            questLoadedQuest.output[index] = outputBak[index] = IOTypeTools.loadOutput(outputJson, {
+            if (IOTypeTools.isOutputIdLoaded(questLoadedQuest.output[index])) return
+            questLoadedQuest.output[index] = outputBak[index] = IOTypeTools.createOutputId(outputJson, {
                 getPlayerList: getPlayerList,
                 getState: System.getOutputState.bind(System, saveData, sourceId, chapterId, questId, index),
                 setState: that.setOutputState.bind(that, saveId, sourceId, chapterId, questId, index)
             }, $ServerSystem_onUnload.bind(null, questLoadedQuest.output, outputBak, index))
+            IOTypeTools.loadOutput(questLoadedQuest.output[index])
         })
     },
     loadAllQuest (saveId, isRelaod) {
+        /** @todo bfs */
         if (!this.isSaveIdValid(saveId)) return
         if (isRelaod) this.unloadAllLoadedQuest(saveId)
-        const json = this.resolvedJson
+        let json = this.resolvedJson
         for (let sourceId in json) {
-            const mainJson = json[sourceId]
+            let mainJson = json[sourceId]
             for (let chapterId in mainJson.chapter) {
-                const chapterJson = mainJson.chapter[chapterId]
+                let chapterJson = mainJson.chapter[chapterId]
                 for (let questId in chapterJson.quest) {
                     this.loadQuest(saveId, sourceId, chapterId, questId)
                 }
@@ -257,12 +267,12 @@ const ServerSystem = {
     setInputState (saveId, sourceId, chapterId, questId, index, extraInfo, inputStateObject) {
         if (!this.isSaveIdValid(saveId)) return
         if (!Utils.isObject(extraInfo)) extraInfo = {}
-        const questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
+        let questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!Utils.isObject(questJson)) return
         if (questJson.type !== 'quest') return
-        const saveData = this.getSaveData(saveId)
+        let saveData = this.getSaveData(saveId)
         if (System.getQuestInputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questOutputState.locked) return
-        const client = this.getConnectedClientList(saveId)
+        let client = this.getConnectedClientList(saveId)
         if (client !== null) {
             runOnMainThread(function () {
                 client.send('CustomQuests.Client.setInputState', {
@@ -271,16 +281,16 @@ const ServerSystem = {
                 })
             })
         }
-        const questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
+        let questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
         if (!Array.isArray(questLoadedQuest.input)) questLoadedQuest.input = []
-        const input = questLoadedQuest.input
-        const that = this
+        let input = questLoadedQuest.input
+        let that = this
         System.setInputState(this.resolvedJson, saveData, sourceId, chapterId, questId, index, inputStateObject, {
             onInputStateChanged (newInputStateObject, oldInputStateObject) {
                 let called = false
                 if (newInputStateObject.state !== oldInputStateObject.state) {
                     if (newInputStateObject.state === EnumObject.inputState.finished) {
-                        if (IOTypeTools.isInputLoaded(input[index])) {
+                        if (IOTypeTools.isInputIdLoaded(input[index])) {
                             try {
                                 called = true
                                 Callback.invokeCallback('CustomQuests.onInputStateChanged',
@@ -295,12 +305,12 @@ const ServerSystem = {
                             IOTypeTools.unloadInput(input[index])
                         }
                     } else {
-                        if (!IOTypeTools.isInputLoaded(input[index])) {
+                        if (!IOTypeTools.isInputIdLoaded(input[index])) {
                             that.loadInput(saveId, sourceId, chapterId, questId, index)
                         }
                     }
                 }
-                if (!called && IOTypeTools.isInputLoaded(input[index])) {
+                if (!called && IOTypeTools.isInputIdLoaded(input[index])) {
                     try {
                         called = true
                         Callback.invokeCallback('CustomQuests.onInputStateChanged',
@@ -354,12 +364,12 @@ const ServerSystem = {
     setOutputState (saveId, sourceId, chapterId, questId, index, extraInfo, outputStateObject) {
         if (!this.isSaveIdValid(saveId)) return
         if (!Utils.isObject(extraInfo)) extraInfo = {}
-        const questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
+        let questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!Utils.isObject(questJson)) return
         if (questJson.type !== 'quest') return
-        const saveData = this.getSaveData(saveId)
+        let saveData = this.getSaveData(saveId)
         if (System.getQuestOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questOutputState.locked) return
-        const client = this.getConnectedClientList(saveId)
+        let client = this.getConnectedClientList(saveId)
         if (client !== null) {
             runOnMainThread(function () {
                 client.send('CustomQuests.Client.setOutputState', {
@@ -368,16 +378,16 @@ const ServerSystem = {
                 })
             })
         }
-        const questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
+        let questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
         if (!Array.isArray(questLoadedQuest.output)) questLoadedQuest.output = []
-        const output = questLoadedQuest.output
-        const that = this
+        let output = questLoadedQuest.output
+        let that = this
         System.setOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId, index, outputStateObject, {
             onOutputStateChanged (newOutputStateObject, oldOutputStateObject) {
                 let called = false
                 if (newOutputStateObject.state !== oldOutputStateObject.state) {
                     if (newOutputStateObject.state === EnumObject.outputState.received) {
-                        if (IOTypeTools.isOutputLoaded(output[index])) {
+                        if (IOTypeTools.isOutputIdLoaded(output[index])) {
                             IOTypeTools.callOutputTypeCb(output[index], 'onReceive', extraInfo)
                             try {
                                 called = true
@@ -393,12 +403,12 @@ const ServerSystem = {
                             IOTypeTools.unloadOutput(output[index])
                         }
                     } else {
-                        if (!IOTypeTools.isOutputLoaded(output[index])) {
+                        if (!IOTypeTools.isOutputIdLoaded(output[index])) {
                             that.loadOutput(saveId, sourceId, chapterId, questId, index)
                         }
                     }
                 }
-                if (!called && IOTypeTools.isOutputLoaded(output[index])) {
+                if (!called && IOTypeTools.isOutputIdLoaded(output[index])) {
                     try {
                         called = true
                         Callback.invokeCallback('CustomQuests.onOutputStateChanged',
@@ -429,16 +439,16 @@ const ServerSystem = {
         if (!this.isSaveIdValid(saveId)) return
         if (!Utils.isObject(extraInfo)) extraInfo = {}
         extraInfo.isFastReceive = true
-        const loadedQuest = this.loadedQuest[saveId]
+        let loadedQuest = this.loadedQuest[saveId]
         if (!Utils.isObject(loadedQuest)) return
-        const mainLoadedQuest = loadedQuest[sourceId]
+        let mainLoadedQuest = loadedQuest[sourceId]
         for (let chapterId in mainLoadedQuest) {
-            const chapterLoadedQuest = mainLoadedQuest[chapterId]
+            let chapterLoadedQuest = mainLoadedQuest[chapterId]
             for (let questId in chapterLoadedQuest) {
-                const questLoadedQuest = chapterLoadedQuest[questId]
+                let questLoadedQuest = chapterLoadedQuest[questId]
                 if (Array.isArray(questLoadedQuest.output)) {
                     questLoadedQuest.output.forEach(function (outputId) {
-                        if (!IOTypeTools.isOutputLoaded(outputId)) return
+                        if (!IOTypeTools.isOutputIdLoaded(outputId)) return
                         IOTypeTools.callOutputTypeCb(outputId, 'onReceive', extraInfo)
                     })
                 }
@@ -447,14 +457,14 @@ const ServerSystem = {
     },
     updateTeam (teamId, beforeDelete) {
         if (typeof beforeDelete !== 'boolean') beforeDelete = Boolean(beforeDelete)
-        const team = this.getTeam(teamId)
+        let team = this.getTeam(teamId)
         if (!Utils.isObject(team)) return
-        const players = team.players
-        const playerList = []
-        const client = new NetworkConnectedClientList()
+        let players = team.players
+        let playerList = []
+        let client = new NetworkConnectedClientList()
         for (let iPlayer in players) {
             if (players[iPlayer] <= EnumObject.playerState.absent) continue
-            const player = Number(iPlayer)
+            let player = Number(iPlayer)
             if (!this.isPlayerLoaded(player)) continue
             playerList.push(player)
             try {
@@ -468,8 +478,8 @@ const ServerSystem = {
                 team: beforeDelete ? null : team
             })
         })
-        if (!Setting.saveOnlyPlayer) {
-            const saveId = team.saveId
+        if (Setting.saveForTeam) {
+            let saveId = team.saveId
             if (beforeDelete) {
                 Store.cache.playerList[saveId] = null
             } else {
@@ -479,7 +489,7 @@ const ServerSystem = {
                         client: null
                     }
                 }
-                const obj = Store.cache.playerList[saveId]
+                let obj = Store.cache.playerList[saveId]
                 obj.player = playerList
                 obj.client = client
             }
@@ -488,8 +498,8 @@ const ServerSystem = {
     createTeam (player, team) {
         if (!this.isPlayerLoaded(player)) return
         if (Utils.isObject(this.getTeam(player))) return
-        const teamId = Utils.getUUID()
-        const saveId = Utils.getUUID()
+        let teamId = Utils.getUUID()
+        let saveId = Utils.getUUID()
         Store.saved.team[teamId] = {
             id: teamId,
             saveId: saveId,
@@ -506,7 +516,7 @@ const ServerSystem = {
     getTeam (target) {
         let teamId
         if (typeof target === 'number') {
-            const obj = Store.saved.players[target]
+            let obj = Store.saved.players[target]
             if (!Utils.isObject(obj)) return null
             teamId = obj.teamId
         } else if (typeof target === 'string') {
@@ -522,10 +532,10 @@ const ServerSystem = {
         Store.saved.team[teamId] = null
     },
     setTeam (player, teamId) {
-        const obj = Store.saved.players[player]
+        let obj = Store.saved.players[player]
         if (!Utils.isObject(obj)) return
         if (teamId !== InvalidId && !Utils.isObject(Store.saved.team[teamId])) return
-        const oldTeamId = obj.teamId
+        let oldTeamId = obj.teamId
         this.setPlayerStateForTeam(oldTeamId, player, EnumObject.playerState.absent)
         this.updateTeam(oldTeamId)
         obj.teamId = teamId
@@ -542,14 +552,14 @@ const ServerSystem = {
     },
     setPlayerStateForTeam (teamId, player, state) {
         if (teamId === InvalidId) return
-        const team = Store.saved.team[teamId]
+        let team = Store.saved.team[teamId]
         if (!Utils.isObject(team)) return
-        const oldState = team.players[player] || EnumObject.playerState.absent
+        let oldState = team.players[player] || EnumObject.playerState.absent
         if (state === oldState) return
         team.players[player] = state
         if (state === EnumObject.playerState.absent) {
             // exit team
-            const list = []
+            let list = []
             for (let iPlayer in team.players) {
                 if (team.players[iPlayer] >= EnumObject.playerState.member) {
                     list.push(Number(iPlayer))
@@ -569,7 +579,7 @@ const ServerSystem = {
         }
     },
     getTeamList () {
-        const list = []
+        let list = []
         for (let teamId in Store.saved.team) {
             if (!Utils.isObject(Store.saved.team[teamId])) continue
             list.push({
@@ -590,7 +600,7 @@ Callback.addCallback('ServerPlayerLoaded', function (player) {
             bookGived: false
         }
     }
-    const obj = Store.saved.players[player]
+    let obj = Store.saved.players[player]
     if (!obj.bookGived) {
         new PlayerActor(player).addItemToInventory(ItemID.quest_book, 1, 0, null, true)
         obj.bookGived = true
@@ -598,8 +608,8 @@ Callback.addCallback('ServerPlayerLoaded', function (player) {
     
     ServerSystem.setPlayerLoaded(player, true)
 
-    const saveId = ServerSystem.getSaveId(player)
-    const client = Network.getClientForPlayer(player)
+    let saveId = ServerSystem.getSaveId(player)
+    let client = Network.getClientForPlayer(player)
     client.send('CustomQuests.Client.message', {
         text: ['§e<CustomQuests>§r ', '$mod.dialog']
     })
@@ -619,9 +629,9 @@ Callback.addCallback('ServerPlayerTick', function (player) {
     /* 30s */
     if (Math.random() * 600 < 1) {
         try {
-            const saveId = ServerSystem.getSaveId(player)
+            let saveId = ServerSystem.getSaveId(player)
             if (!ServerSystem.isSaveIdValid(saveId)) return
-            const client = Network.getClientForPlayer(player)
+            let client = Network.getClientForPlayer(player)
             client.send('CustomQuests.Client.setLocalCache', {
                 saveData: ServerSystem.getSaveData(saveId)
             })

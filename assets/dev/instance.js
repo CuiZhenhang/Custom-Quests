@@ -10,6 +10,6 @@ IDRegistry.genItemID('missing_item')
 Item.createItem('missing_item', 'Missing Item', { name: 'missing_item' }, { stack: 64 })
 
 ; (function () {
-    const contents = Utils.readContents(__dir__ + 'custom/')
+    let contents = Utils.readContents(__dir__ + 'custom/')
     ServerSystem.addContents('Default', contents)
 })()

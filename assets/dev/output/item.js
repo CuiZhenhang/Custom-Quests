@@ -19,7 +19,7 @@ IOTypeTools.setOutputType('item', {
     },
     onPacket (outputJson, toolsCb, cache, extraInfo) {
         if (extraInfo.packetData.type !== 'receive') return
-        const player = extraInfo.client.getPlayerUid()
+        let player = extraInfo.client.getPlayerUid()
         toolsCb.setState({
             operator: {
                 type: 'player',
@@ -38,16 +38,16 @@ IOTypeTools.setOutputType('item', {
             }
             player = extraInfo.operator.player
         } else {
-            const playerList = toolsCb.getPlayerList(true)
+            let playerList = toolsCb.getPlayerList(true)
             player = playerList[Math.floor(Math.random() * playerList.length)]
         }
-        const item = Utils.transferItemFromJson(outputJson)
-        const actor = new PlayerActor(player)
+        let item = Utils.transferItemFromJson(outputJson)
+        let actor = new PlayerActor(player)
         actor.addItemToInventory(item.id, item.count, item.data, item.extra, true)
     },
     getIcon (outputJson, toolsCb, extraInfo) {
-        const pos = extraInfo.pos
-        const ret = {}
+        let pos = extraInfo.pos
+        let ret = {}
         ret[extraInfo.prefix + 'main'] = {
 			type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
             bitmap: (typeof outputJson.bitmap === 'string') ? outputJson.bitmap : 'clear',

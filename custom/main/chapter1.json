@@ -15,7 +15,7 @@
         "icon": {
             "id": "vblock:planks"
         },
-        "info": {
+        "inner": {
             "input": [{
                 "type": "item",
                 "id": "vblock:planks",

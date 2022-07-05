@@ -8,9 +8,9 @@ IOTypeTools.setInputType('check', {
         })
     },
     getIcon (inputJson, toolsCb, extraInfo) {
-        const finished = toolsCb.getState().state === EnumObject.inputState.finished
-        const pos = extraInfo.pos
-        const ret = {}
+        let finished = toolsCb.getState().state === EnumObject.inputState.finished
+        let pos = extraInfo.pos
+        let ret = {}
         ret[extraInfo.prefix + 'main'] = {
 			type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
             bitmap: finished ? 'task_check' : 'task_check_grey',
