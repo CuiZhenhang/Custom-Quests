@@ -8,10 +8,18 @@ ServerSystem.js
 ClientSystem.js
 Interaction.js
 
+input/group.js
 input/check.js
 input/item.js
+input/exp.js
+input/visit_dimension.js
+input/location.js
+input/kill.js
 
 output/item.js
+output/exp.js
+output/command.js
+output/message.js
 
 instance.js
 share.js

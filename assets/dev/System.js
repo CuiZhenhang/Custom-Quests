@@ -2,41 +2,27 @@
 
 /** @type { System } */
 const System = {
+    resolveInputJson (inputJson, refsArray, bitmapNameObject) {
+        if (!Utils.isObject(inputJson)) return null
+        if (typeof inputJson.type !== 'string') return null
+        let inputTypeCb = IOTypeTools.getInputTypeCb(inputJson.type)
+        if (typeof inputTypeCb.resolveJson !== 'function') return inputJson
+        let resolvedJson = inputTypeCb.resolveJson(inputJson, refsArray, bitmapNameObject)
+        if (!Utils.isObject(resolvedJson)) return null
+        if (typeof resolvedJson.type !== 'string') return null
+        return resolvedJson
+    },
+    resolveOutputJson (outputJson, refsArray, bitmapNameObject) {
+        if (!Utils.isObject(outputJson)) return null
+        if (typeof outputJson.type !== 'string') return null
+        let outputTypeCb = IOTypeTools.getOutputTypeCb(outputJson.type)
+        if (typeof outputTypeCb.resolveJson !== 'function') return outputJson
+        let resolvedJson = outputTypeCb.resolveJson(outputJson, refsArray, bitmapNameObject)
+        if (!Utils.isObject(resolvedJson)) return null
+        if (typeof resolvedJson.type !== 'string') return null
+        return resolvedJson
+    },
     resolveJson: (function () {
-        /**
-         * @param { CQTypes.IOTypes.InputJsonBase } inputJson 
-         * @param { Array<{[refId: CQTypes.refId]: unknown}> } refsArray 
-         * @param { {[bitmapName: string]: boolean} } bitmapNameObject 
-         * @returns { CQTypes.IOTypes.InputJson } 
-         */
-        let resolveInputJson = function (inputJson, refsArray, bitmapNameObject) {
-            if (!Utils.isObject(inputJson)) return null
-            if (typeof inputJson.type !== 'string') return null
-            let inputTypeCb = IOTypeTools.getInputTypeCb(inputJson.type)
-            if (typeof inputTypeCb.resolveJson !== 'function') return inputJson
-            let resolvedJson = inputTypeCb.resolveJson(inputJson, refsArray, bitmapNameObject)
-            if (!Utils.isObject(resolvedJson)) return null
-            if (typeof resolvedJson.type !== 'string') return null
-            return resolvedJson
-        }
-
-        /**
-         * @param { CQTypes.IOTypes.OutputJsonBase } outputJson 
-         * @param { Array<{[refId: CQTypes.refId]: unknown}> } refsArray 
-         * @param { {[bitmapName: string]: boolean} } bitmapNameObject 
-         * @returns { CQTypes.IOTypes.OutputJson } 
-         */
-        let resolveOutputJson = function (outputJson, refsArray, bitmapNameObject) {
-            if (!Utils.isObject(outputJson)) return null
-            if (typeof outputJson.type !== 'string') return null
-            let outputTypeCb = IOTypeTools.getOutputTypeCb(outputJson.type)
-            if (typeof outputTypeCb.resolveJson !== 'function') return outputJson
-            let resolvedJson = outputTypeCb.resolveJson(outputJson, refsArray, bitmapNameObject)
-            if (!Utils.isObject(resolvedJson)) return null
-            if (typeof resolvedJson.type !== 'string') return null
-            return resolvedJson
-        }
-
         let Graph = function () {
             let num_node = 0, map = {}, value = [0]
             let edge = {
@@ -229,9 +215,9 @@ const System = {
                                 resolvedQuestJson.inner.text = Utils.resolveTextJson(questJson.inner.text)
                                 resolvedQuestJson.inner.repeat = Boolean(questJson.inner.repeat)
                                 if (Array.isArray(questJson.inner.input)) questJson.inner.input.forEach(function (inputJson, index) {
-                                    let resolvedInputJson = resolveInputJson(
+                                    let resolvedInputJson = System.resolveInputJson(
                                         Utils.deepCopy(Utils.resolveRefs(inputJson, refsArray)),
-                                        Utils.deepCopy(refsArray),
+                                        refsArray,
                                         bitmapNameObject
                                     )
                                     if (Utils.isObject(resolvedInputJson)) {
@@ -241,9 +227,9 @@ const System = {
                                     }
                                 })
                                 if (Array.isArray(questJson.inner.output)) questJson.inner.output.forEach(function (outputJson, index) {
-                                    let resolvedOutputJson = resolveOutputJson(
+                                    let resolvedOutputJson = System.resolveOutputJson(
                                         Utils.deepCopy(Utils.resolveRefs(outputJson, refsArray)),
-                                        Utils.deepCopy(refsArray),
+                                        refsArray,
                                         bitmapNameObject
                                     )
                                     if (Utils.isObject(resolvedOutputJson)) {

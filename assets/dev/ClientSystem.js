@@ -35,7 +35,8 @@ Callback.addCallback('CustomQuests.onQuestInputStateChangedLocal', function (pat
     if (newState === EnumObject.questInputState.finished) {
         const questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
         if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
-        Game.message('<Custom Quests> ' + TranAPI.translate('message.questFinished')
-            + TranAPI.t(questJson.inner.name, path[0], path[1], path[2], 'name'))
+        Game.message('§e<CustomQuests>§r ' + TranAPI.replace(TranAPI.translate('message.questFinished'), [
+            ['{questName}', TranAPI.t(questJson.inner.name, path[0], path[1], path[2], 'name')]
+        ]))
     }
 })

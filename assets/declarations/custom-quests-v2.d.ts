@@ -27,6 +27,7 @@ declare namespace CQTypes {
 
         interface InputJson_group extends InputJsonBase {
             type: 'group'
+            icon: Ref<IconJson>
             list: Array<Ref<InputJson>>
         }
         interface InputJson_check extends InputJsonBase {
@@ -40,10 +41,27 @@ declare namespace CQTypes {
         interface InputJson_exp extends InputJsonBase {
             type: 'exp'
             value: number
+            isLevel?: boolean
+            submit?: boolean
         }
-        interface InputJson_level extends InputJsonBase {
-            type: 'level'
-            value: number
+        interface InputJson_visit_dimension extends InputJsonBase {
+            type: 'visit_dimension'
+            icon: Ref<IconJson>
+            dimension: string | number
+        }
+        interface InputJson_location extends InputJsonBase {
+            type: 'location'
+            icon: Ref<IconJson>
+            pos: [x: number, y: number, z: number]
+            radius: [x: number, y: number, z: number]
+            dimension?: string | number
+            ignoreDimension?: boolean
+        }
+        interface InputJson_kill extends InputJsonBase {
+            type: 'kill'
+            icon: Ref<IconJson>
+            entityId: number
+            count: number
         }
         type InputJson = (
             InputJsonBase
@@ -51,7 +69,9 @@ declare namespace CQTypes {
             | InputJson_check
             | InputJson_item
             | InputJson_exp
-            | InputJson_level
+            | InputJson_visit_dimension
+            | InputJson_location
+            | InputJson_kill
         )
 
         interface OutputJsonBase {
@@ -62,6 +82,7 @@ declare namespace CQTypes {
 
         interface OutputJson_random extends OutputJsonBase {
             type: 'random'
+            icon: Ref<IconJson>
             list: Array<{
                 output: Ref<OutputJson>
                 weigth: number
@@ -69,23 +90,27 @@ declare namespace CQTypes {
         }
         interface OutputJson_select extends OutputJsonBase {
             type: 'select'
+            autoReceive?: false
+            icon: Ref<IconJson>
             list: Array<Ref<OutputJson>>
         }
-        interface OutputJson_item extends ItemJson, InputJsonBase {
+        interface OutputJson_item extends ItemJson, OutputJsonBase {
             type: 'item'
             bitmap?: bitmap
         }
         interface OutputJson_exp extends OutputJsonBase {
             type: 'exp'
             value: number
-        }
-        interface OutputJson_level extends OutputJsonBase {
-            type: 'level'
-            value: number
+            isLevel?: boolean
         }
         interface OutputJson_command extends OutputJsonBase {
-            type: 'level'
+            type: 'command'
             commands: string[]
+        }
+        interface OutputJson_message extends OutputJsonBase {
+            type: 'message'
+            message: TextJson
+            toAll?: boolean
         }
         type OutputJson = (
             OutputJsonBase
@@ -93,8 +118,8 @@ declare namespace CQTypes {
             | OutputJson_select
             | OutputJson_item
             | OutputJson_exp
-            | OutputJson_level
             | OutputJson_command
+            | OutputJson_message
         )        
     }
 
@@ -147,10 +172,7 @@ declare namespace CQTypes {
     interface MainJson {
         name: TextJson
         main: ChapterJson[]
-        group?: Array<{
-            name: TextJson
-            array: chapterId[]
-        }>
+        group?: Array<chapterId[]>
         background?: [bitmap: bitmap, ratdio?: number]
         bitmaps?: Array<{
             name: string
@@ -195,10 +217,7 @@ declare namespace CQTypes {
     interface ResolvedMainJson {
         chapter: {[chapterId: chapterId]: ResolvedChapterJson}
         name: MainJson['name']
-        group?: Array<{
-            name: TextJson
-            array: chapterId[]
-        }>
+        group?: MainJson['group']
     }
 
     interface AllResolvedMainJson {
@@ -278,8 +297,9 @@ declare namespace CQTypes {
 
     interface IOTypeToolsCb <T = InputStateObject | OutputStateObject>{
         getState: () => T
-        setState?: (extraInfo: object, stateObject: T) => void
-        getPlayerList?: (online?: boolean) => Array<number>
+        setState: (extraInfo: object, stateObject: T) => void
+        getPlayerList: (online?: boolean) => Array<number>
+        getConnectedClientList: () => NetworkConnectedClientList
     }
 
     interface IOTypeToolsLocalCb <T = InputStateObject | OutputStateObject>{
@@ -294,6 +314,9 @@ declare namespace CQTypes {
         resolveJson?: (inputJson: IOTypes.InputJsonBase, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<IOTypes.InputJson>
         onLoad?: (inputJson: IOTypes.InputJson, toolsCb: IOTypeToolsCb<InputStateObject>, cache: {[key: string]: unknown}) => void
         onUnload?: (inputJson: IOTypes.InputJson, toolsCb: IOTypeToolsCb<InputStateObject>, cache: {[key: string]: unknown}) => void
+        onCustomCall?: (inputJson: IOTypes.InputJson, toolsCb: IOTypeToolsCb<InputStateObject>, cache: {[key: string]: unknown}, extraInfo: {
+            [key: string]: unknown
+        }) => unknown
         onPacket?: (inputJson: IOTypes.InputJson, toolsCb: IOTypeToolsCb<InputStateObject>, cache: {[key: string]: unknown}, extraInfo: {
             client: NetworkClient
             packetData: object
@@ -326,6 +349,9 @@ declare namespace CQTypes {
         resolveJson?: (outputJson: IOTypes.OutputJsonBase, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<IOTypes.OutputJson>
         onLoad?: (outputJson: IOTypes.OutputJson, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: {[key: string]: unknown}) => void
         onUnload?: (outputJson: IOTypes.OutputJson, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: {[key: string]: unknown}) => void
+        onCustomCall?: (outputJson: IOTypes.OutputJson, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: {[key: string]: unknown}, extraInfo: {
+            [key: string]: unknown
+        }) => unknown
         onPacket?: (outputJson: IOTypes.OutputJson, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: {[key: string]: unknown}, extraInfo: {
             client: NetworkClient
             packetData: object
@@ -431,6 +457,7 @@ interface TranAPI {
     addTranslation (str: string, params: {[lang: string]: string}): void
     translate (str: string | {[lang: string]: string}): string
     t (str: CQTypes.TextJson, sourceId?: CQTypes.sourceId, chapterId?: CQTypes.chapterId, questId?: CQTypes.questId, type?: string): string
+    replace (str: string, replaceArray: Array<[key: string, str: string]>): string
 }
 
 interface Utils {
@@ -477,12 +504,14 @@ interface IOTypeTools {
      */
     inputType: {
         [type: string]: {
+            name: CQTypes.TextJson
             cb: CQTypes.InputTypeCb
             config: CQTypes.InputTypeConfig
         }
     }
-    setInputType (type: string, inputTypeCb: CQTypes.InputTypeCb, config?: CQTypes.InputTypeConfig): void
+    setInputType (type: string, name: CQTypes.TextJson, inputTypeCb: CQTypes.InputTypeCb, config?: CQTypes.InputTypeConfig): void
     getAllInputType (): Array<string>
+    getInputTypeName (type: string): string
     getInputTypeCb (type: string): CQTypes.InputTypeCb
     getInputTypeConfig (type: string): Nullable<CQTypes.InputTypeConfig>
     /**
@@ -507,6 +536,7 @@ interface IOTypeTools {
     loadInput (inputId: CQTypes.inputId): void
     unloadInput (inputId: CQTypes.inputId): void
     callInputTypeCb (inputId: CQTypes.inputId, method: string, extraInfo: object): unknown
+    callInputTypeCb (inputId: CQTypes.inputId, method: 'onCustomCall', extraInfo: Parameters<CQTypes.InputTypeCb['onCustomCall']>[3]): ReturnType<CQTypes.InputTypeCb['onCustomCall']>
     callInputTypeCb (inputId: CQTypes.inputId, method: 'onPacket', extraInfo: Parameters<CQTypes.InputTypeCb['onPacket']>[3]): ReturnType<CQTypes.InputTypeCb['onPacket']>
     callInputTypeCb (inputId: CQTypes.inputId, method: 'onTick', extraInfo: Parameters<CQTypes.InputTypeCb['onTick']>[3]): ReturnType<CQTypes.InputTypeCb['onTick']>
     getPlayerListByInputId (inputId: CQTypes.inputId, online?: boolean): number[]
@@ -516,12 +546,14 @@ interface IOTypeTools {
      */
     outputType: {
         [type: string]: {
+            name: CQTypes.TextJson
             cb: CQTypes.OutputTypeCb
             config: CQTypes.OutputTypeConfig
         }
     }
-    setOutputType (type: string, outputTypeCb: CQTypes.OutputTypeCb, config?: CQTypes.OutputTypeConfig): void
+    setOutputType (type: string, name: CQTypes.TextJson, outputTypeCb: CQTypes.OutputTypeCb, config?: CQTypes.OutputTypeConfig): void
     getAllOutputType (): Array<string>
+    getOutputTypeName (type: string): string
     getOutputTypeCb (type: string): CQTypes.OutputTypeCb
     getOutputTypeConfig (type: string): Nullable<CQTypes.OutputTypeConfig>
     /**
@@ -546,6 +578,7 @@ interface IOTypeTools {
     loadOutput (outputId: CQTypes.outputId): void
     unloadOutput (outputId: CQTypes.outputId): void
     callOutputTypeCb (outputId: CQTypes.outputId, method: string, extraInfo: object): unknown
+    callOutputTypeCb (outputId: CQTypes.outputId, method: 'onCustomCall', extraInfo: Parameters<CQTypes.OutputTypeCb['onCustomCall']>[3]): ReturnType<CQTypes.OutputTypeCb['onCustomCall']>
     callOutputTypeCb (outputId: CQTypes.outputId, method: 'onPacket', extraInfo: Parameters<CQTypes.OutputTypeCb['onPacket']>[3]): ReturnType<CQTypes.OutputTypeCb['onPacket']>
     callOutputTypeCb (outputId: CQTypes.outputId, method: 'onReceive', extraInfo: Parameters<CQTypes.OutputTypeCb['onReceive']>[3]): ReturnType<CQTypes.OutputTypeCb['onReceive']>
     getPlayerListByOutputId (outputId: CQTypes.outputId, online?: boolean): number[]
@@ -553,6 +586,8 @@ interface IOTypeTools {
 }
 
 interface System {
+    resolveInputJson (inputJson:  CQTypes.IOTypes.InputJsonBase, refsArray: Array<{[refId: CQTypes.refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}): CQTypes.IOTypes.InputJson
+    resolveOutputJson (outputJson: CQTypes.IOTypes.OutputJsonBase, refsArray: Array<{[refId: CQTypes.refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}): CQTypes.IOTypes.OutputJson
     resolveJson (json: CQTypes.AllMainJson): {
         json: CQTypes.AllResolvedMainJson
         config: {[sourceId: CQTypes.sourceId]: CQTypes.MainJson['config']}
@@ -598,6 +633,18 @@ interface ServerSystem {
             }
         }
     }
+    typedLoadedQuest: {
+        input: {
+            [saveId: CQTypes.saveId]: {
+                [type: string]: Array<CQTypes.inputId>
+            }
+        }
+        output: {
+            [saveId: CQTypes.saveId]: {
+                [type: string]: Array<CQTypes.outputId>
+            }
+        }
+    }
     addContents (sourceId: CQTypes.sourceId, contents: CQTypes.MainJson): void
     createSaveId (playerList: Array<number>): CQTypes.saveId
     getSaveId (target: number | CQTypes.teamId): CQTypes.saveId
@@ -612,6 +659,8 @@ interface ServerSystem {
         input?: Array<Nullable<CQTypes.inputId>>
         output?: Array<Nullable<CQTypes.outputId>>
     }
+    getTypedInputId (saveId: CQTypes.saveId, type: string): Array<CQTypes.inputId>
+    getTypedOutputId (saveId: CQTypes.saveId, type: string): Array<CQTypes.outputId>
     unloadAllLoadedQuest (saveId: CQTypes.saveId): void
     loadInput (saveId: CQTypes.saveId, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): void
     loadOutput (saveId: CQTypes.saveId, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): void

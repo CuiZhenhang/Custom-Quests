@@ -34,6 +34,15 @@ const TranAPI = {
         if (questId) name += '.' + questId
         if (type) name += '.' + type
         return this.translate(str).replace(/\\n/g, '\n') || name
+    },
+    replace (str, replaceArray) {
+        if (typeof str !== 'string') return ''
+        if (!Array.isArray(replaceArray)) return str
+        replaceArray.forEach(function (replacement) {
+            if (!Array.isArray(replacement)) return
+            str = str.replace(String(replacement[0], String(replacement[1])))
+        })
+        return str
     }
 }
 

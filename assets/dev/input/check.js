@@ -1,6 +1,8 @@
 /// <reference path='../interaction.js'/>
 
 IOTypeTools.setInputType('check', {
+    en: 'check'
+}, {
     onPacket (inputJson, toolsCb, cache, extraInfo) {
         if (extraInfo.packetData.type !== 'check') return
         toolsCb.setState({}, {

@@ -3,10 +3,10 @@
 /** @type { IOTypeTools } */
 const IOTypeTools = {
     inputType: {},
-    setInputType (type, inputTypeCb, config) {
-        let that = this
+    setInputType (type, name, inputTypeCb, config) {
         if (!Utils.isObject(this.inputType[type])) {
             this.inputType[type] = {
+                name: '',
                 cb: {},
                 config: {
                     allowGroup: false,
@@ -14,24 +14,38 @@ const IOTypeTools = {
                 }
             }
         }
+        let inputType = this.inputType[type]
+        if (typeof name === 'string') {
+            if (typeof inputType.name === 'string') {
+                inputType.name = name
+            }
+        } else if (Utils.isObject(name)) {
+            if (typeof inputType.name === 'string') {
+                inputType.name = name
+            } else {
+                for (let lang in name) {
+                    inputType.name[lang] = name[lang]
+                }
+            }
+        }
         let methods = [
-            'resolveJson', 'onPacket',
+            'resolveJson', 'onPacket', 'onCustomCall',
             'onLoad', 'onUnload', 'onTick',
             'getIcon', 'getDesc', 'onEdit'
         ]
         methods.forEach(function (method) {
             if (typeof inputTypeCb[method] === 'function') {
-                that.inputType[type].cb[method] = inputTypeCb[method]
+                inputType.cb[method] = inputTypeCb[method]
             } else if (inputTypeCb[method] === null) {
-                that.inputType[type].cb[method] = null
+                inputType.cb[method] = null
             }
         })
         if (Utils.isObject(config)) {
             if (typeof config.allowGroup === 'boolean') {
-                this.inputType[type].config.allowGroup = config.allowGroup
+                inputType.config.allowGroup = config.allowGroup
             }
             if (typeof config.allowRepeat === 'boolean') {
-                this.inputType[type].config.allowRepeat = config.allowRepeat
+                inputType.config.allowRepeat = config.allowRepeat
             }
         }
     },
@@ -44,19 +58,24 @@ const IOTypeTools = {
         }
         return ret
     },
+    getInputTypeName (type) {
+        let inputType = this.inputType[type]
+        if (!Utils.isObject(inputType)) return ''
+        return TranAPI.t(inputType.name)
+    },
     getInputTypeCb (type) {
-        let obj = this.inputType[type]
-        if (!Utils.isObject(obj)) return {}
+        let inputType = this.inputType[type]
+        if (!Utils.isObject(inputType)) return {}
         let cb = {}
-        for (let method in obj.cb) {
-            cb[method] = obj.cb[method]
+        for (let method in inputType.cb) {
+            cb[method] = inputType.cb[method]
         }
         return cb
     },
     getInputTypeConfig (type) {
-        let obj = this.inputType[type]
-        if (!Utils.isObject(obj)) return null
-        return Utils.deepCopy(obj.config)
+        let inputType = this.inputType[type]
+        if (!Utils.isObject(inputType)) return null
+        return Utils.deepCopy(inputType.config)
     },
     inputObject: {},
     typedInputList: {},
@@ -130,7 +149,7 @@ const IOTypeTools = {
         if (!this.isInputIdLoaded(inputId)) return null
         if (!Utils.isObject(extraInfo)) extraInfo = {}
         let methods = [
-            'onPacket', 'onTick'
+            'onCustomCall', 'onPacket', 'onTick'
         ]
         if (methods.indexOf(method) < 0) return
         let inputObject = this.inputObject[inputId]
@@ -155,10 +174,10 @@ const IOTypeTools = {
         return Utils.deepCopy(inputObject.json)
     },
     outputType: {},
-    setOutputType (type, outputTypeCb, config) {
-        let that = this
+    setOutputType (type, name, outputTypeCb, config) {
         if (!Utils.isObject(this.outputType[type])) {
             this.outputType[type] = {
+                name: '',
                 cb: {},
                 config: {
                     allowGroup: false,
@@ -166,24 +185,38 @@ const IOTypeTools = {
                 }
             }
         }
+        let outputType = this.outputType[type]
+        if (typeof name === 'string') {
+            if (typeof outputType.name === 'string') {
+                outputType.name = name
+            }
+        } else if (Utils.isObject(name)) {
+            if (typeof outputType.name === 'string') {
+                outputType.name = name
+            } else {
+                for (let lang in name) {
+                    outputType.name[lang] = name[lang]
+                }
+            }
+        }
         let methods = [
-            'resolveJson', 'onPacket',
+            'resolveJson', 'onPacket', 'onCustomCall',
             'onLoad', 'onUnload', 'onReceive',
             'getIcon', 'getDesc', 'onEdit'
         ]
         methods.forEach(function (method) {
             if (typeof outputTypeCb[method] === 'function') {
-                that.outputType[type].cb[method] = outputTypeCb[method]
+                outputType.cb[method] = outputTypeCb[method]
             } else if (outputTypeCb[method] === null) {
-                that.outputType[type].cb[method] = null
+                outputType.cb[method] = null
             }
         })
         if (Utils.isObject(config)) {
             if (typeof config.allowGroup === 'boolean') {
-                this.outputType[type].config.allowGroup = config.allowGroup
+                outputType.config.allowGroup = config.allowGroup
             }
             if (typeof config.allowRepeat === 'boolean') {
-                this.outputType[type].config.allowRepeat = config.allowRepeat
+                outputType.config.allowRepeat = config.allowRepeat
             }
         }
     },
@@ -196,19 +229,24 @@ const IOTypeTools = {
         }
         return ret
     },
+    getOutputTypeName (type) {
+        let outputType = this.outputType[type]
+        if (!Utils.isObject(outputType)) return ''
+        return TranAPI.t(outputType.name)
+    },
     getOutputTypeCb (type) {
-        let obj = this.outputType[type]
-        if (!Utils.isObject(obj)) return {}
+        let outputType = this.outputType[type]
+        if (!Utils.isObject(outputType)) return {}
         let cb = {}
-        for (let method in obj.cb) {
-            cb[method] = obj.cb[method]
+        for (let method in outputType.cb) {
+            cb[method] = outputType.cb[method]
         }
         return cb
     },
     getOutputTypeConfig (type) {
-        let obj = this.outputType[type]
-        if (!Utils.isObject(obj)) return null
-        return Utils.deepCopy(obj.config)
+        let outputType = this.outputType[type]
+        if (!Utils.isObject(outputType)) return null
+        return Utils.deepCopy(outputType.config)
     },
     outputObject: {},
     typedOutputList: {},
@@ -282,7 +320,7 @@ const IOTypeTools = {
         if (!this.isOutputIdLoaded(outputId)) return null
         if (!Utils.isObject(extraInfo)) extraInfo = {}
         let methods = [
-            'onPacket', 'onReceive'
+            'onCustomCall', 'onPacket', 'onReceive'
         ]
         if (methods.indexOf(method) < 0) return
         let outputObject = this.outputObject[outputId]

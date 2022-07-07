@@ -1,6 +1,8 @@
 /// <reference path='../interaction.js'/>
 
 IOTypeTools.setInputType('item', {
+    en: 'item'
+}, {
     resolveJson (inputJson, refsArray, bitmapNameObject) {
         if (typeof inputJson.id !== 'string' && typeof inputJson.id !== 'number') return null
         if (typeof inputJson.count !== 'number' || inputJson.count <= 0) inputJson.count = 1
@@ -47,11 +49,9 @@ IOTypeTools.setInputType('item', {
             }
         }
         if (count !== (stateObj.count || 0)) {
-            let finished = count >= inputJson.count
-            toolsCb.setState({}, {
-                state: finished ? EnumObject.inputState.finished : stateObj.state,
-                count: count
-            })
+            if (count >= inputJson.count) stateObj.state = EnumObject.inputState.finished
+            stateObj.count = count
+            toolsCb.setState({}, stateObj)
         }
     },
     onTick (inputJson, toolsCb, cache, extraInfo) {
