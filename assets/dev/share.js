@@ -11,6 +11,8 @@ ModAPI.registerAPI('CustomQuestsAPI', {
     System: System,
     ServerSystem: ServerSystem,
     ClientSystem: ClientSystem,
+    QuestUi: QuestUi,
+    QuestUiTools: QuestUiTools,
     requireGlobal: function (cmd) { return eval(cmd) }
 })
 Logger.Log('The API of Custom Quests is named CustomQuestsAPI.', 'API')

@@ -67,6 +67,7 @@ const Store = (function () {
             jsonConfig: null,
             saveData: null,
             team: null,
+            teamPlayerList: null,
             isAdmin: false,
             teamList: []
         }

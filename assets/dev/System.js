@@ -112,10 +112,23 @@ const System = {
             let resolvedMainJson = {}
             resolvedMainJson.chapter = {}
             resolvedMainJson.name = Utils.resolveTextJson(mainJson.name)
-            if (Array.isArray(mainJson.group)) resolvedMainJson.group = mainJson.group
+            if (Array.isArray(mainJson.group)) {
+                resolvedMainJson.group = []
+                mainJson.group.forEach(function (obj) {
+                    if (!Utils.isObject(obj)) return
+                    if (!Array.isArray(obj.list)) return
+                    resolvedMainJson.group.push({
+                        name: Utils.resolveTextJson(obj.name),
+                        icon: Utils.resolveIconJson(obj.icon, refsArray, bitmapNameObject),
+                        list: Utils.deepCopy(obj.list)
+                    })
+                })
+            }
             let background = Utils.deepCopy(mainJson.background)
-            if (Array.isArray(background) && typeof background[0] === 'string') {
-                background[0] = Utils.resolveBitmap(background[0], bitmapNameObject)
+            if (Array.isArray(background)) {
+                if (typeof background[0] === 'string') {
+                    background[0] = Utils.resolveBitmap(background[0], bitmapNameObject)
+                }
                 if (typeof background[1] !== 'number') background[1] = null
             } else background = null
 
@@ -129,11 +142,12 @@ const System = {
                 resolvedChapterJson.quest = {}
                 resolvedChapterJson.name = Utils.resolveTextJson(chapterJson.name)
                 resolvedChapterJson.description = Utils.resolveTextJson(chapterJson.description)
-                resolvedChapterJson.icon = Utils.deepCopy(Utils.resolveRefs(chapterJson.icon, refsArray))
-                if (!Utils.isObject(resolvedChapterJson.icon)) resolvedChapterJson.icon = {}
+                resolvedChapterJson.icon = Utils.resolveIconJson(chapterJson.icon, refsArray, bitmapNameObject)
                 resolvedChapterJson.background = Utils.deepCopy(chapterJson.background)
-                if (Array.isArray(resolvedChapterJson.background) && typeof resolvedChapterJson.background[0] === 'string') {
-                    resolvedChapterJson.background[0] = Utils.resolveBitmap(resolvedChapterJson.background[0], bitmapNameObject)
+                if (Array.isArray(resolvedChapterJson.background)) {
+                    if (typeof resolvedChapterJson.background[0] === 'string') {
+                        resolvedChapterJson.background[0] = Utils.resolveBitmap(resolvedChapterJson.background[0], bitmapNameObject)
+                    }
                     if (typeof resolvedChapterJson.background[1] !== 'number') resolvedChapterJson.background[1] = null
                 } else resolvedChapterJson.background = Utils.deepCopy(background)
 
@@ -174,13 +188,11 @@ const System = {
                             if (Array.isArray(icon)) {
                                 resolvedQuestJson.icon = []
                                 for (let i = 0; i < 3; i++) {
-                                    let tmpIcon = Utils.deepCopy(Utils.resolveRefs(icon[i], refsArray))
-                                    if (!Utils.isObject(tmpIcon)) tmpIcon = {}
+                                    let tmpIcon = Utils.resolveIconJson(icon[i], refsArray, bitmapNameObject)
                                     resolvedQuestJson.icon[i] = tmpIcon
                                 }
                             } else {
-                                icon = Utils.deepCopy(Utils.resolveRefs(icon, refsArray))
-                                if (!Utils.isObject(icon)) icon = {}
+                                icon = Utils.resolveIconJson(icon, refsArray, bitmapNameObject)
                                 resolvedQuestJson.icon = [icon, icon, icon]
                             }
                             resolvedQuestJson.parent = []
@@ -214,6 +226,7 @@ const System = {
                                 resolvedQuestJson.inner.name = Utils.resolveTextJson(questJson.inner.name)
                                 resolvedQuestJson.inner.text = Utils.resolveTextJson(questJson.inner.text)
                                 resolvedQuestJson.inner.repeat = Boolean(questJson.inner.repeat)
+                                if (resolvedQuestJson.inner.repeat) resolvedQuestJson.inner.repeat_time = Number(questJson.inner.repeat_time)
                                 if (Array.isArray(questJson.inner.input)) questJson.inner.input.forEach(function (inputJson, index) {
                                     let resolvedInputJson = System.resolveInputJson(
                                         Utils.deepCopy(Utils.resolveRefs(inputJson, refsArray)),
@@ -396,6 +409,7 @@ const System = {
     },
     getQuestOutputState (json, data, sourceId, chapterId, questId) {
         let DEFAULT = EnumObject.questOutputState.locked
+        if (!this.isQuestExist(json, sourceId, chapterId, questId)) return DEFAULT
         let inputState = this.getQuestInputState(json, data, sourceId, chapterId, questId)
         if (inputState >= EnumObject.questInputState.finished) {
             DEFAULT = EnumObject.questOutputState.unreceived
@@ -407,8 +421,35 @@ const System = {
         let chapterData = mainData[chapterId]
         if (!Utils.isObject(chapterData[questId])) return DEFAULT
         let state = chapterData[questId].outputState
-        if (inputState >= 0 && state <= EnumObject.questOutputState.locked) return DEFAULT
+        if (inputState >= EnumObject.questInputState.finished && state <= EnumObject.questOutputState.locked) return DEFAULT
         return state
+    },
+    getQuestSaveData (json, data, sourceId, chapterId, questId) {
+        /** @type { CQTypes.QuestSaveData } */
+        let ret = {
+            inputState: EnumObject.questInputState.locked,
+            outputState: EnumObject.questOutputState.locked,
+            input: [],
+            output: []
+        }
+        if (!this.isQuestExist(json, sourceId, chapterId, questId)) return ret
+        let parent = this.getParent(json, sourceId, chapterId, questId)
+        if (parent.length === 0) ret.inputState = EnumObject.questInputState.unfinished
+        if (!Utils.isObject(data)) return ret
+        if (!Utils.isObject(data[sourceId])) return ret
+        let mainData = data[sourceId]
+        if (!Utils.isObject(mainData[chapterId])) return ret
+        let chapterData = mainData[chapterId]
+        if (!Utils.isObject(chapterData[questId])) return ret
+        if (parent.length !== 0 || chapterData[questId].inputState > EnumObject.questInputState.locked) {
+            ret.inputState = chapterData[questId].inputState
+        }
+        if (ret.inputState < EnumObject.questInputState.finished || chapterData[questId].outputState > EnumObject.questOutputState.locked) {
+            ret.outputState = chapterData[questId].outputState
+        }
+        ret.input = Utils.deepCopy(chapterData[questId].input)
+        ret.output = Utils.deepCopy(chapterData[questId].output)
+        return ret
     },
     setInputState (json, data, sourceId, chapterId, questId, index, inputStateObject, cb) {
         if (!Utils.isObject(inputStateObject)) return

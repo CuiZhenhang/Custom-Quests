@@ -12,6 +12,16 @@ const TranAPI = {
             }
         }
     },
+    getTranslation (str) {
+        /** @type { ReturnType<TranAPI['getTranslation']> } */
+        let ret = {}
+        for (let lang in this.translation) {
+            if (this.translation[lang] && typeof this.translation[lang][str] === 'string') {
+                ret[lang] = this.translation[lang][str]
+            }
+        }
+        return ret
+    },
     translate (str) {
         if (typeof str === 'string') {
             if (this.translation[this.lang] && typeof this.translation[this.lang][str] === 'string') {
@@ -26,23 +36,6 @@ const TranAPI = {
             if (typeof str['en'] === 'string') return str['en']
             return ''
         }
-    },
-    t (str, sourceId, chapterId, questId, type) {
-        if (typeof str === 'string') return str.replace(/\\n/g, '\n')
-        let name = sourceId || ''
-        if (chapterId) name += '.' + chapterId
-        if (questId) name += '.' + questId
-        if (type) name += '.' + type
-        return this.translate(str).replace(/\\n/g, '\n') || name
-    },
-    replace (str, replaceArray) {
-        if (typeof str !== 'string') return ''
-        if (!Array.isArray(replaceArray)) return str
-        replaceArray.forEach(function (replacement) {
-            if (!Array.isArray(replacement)) return
-            str = str.replace(String(replacement[0], String(replacement[1])))
-        })
-        return str
     }
 }
 
@@ -64,10 +57,10 @@ const TranAPI = {
             str = str.replace(/\\n/g, '\n')
             TranAPI.translation[lang][str] = translations[str].replace(/\\n/g, '\n')
         }
-        if (translations['item.quest_book.name']) QB.book[lang] = translations['item.quest_book.name'].replace(/\\n/g, '\n')
-        if (translations['item.quest_book_admin.name']) QB.admin[lang] = translations['item.quest_book_admin.name'].replace(/\\n/g, '\n')
-        if (translations['item.quest_book_editor.name']) QB.editor[lang] = translations['item.quest_book_editor.name'].replace(/\\n/g, '\n')
-        if (translations['item.missing_item.name']) QB.missing[lang] = translations['item.missing_item.name'].replace(/\\n/g, '\n')
+        if (translations['item.quest_book']) QB.book[lang] = translations['item.quest_book'].replace(/\\n/g, '\n')
+        if (translations['item.quest_book_admin']) QB.admin[lang] = translations['item.quest_book_admin'].replace(/\\n/g, '\n')
+        if (translations['item.quest_book_editor']) QB.editor[lang] = translations['item.quest_book_editor'].replace(/\\n/g, '\n')
+        if (translations['item.missing_item']) QB.missing[lang] = translations['item.missing_item'].replace(/\\n/g, '\n')
         let obj = {}
         obj[lang] = lang
         Translation.addTranslation('CustomQuests.lang', obj)

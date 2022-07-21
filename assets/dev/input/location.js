@@ -1,11 +1,10 @@
-/// <reference path='../interaction.js'/>
+/// <reference path='../Integration.js'/>
 
 IOTypeTools.setInputType('location', {
     en: 'location'
 }, {
     resolveJson (inputJson, refsArray, bitmapNameObject) {
-        inputJson.icon = Utils.deepCopy(Utils.resolveRefs(inputJson.icon, refsArray))
-        if (!Utils.isObject(inputJson.icon)) inputJson.icon = {}
+        inputJson.icon = Utils.resolveIconJson(inputJson.icon, refsArray, bitmapNameObject)
         if (!Array.isArray(inputJson.pos)) return null
         if (!Array.isArray(inputJson.radius)) inputJson.radius = [1, 1, 1]
         if (!inputJson.ignoreDimension) {
@@ -58,14 +57,14 @@ IOTypeTools.setInputType('location', {
     },
     getIcon (inputJson, toolsCb, extraInfo) {
         let pos = extraInfo.pos
-        let ret = {}
-        ret[extraInfo.prefix + 'main'] = {
-			type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-            bitmap: (typeof inputJson.icon.bitmap === 'string') ? inputJson.icon.bitmap : 'clear',
-            source: Utils.transferItemFromJson(inputJson.icon),
-			clicker: {}
-        }
-        return ret
+        return [
+            [extraInfo.prefix + 'main', {
+                type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
+                bitmap: (typeof inputJson.icon.bitmap === 'string') ? inputJson.icon.bitmap : 'clear',
+                source: Utils.transferItemFromJson(inputJson.icon),
+                clicker: {}
+            }]
+        ]
     },
     getDesc (inputJson, toolsCb, extraInfo) {
         

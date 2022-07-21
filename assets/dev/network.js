@@ -14,7 +14,7 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
     if (packetData.type === 'input') {
         if (!Array.isArray(loadedQuest.input)) return
         let inputId = loadedQuest.input[packetData.index]
-        if (!IOTypeTools.isInputLoaded(inputId)) return
+        if (!IOTypeTools.isInputIdLoaded(inputId)) return
         IOTypeTools.callInputTypeCb(inputId, 'onPacket', {
             client: client,
             packetData: packetData.data
@@ -22,7 +22,7 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
     } else if (packetData.type === 'output') {
         if (!Array.isArray(loadedQuest.output)) return
         let outputId = loadedQuest.output[packetData.index]
-        if (!IOTypeTools.isOutputLoaded(outputId)) return
+        if (!IOTypeTools.isOutputIdLoaded(outputId)) return
         IOTypeTools.callOutputTypeCb(outputId, 'onPacket', {
             client: client,
             packetData: packetData.data
@@ -30,17 +30,11 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
     }
 })
 
-Network.addServerPacket('CustomQuests.Server.teamTools', function (client, packetData) {
+Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packetData) {
     let player = client.getPlayerUid()
     if (typeof packetData.player === 'number') player = packetData.player
-    if (typeof packetData.type !== 'string') return
-    switch(packetData.type) {
-        case 'getList': {
-            client.send('CustomQuests.Client.setLocalCache', {
-                teamList: ServerSystem.getTeamList()
-            })
-            break
-        }
+    if (typeof packetData.method !== 'string') return
+    switch(packetData.method) {
         case 'create': {
             if (!Utils.isObject(packetData.team)) return
             ServerSystem.createTeam(player, packetData.team)
@@ -48,6 +42,9 @@ Network.addServerPacket('CustomQuests.Server.teamTools', function (client, packe
         }
         case 'join': {
             if (typeof packetData.teamId !== 'string') return
+            let team = ServerSystem.getTeam(packetData.teamId)
+            if (!Utils.isObject(team)) return
+            if (packetData.password !== team.password) return
             ServerSystem.setTeam(player, packetData.teamId)
             break
         }
@@ -115,17 +112,29 @@ Network.addClientPacket('CustomQuests.Client.resolveJson', function (packetData)
 })
 
 Network.addClientPacket('CustomQuests.Client.setLocalCache', function (packetData) {
+    let oldLocalCache = Utils.deepCopy(Store.localCache)
     if (Utils.isObject(packetData.saveData) || packetData.saveData === null) {
         Store.localCache.saveData = packetData.saveData
     }
     if (Utils.isObject(packetData.team) || packetData.team === null) {
         Store.localCache.team = packetData.team
     }
+    if (Array.isArray(packetData.teamPlayerList) || packetData.teamPlayerList === null) {
+        Store.localCache.teamPlayerList = packetData.teamPlayerList
+    }
     if (typeof packetData.isAdmin === 'boolean') {
         Store.localCache.isAdmin = packetData.isAdmin
     }
     if (Array.isArray(packetData.teamList)) {
         Store.localCache.teamList = packetData.teamList
+    }
+    try {
+        Callback.invokeCallback('CustomQuests.onLocalCacheChanged',
+            Utils.deepCopy(packetData),
+            oldLocalCache
+        )
+    } catch (err) {
+        Utils.log('Error in Callback \'CustomQuests.onLocalCacheChanged\' (network.js):\n' + err, 'ERROR', true)
     }
 })
 
@@ -144,7 +153,7 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
     System.setInputState(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId, index, packetData.inputStateObject, {
             onInputStateChanged (newInputStateObject, oldInputStateObject) {
                 try {
-                    Callback.invokeCallback('CustomQuests.onInputStateChangedLocal',
+                    Callback.invokeCallback('CustomQuests.onLocalInputStateChanged',
                         [sourceId, chapterId, questId],
                         index,
                         Utils.deepCopy(newInputStateObject),
@@ -152,40 +161,40 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                         Utils.deepCopy(extraInfo)
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onInputStateChangedLocal\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.log('Error in Callback \'CustomQuests.onLocalInputStateChanged\' (network.js):\n' + err, 'ERROR', true)
                 }
             },
             onQuestInputStateChanged (newQuestInputState, oldQuestInputState) {
                 try {
-                    Callback.invokeCallback('CustomQuests.onQuestInputStateChangedLocal',
+                    Callback.invokeCallback('CustomQuests.onLocalQuestInputStateChanged',
                         [sourceId, chapterId, questId],
                         newQuestInputState,
                         oldQuestInputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onQuestInputStateChangedLocal\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n' + err, 'ERROR', true)
                 }
             },
             onQuestOutputStateChanged (newQuestOutputState, oldQuestOutputState) {
                 try {
-                    Callback.invokeCallback('CustomQuests.onQuestOutputStateChangedLocal',
+                    Callback.invokeCallback('CustomQuests.onLocalQuestOutputStateChanged',
                         [sourceId, chapterId, questId],
                         newQuestOutputState,
                         oldQuestOutputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onQuestOutputStateChangedLocal\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n' + err, 'ERROR', true)
                 }
             },
             onChildQuestInputStateChanged (pathArray, newQuestInputState, oldQuestInputState) {
                 try {
-                    Callback.invokeCallback('CustomQuests.onQuestInputStateChangedLocal',
+                    Callback.invokeCallback('CustomQuests.onLocalQuestInputStateChanged',
                         [pathArray[0], pathArray[1], pathArray[2]],
                         newQuestInputState,
                         oldQuestInputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onQuestInputStateChangedLocal\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n' + err, 'ERROR', true)
                 }
             }
         }
@@ -207,7 +216,7 @@ Network.addClientPacket('CustomQuests.Client.setOutputState', function (packetDa
     System.setOutputState(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId, index, packetData.outputStateObject, {
             onOutputStateChanged (newOutputStateObject, oldOutputStateObject) {
                 try {
-                    Callback.invokeCallback('CustomQuests.onOutputStateChangedLocal',
+                    Callback.invokeCallback('CustomQuests.onLocalOutputStateChanged',
                         [sourceId, chapterId, questId],
                         index,
                         Utils.deepCopy(newOutputStateObject),
@@ -215,20 +224,25 @@ Network.addClientPacket('CustomQuests.Client.setOutputState', function (packetDa
                         Utils.deepCopy(extraInfo)
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onOutputStateChangedLocal\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.log('Error in Callback \'CustomQuests.onLocalOutputStateChanged\' (network.js):\n' + err, 'ERROR', true)
                 }
             },
             onQuestOutputStateChanged (newQuestOutputState, oldQuestOutputState) {
                 try {
-                    Callback.invokeCallback('CustomQuests.onQuestOutputStateChangedLocal',
+                    Callback.invokeCallback('CustomQuests.onLocalQuestOutputStateChanged',
                         [sourceId, chapterId, questId],
                         newQuestOutputState,
                         oldQuestOutputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onQuestOutputStateChangedLocal\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n' + err, 'ERROR', true)
                 }
             }
         }
     )
+})
+
+Network.addClientPacket('CustomQuests.Client.openUi', function (packetData) {
+    if (typeof packetData.sourceId !== 'string') return
+    QuestUi.open(packetData.sourceId)
 })

@@ -1,4 +1,4 @@
-/// <reference path='../interaction.js'/>
+/// <reference path='../Integration.js'/>
 
 IOTypeTools.setOutputType('item', {
     en: 'item'
@@ -31,6 +31,11 @@ IOTypeTools.setOutputType('item', {
             state: EnumObject.outputState.received
         })
     },
+    onFastReceive (outputJson, toolsCb, cache, extraInfo) {
+        toolsCb.setState(extraInfo, {
+            state: EnumObject.outputState.received
+        })
+    },
     onReceive (outputJson, toolsCb, cache, extraInfo) {
         let player
         if (Utils.isObject(extraInfo.operator)) {
@@ -48,24 +53,21 @@ IOTypeTools.setOutputType('item', {
         actor.addItemToInventory(item.id, item.count, item.data, item.extra, true)
     },
     getIcon (outputJson, toolsCb, extraInfo) {
+        let received = toolsCb.getState().state === EnumObject.outputState.received
         let pos = extraInfo.pos
-        let ret = {}
-        ret[extraInfo.prefix + 'main'] = {
-			type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-            bitmap: (typeof outputJson.bitmap === 'string') ? outputJson.bitmap : 'clear',
-            source: Utils.transferItemFromJson(outputJson),
-			clicker: {
-                onClick: (toolsCb.getState().state !== EnumObject.outputState.received)
-                  ? Utils.debounce(function () {
-                        if (toolsCb.getState().state === EnumObject.outputState.received) return
-                        toolsCb.sendPacket({
-                            'type': 'receive'
-                        })
-                    }, 500)
-                  : null
-            }
-        }
-        return ret
+        return [
+            [extraInfo.prefix + 'main', {
+                type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
+                bitmap: (typeof outputJson.bitmap === 'string') ? outputJson.bitmap : 'clear',
+                source: Utils.transferItemFromJson(outputJson),
+                clicker: {
+                    onClick: (!received) ? Utils.debounce(function () {
+                            if (toolsCb.getState().state === EnumObject.outputState.received) return
+                            toolsCb.sendPacket({ type: 'receive' })
+                        }, 500) : null
+                }
+            }]
+        ]
     },
     getDesc (outputJson, toolsCb, extraInfo) {
         

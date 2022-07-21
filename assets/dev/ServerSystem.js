@@ -45,12 +45,14 @@ const ServerSystem = {
     addContents (sourceId, contents) {
         if (typeof sourceId !== 'string') return
         if (!Utils.isObject(contents)) return
+        if (!Array.isArray(contents.main)) return
         this.json[sourceId] = contents
     },
     createSaveId (playerList) {
         if (!Array.isArray(playerList)) return
         if (playerList.length === 0) return
         let saveId = Utils.getUUID()
+        while (this.isSaveIdValid(saveId)) saveId = Utils.getUUID()
         Store.saved.playerList[saveId] = Utils.deepCopy(playerList)
         Store.saved.data[saveId] = {}
         Store.saved.exist[saveId] = true
@@ -74,9 +76,9 @@ const ServerSystem = {
     deleteSaveId (saveId) {
         if (!this.isSaveIdValid(saveId)) return
         this.unloadAllLoadedQuest(saveId)
-        Store.saved.playerList[saveId] = null
-        Store.saved.data[saveId] = null
-        Store.saved.exist[saveId] = null
+        delete Store.saved.playerList[saveId]
+        delete Store.saved.data[saveId]
+        delete Store.saved.exist[saveId]
     },
     isSaveIdValid (saveId) {
         if (saveId === InvalidId) return false
@@ -181,7 +183,7 @@ const ServerSystem = {
                 })
             }
         }
-        this.typedLoadedQuest.input[saveId] = null
+        delete this.typedLoadedQuest.input[saveId]
         let typedLoadedQuest_Output = this.typedLoadedQuest.output[saveId]
         if (Utils.isObject(typedLoadedQuest_Output)) {
             for (let type in typedLoadedQuest_Output) {
@@ -192,8 +194,8 @@ const ServerSystem = {
                 })
             }
         }
-        this.typedLoadedQuest.output[saveId] = null
-        this.loadedQuest[saveId] = null
+        delete this.typedLoadedQuest.output[saveId]
+        delete this.loadedQuest[saveId]
     },
     loadInput (saveId, sourceId, chapterId, questId, index) {
         if (!this.isSaveIdValid(saveId)) return
@@ -489,7 +491,6 @@ const ServerSystem = {
     receiveAllQuest (saveId, sourceId, extraInfo) {
         if (!this.isSaveIdValid(saveId)) return
         if (!Utils.isObject(extraInfo)) extraInfo = {}
-        extraInfo.isFastReceive = true
         let loadedQuest = this.loadedQuest[saveId]
         if (!Utils.isObject(loadedQuest)) return
         let mainLoadedQuest = loadedQuest[sourceId]
@@ -500,13 +501,14 @@ const ServerSystem = {
                 if (Array.isArray(questLoadedQuest.output)) {
                     questLoadedQuest.output.forEach(function (outputId) {
                         if (!IOTypeTools.isOutputIdLoaded(outputId)) return
-                        IOTypeTools.callOutputTypeCb(outputId, 'onReceive', extraInfo)
+                        IOTypeTools.callOutputTypeCb(outputId, 'onFastReceive', extraInfo)
                     })
                 }
             }
         }
     },
     updateTeam (teamId, beforeDelete) {
+        if (teamId === InvalidId) return
         if (typeof beforeDelete !== 'boolean') beforeDelete = Boolean(beforeDelete)
         let team = this.getTeam(teamId)
         if (!Utils.isObject(team)) return
@@ -524,15 +526,17 @@ const ServerSystem = {
                 Utils.log('Error in updateTeam (ServerSystem.js):\n' + err, 'ERROR', false)
             }
         }
+        let that = this
         runOnMainThread(function () {
             client.send('CustomQuests.Client.setLocalCache', {
-                team: beforeDelete ? null : team
+                team: beforeDelete ? null : team,
+                teamPlayerList: beforeDelete ? null : that.getTeamPlayerList(teamId)
             })
         })
         if (Setting.saveForTeam) {
             let saveId = team.saveId
             if (beforeDelete) {
-                Store.cache.playerList[saveId] = null
+                delete Store.cache.playerList[saveId]
             } else {
                 if (!Utils.isObject(Store.cache.playerList[saveId])) {
                     Store.cache.playerList[saveId] = {
@@ -550,7 +554,8 @@ const ServerSystem = {
         if (!this.isPlayerLoaded(player)) return
         if (Utils.isObject(this.getTeam(player))) return
         let teamId = Utils.getUUID()
-        let saveId = Utils.getUUID()
+        while (Utils.isObject(Store.saved.team[teamId])) teamId = Utils.getUUID()
+        let saveId = this.createSaveId([player])
         Store.saved.team[teamId] = {
             id: teamId,
             saveId: saveId,
@@ -560,9 +565,15 @@ const ServerSystem = {
             players: {},
             settingTeam: team.setting
         }
-        Store.saved.exist[saveId]
+        this.setTeam(player, teamId)
         this.setPlayerStateForTeam(teamId, player, EnumObject.playerState.owner)
         this.updateTeam(teamId)
+        let that = this
+        new NetworkConnectedClientList()
+            .setupAllPlayersPolicy()
+            .send('CustomQuests.Client.setLocalCache', {
+                teamList: that.getTeamList()
+            })
     },
     getTeam (target) {
         let teamId
@@ -579,14 +590,21 @@ const ServerSystem = {
     deleteTeam (teamId) {
         if (teamId === InvalidId) return
         this.deleteSaveId(Store.saved.team[teamId].saveId)
-        this.updateTeam(teamId)
-        Store.saved.team[teamId] = null
+        this.updateTeam(teamId, true)
+        delete Store.saved.team[teamId]
+        let that = this
+        new NetworkConnectedClientList()
+            .setupAllPlayersPolicy()
+            .send('CustomQuests.Client.setLocalCache', {
+                teamList: that.getTeamList(),
+            })
     },
     setTeam (player, teamId) {
         let obj = Store.saved.players[player]
         if (!Utils.isObject(obj)) return
         if (teamId !== InvalidId && !Utils.isObject(Store.saved.team[teamId])) return
         let oldTeamId = obj.teamId
+        if (teamId === oldTeamId) return
         this.setPlayerStateForTeam(oldTeamId, player, EnumObject.playerState.absent)
         this.updateTeam(oldTeamId)
         obj.teamId = teamId
@@ -594,9 +612,11 @@ const ServerSystem = {
             this.setPlayerStateForTeam(teamId, player, EnumObject.playerState.member)
             this.updateTeam(teamId)
         } else {
+            let that = this
             runOnMainThread(function () {
                 Network.getClientForPlayer(player).send('CustomQuests.Client.setLocalCache', {
-                    team: null
+                    team: null,
+                    teamPlayerList: that.getTeamPlayerList(teamId)
                 })
             })
         }
@@ -640,6 +660,25 @@ const ServerSystem = {
             })
         }
         return list
+    },
+    getTeamPlayerList (teamId) {
+        if (teamId === InvalidId) return null
+        let team = Store.saved.team[teamId]
+        if (!Utils.isObject(team)) return null
+        let playerList = this.getPlayerList(team.saveId, false)
+        /** @type { ReturnType<ServerSystem['getTeamPlayerList']> } */
+        let ret = []
+        let that = this
+        playerList.forEach(function (player) {
+            let obj = Store.saved.players[player]
+            if (!Utils.isObject(obj)) return
+            ret.push({
+                name: obj.name,
+                player: player,
+                online: that.isPlayerLoaded(player)
+            })
+        })
+        return ret
     }
 }
 
@@ -648,7 +687,8 @@ Callback.addCallback('ServerPlayerLoaded', function (player) {
         Store.saved.players[player] = {
             saveId: ServerSystem.createSaveId([player]),
             teamId: InvalidId,
-            bookGived: false
+            bookGived: false,
+            name: Entity.getNameTag(player)
         }
     }
     let obj = Store.saved.players[player]
@@ -656,6 +696,7 @@ Callback.addCallback('ServerPlayerLoaded', function (player) {
         new PlayerActor(player).addItemToInventory(ItemID.quest_book, 1, 0, null, true)
         obj.bookGived = true
     }
+    obj.name = Entity.getNameTag(player)
     
     ServerSystem.setPlayerLoaded(player, true)
 
@@ -672,7 +713,8 @@ Callback.addCallback('ServerPlayerLoaded', function (player) {
         team: ServerSystem.getTeam(player),
         isAdmin: Boolean(obj.isAdmin),
         isEditor: Boolean(obj.isEditor),
-        teamList: ServerSystem.getTeamList()
+        teamList: ServerSystem.getTeamList(),
+        teamPlayerList: ServerSystem.getTeamPlayerList(obj.teamId)
     })
 })
 

@@ -9,7 +9,10 @@ const Utils = {
         Logger.Log(msg, type)
     },
     getUUID () {
-        return String(java.util.UUID.randomUUID().toString())
+        let uuid = String(java.util.UUID.randomUUID().toString()).split('-')
+        let time = (Date.now() % 65535).toString(16)
+        while (time.length < 4) time = '0' + time
+        return uuid[0] + uuid[1] + time
     },
     md5 (str) {
         if (typeof str !== 'string') return
@@ -38,9 +41,11 @@ const Utils = {
         let time = 0
         return function () {
             let now = Date.now()
+            let ret
+            if (now >= time) ret = func.apply(ths, arguments)
+            else if (typeof func2 === 'function') ret = func2.apply(ths, arguments)
             time = now + delay
-            if (now >= time) return func.apply(ths, arguments)
-            if (typeof func2 === 'function') return func2.apply(ths, arguments)
+            return ret
         }
     },
     operate (a, operator, b, defaultValue) {
@@ -55,13 +60,21 @@ const Utils = {
             default: return Boolean(defaultValue)
         }
     },
+    replace (str, replaceArray) {
+        if (typeof str !== 'string') return ''
+        if (!Array.isArray(replaceArray)) return str
+        replaceArray.forEach(function (replacement) {
+            if (!Array.isArray(replacement)) return
+            str = str.replace(String(replacement[0]), String(replacement[1]))
+        })
+        return str
+    },
     transferIdFromJson (id) {
-        if (!id) return ItemID.missing_item
+        if (typeof id !== 'number' && typeof id !== 'string') return 0
+        if (typeof id === 'string' && !isNaN(Number(id))) id = Number(id)
         if (typeof id === 'number') {
             return Network.inRemoteWorld() ? Network.serverToLocalId(id) : id
         }
-        if (typeof id !== 'string') return ItemID.missing_item
-        if (!isNaN(Number(id))) return Number(id)
         if (id.match(/^item[a-z]*(:|.)/i)) {
             return ItemID[id.replace(/^item[a-z]*(:|.)/i, '')] || ItemID.missing_item
         }
@@ -77,6 +90,7 @@ const Utils = {
         return ItemID.missing_item
     },
     idFromItem: (function () {
+        /** @type { typeof Utils['idFromItem'] } */
         let idFromItem = {}
         Callback.addCallback('PostLoaded', function () {
             new java.lang.Thread(new java.lang.Runnable({
@@ -92,7 +106,7 @@ const Utils = {
     })(),
     transferIdFromItem (id) {
         if (typeof id !== 'number') return '0'
-        return this.idFromItem[id] || String(id)
+        return this.idFromItem[id] || String(Network.localToServerId(id))
     },
     extraType: {},
     setExtraTypeCb (type, extraTypeCb) {
@@ -116,7 +130,7 @@ const Utils = {
         return this.extraType[type][from] || this.voidFunc
     },
     transferItemFromJson (itemJson) {
-        if (!this.isObject(itemJson)) return {}
+        if (!this.isObject(itemJson)) return { id: 0, count: 0, data: 0 }
         let that = this
         let item = {
             id: this.transferIdFromJson(itemJson.id),
@@ -136,7 +150,7 @@ const Utils = {
         return item
     },
     transferItemFromItem (item) {
-        if (!this.isObject(item)) return {}
+        if (!this.isObject(item)) return { id: '0' }
         let itemJson = {
             id: this.transferIdFromItem(item.id),
             count: item.count || 1,
@@ -165,10 +179,10 @@ const Utils = {
                 if (!that.isObject(extraJson)) return true
                 let cb = that.getExtraTypeCb(extraJson.type, 'isPassed')
                 if (cb === that.voidFunc) return true
-                return passed = passed && cb(item, extraJson)
+                return passed = passed && Boolean(cb(item, extraJson))
             })
         }
-        return Boolean(passed)
+        return passed
     },
     readContents (path) {
         if (typeof path !== 'string') return {}
@@ -240,7 +254,7 @@ const Utils = {
     },
     resolveTextJson (textJson) {
         if (typeof textJson === 'string') return textJson
-        if (Utils.isObject(textJson)) {
+        if (this.isObject(textJson)) {
             let ret = {}
             for (let lang in textJson) {
                 ret[lang] = String(textJson[lang])
@@ -249,28 +263,36 @@ const Utils = {
         }
         return ''
     },
+    resolveIconJson (iconJson, refsArray, bitmapNameObject) {
+        let ret = this.deepCopy(this.resolveRefs(iconJson, refsArray))
+        if (!this.isObject(ret)) return {}
+        if (typeof ret.bitmap === 'string') {
+            ret.bitmap = this.resolveBitmap(ret.bitmap, bitmapNameObject)
+        }
+        return ret
+    },
     putTextureSourceFromBase64: (function () {
-        // let TextureSource = new com.zhekasmirnov.innercore.api.mod.ui.TextureSource()
-        /** @type { Utils['putTextureSourceFromBase64'] } */
+        // /** @type { com.zhekasmirnov.innercore.api.mod.ui.TextureSource } */
+        // let TextureSource = WRAP_JAVA("com.zhekasmirnov.innercore.api.mod.ui.TextureSource").instance
         return function (name, encodedString) {
-            // if (typeof name !== 'string') return
-            // if (typeof encodedString !== 'string') return
-            // try {
-            //     let encodeByte = android.util.Base64.decode(encodedString, 0)
-            //     let bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
-            //     TextureSource.put(name, bitmap)
-            // } catch (err) {
-            //     this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
-            // }
+            if (typeof name !== 'string') return
+            if (typeof encodedString !== 'string') return
+            try {
+                let encodeByte = android.util.Base64.decode(encodedString, 0)
+                let bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
+                UI.TextureSource.put(name, bitmap)
+            } catch (err) {
+                this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
+            }
         }
     })(),
-    getInput ({text, hint, title, button}, cb){
+    getInput ({text, hint, title, button, mutiLine}, cb){
         UI.getContext().runOnUiThread(new java.lang.Runnable({
             run () {
                 try {
                     let editText = new android.widget.EditText(UI.getContext())
                     editText.setHint(hint || '')
-                    editText.setSingleLine(true)
+                    if (!mutiLine) editText.setSingleLine(true)
                     if(typeof text == 'string') editText.setText(text)
                     new android.app.AlertDialog.Builder(UI.getContext())
                         .setTitle(title || '')
@@ -278,10 +300,13 @@ const Utils = {
                         .setPositiveButton(
                             button || TranAPI.translate('Utils.dialog.confirm'),
                             new android.content.DialogInterface.OnClickListener({
-                                onClick: Utils.debounce(function () {
+                                onClick: Utils.debounce(function (dialogInterface) {
                                     if (typeof cb === 'function') {
-                                        cb(editText.getText().toString() + '')
+                                        try {
+                                            cb(editText.getText().toString() + '')
+                                        } catch (err) {}
                                     }
+                                    dialogInterface.dismiss()
                                 }, 500)
                             })
                         )
@@ -301,8 +326,13 @@ const Utils = {
                         .setPositiveButton(
                             button || TranAPI.translate('Utils.dialog.confirm'),
                             new android.content.DialogInterface.OnClickListener({
-                                onClick: Utils.debounce(function () {
-                                    if(typeof cb === 'function') cb()
+                                onClick: Utils.debounce(function (dialogInterface) {
+                                    if (typeof cb === 'function') {
+                                        try {
+                                            cb()
+                                        } catch (err) {}
+                                    }
+                                    dialogInterface.dismiss()
                                 }, 500)
                             })
                         )
@@ -321,6 +351,7 @@ const Utils = {
 		return inventory
     },
     getSortInventory (inventory) {
+        /** @type { ReturnType<Utils['getSortInventory']> } */
 		let sortInventory = {}
 		inventory.forEach(function (item) {
 			if (item.id === 0) return
@@ -335,6 +366,7 @@ const Utils = {
 		return sortInventory
     },
     getExtraInventory (inventory) {
+        /** @type { ReturnType<Utils['getExtraInventory']> } */
         let extraInventory = {}
         inventory.forEach(function (item) {
             if (!item.extra || item.extra.isEmpty()) return
@@ -352,14 +384,14 @@ const Utils = {
 
 Utils.setExtraTypeCb('name', {
     fromJson: function (item, extraJson) {
-        item.extra.setCustomName(extraJson.name)
+        item.extra.setCustomName(String(extraJson.name))
     },
     fromItem: function (item, extraJson) {
         extraJson.name = item.extra.getCustomName()
         return !extraJson.name
     },
     isPassed: function(item, extraJson) {
-        return item.extra.getCustomName() === extraJson.name
+        return item.extra.getCustomName() === String(extraJson.name)
     }
 })
 
@@ -415,6 +447,6 @@ Utils.setExtraTypeCb('energy', {
         let energy = item.extra.getInt('energy')
         if (typeof extraJson.operator !== 'string') extraJson.operator = '>='
         if (typeof extraJson.energy !== 'number') extraJson.energy = 0
-        return Utils.operate(energy, extraJson.operator, extraJson.energy, true)
+        return Utils.operate(energy, String(extraJson.operator), Number(extraJson.energy), true)
     }
 })

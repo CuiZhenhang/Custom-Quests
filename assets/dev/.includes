@@ -2,11 +2,6 @@ header.js
 TranAPI.js
 Utils.js
 IOTypeTools.js
-System.js
-network.js
-ServerSystem.js
-ClientSystem.js
-Interaction.js
 
 input/group.js
 input/check.js
@@ -15,11 +10,23 @@ input/exp.js
 input/visit_dimension.js
 input/location.js
 input/kill.js
-
 output/item.js
 output/exp.js
 output/command.js
 output/message.js
 
+System.js
+network.js
+ServerSystem.js
+ClientSystem.js
+QuestUi.js
+
+ui/MainUi.js
+ui/QuestUi.js
+ui/QuestListUi.js
+ui/TeamUi.js
+ui/ItemChooseUi.js
+
+Interaction.js
 instance.js
 share.js

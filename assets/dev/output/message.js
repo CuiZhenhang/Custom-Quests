@@ -1,4 +1,4 @@
-/// <reference path='../interaction.js'/>
+/// <reference path='../Integration.js'/>
 
 Network.addClientPacket('CustomQuests.output.message', function (packetData) {
     let message = ''
@@ -26,6 +26,11 @@ IOTypeTools.setOutputType('message', {
             state: EnumObject.outputState.received
         })
     },
+    onFastReceive (outputJson, toolsCb, cache, extraInfo) {
+        toolsCb.setState(extraInfo, {
+            state: EnumObject.outputState.received
+        })
+    },
     onReceive (outputJson, toolsCb, cache, extraInfo) {
         /** @type { NetworkConnectedClientList } */
         let client
@@ -40,9 +45,20 @@ IOTypeTools.setOutputType('message', {
         })
     },
     getIcon (outputJson, toolsCb, extraInfo) {
+        let received = toolsCb.getState().state === EnumObject.outputState.received
         let pos = extraInfo.pos
-        let ret = {}
-        return ret
+        return [
+            [extraInfo.prefix + 'main', {
+                type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
+                bitmap: 'reward_message',
+                clicker: {
+                    onClick: (!received) ? Utils.debounce(function () {
+                            if (toolsCb.getState().state === EnumObject.outputState.received) return
+                            toolsCb.sendPacket({ type: 'receive' })
+                        }, 500) : null
+                }
+            }]
+        ]
     },
     getDesc (outputJson, toolsCb, extraInfo) {
         

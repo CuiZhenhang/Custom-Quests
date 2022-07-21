@@ -1,4 +1,4 @@
-/// <reference path='../interaction.js'/>
+/// <reference path='../Integration.js'/>
 
 IOTypeTools.setInputType('exp', {
     en: 'experience'
@@ -13,7 +13,7 @@ IOTypeTools.setInputType('exp', {
             if (value >= inputJson.value) {
                 toolsCb.setState({}, {
                     state: EnumObject.inputState.finished,
-                    value: value
+                    value: 0
                 })
             }
         }
@@ -38,7 +38,7 @@ IOTypeTools.setInputType('exp', {
         }
         if (value !== (stateObj.value || 0)) {
             if (value >= inputJson.value) stateObj.state = EnumObject.inputState.finished
-            stateObj.value = value
+            stateObj.value = 0
             toolsCb.setState({}, stateObj)
         }
     },
@@ -57,10 +57,21 @@ IOTypeTools.setInputType('exp', {
         }
     },
     getIcon (inputJson, toolsCb, extraInfo) {
+        let finished = toolsCb.getState().state === EnumObject.inputState.finished
         let submit = inputJson.submit
         let pos = extraInfo.pos
-        let ret = {}
-        return ret
+        return [
+            [extraInfo.prefix + 'main', {
+                type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
+                bitmap: 'clear', source: { id: VanillaItemID.experience_bottle, count: inputJson.value },
+                clicker: {
+                    onClick: (submit && !finished) ? Utils.debounce(function () {
+                        if (toolsCb.getState().state === EnumObject.inputState.finished) return
+                        toolsCb.sendPacket({ type: 'submit' })
+                    }, 500) : null
+                }
+            }]
+        ]
     },
     getDesc (inputJson, toolsCb, extraInfo) {
         

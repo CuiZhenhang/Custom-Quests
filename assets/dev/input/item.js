@@ -1,4 +1,4 @@
-/// <reference path='../interaction.js'/>
+/// <reference path='../Integration.js'/>
 
 IOTypeTools.setInputType('item', {
     en: 'item'
@@ -21,7 +21,7 @@ IOTypeTools.setInputType('item', {
             if (count >= inputJson.count) {
                 toolsCb.setState({}, {
                     state: EnumObject.inputState.finished,
-                    count: count
+                    count: 0
                 })
             }
         }
@@ -50,7 +50,7 @@ IOTypeTools.setInputType('item', {
         }
         if (count !== (stateObj.count || 0)) {
             if (count >= inputJson.count) stateObj.state = EnumObject.inputState.finished
-            stateObj.count = count
+            stateObj.count = 0
             toolsCb.setState({}, stateObj)
         }
     },
@@ -83,25 +83,22 @@ IOTypeTools.setInputType('item', {
         }
     },
     getIcon (inputJson, toolsCb, extraInfo) {
+        let finished = toolsCb.getState().state === EnumObject.inputState.finished
         let submit = inputJson.submit
         let pos = extraInfo.pos
-        let ret = {}
-        ret[extraInfo.prefix + 'main'] = {
-			type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-            bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'clear',
-            source: Utils.transferItemFromJson(inputJson),
-			clicker: {
-                onClick: (submit && toolsCb.getState().state !== EnumObject.inputState.finished)
-                  ? Utils.debounce(function () {
-                        if (toolsCb.getState().state === EnumObject.inputState.finished) return
-                        toolsCb.sendPacket({
-                            'type': 'submit'
-                        })
-                    }, 500)
-                  : null
-            }
-        }
-        return ret
+        return [
+            [extraInfo.prefix + 'main', {
+                type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
+                bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'clear',
+                source: Utils.transferItemFromJson(inputJson),
+                clicker: {
+                    onClick: (submit && !finished) ? Utils.debounce(function () {
+                            if (toolsCb.getState().state === EnumObject.inputState.finished) return
+                            toolsCb.sendPacket({ type: 'submit' })
+                        }, 500) : null
+                }
+            }]
+        ]
     },
     getDesc (inputJson, toolsCb, extraInfo) {
         

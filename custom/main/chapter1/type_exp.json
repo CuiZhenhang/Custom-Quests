@@ -1,0 +1,33 @@
+{
+    "type": "quest",
+    "id": "type_exp",
+    "pos": [210, 110],
+    "size": 80,
+    "icon": {
+        "id": "vitem:experience_bottle"
+    },
+    "parent": [
+        "type_item"
+    ],
+    "inner": {
+        "input": [{
+            "type": "exp",
+            "value": 1,
+            "isLevel": true
+        }],
+        "output": [{
+            "type": "exp",
+            "value": 3,
+            "isLevel": true,
+            "autoReceive": true
+        }],
+        "name": {
+            "en": "exp",
+            "zh": "经验"
+        },
+        "text": {
+            "en": "",
+            "zh": ""
+        }
+    }
+}

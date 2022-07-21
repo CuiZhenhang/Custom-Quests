@@ -1,8 +1,33 @@
 mod.dialog=Welcome to use Custom Quests.\nMod author Cui Zhenhang.
 
-item.quest_book.name=Quests Book
-item.quest_book_admin.name=Quests Admin Book
-item.quest_book_editor.name=Quests Editor Book
-item.missing_item.name=Missing Item
+item.quest_book=Quests Book
+item.quest_book_admin=Quests Admin Book
+item.quest_book_editor=Quests Editor Book
+item.missing_item=Missing Item
 
 message.questFinished=Quest finished: {questName}
+
+Utils.dialog.confirm=Confirm
+Utils.dialog.cancel=Cancel
+
+Integration.RecipeViewer.noRecipe=RecipeViewer has no recipe
+Integration.RecipeViewer.oldVersion=RecipeViewer is old version
+Integration.RecipeViewer.disabled=RecipeViewer is disabled
+
+gui.task=Task
+gui.reward=Reward
+gui.chapterList=Chapter List
+gui.team=Team
+gui.team.search=Search
+gui.team.search.title=Search the name of teams
+gui.team.search.hint=Enter some keyword
+gui.team.noTeam=You hava no team
+gui.team.joinOrCreate=Join or create a team
+gui.team.create=Create
+gui.team.joinTeam=Join the team
+gui.team.enterPassword=Please enter the password of the team
+gui.team.applicationSent=Application has been sent
+gui.team.playerState.absent=Absent
+gui.team.playerState.member=Member
+gui.team.playerState.admin=Administrator
+gui.team.playerState.owner=Owner

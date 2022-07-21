@@ -1,4 +1,4 @@
-/// <reference path='../interaction.js'/>
+/// <reference path='../Integration.js'/>
 
 IOTypeTools.setOutputType('exp', {
     en: 'exp'
@@ -26,6 +26,11 @@ IOTypeTools.setOutputType('exp', {
             state: EnumObject.outputState.received
         })
     },
+    onFastReceive (outputJson, toolsCb, cache, extraInfo) {
+        toolsCb.setState(extraInfo, {
+            state: EnumObject.outputState.received
+        })
+    },
     onReceive (outputJson, toolsCb, cache, extraInfo) {
         let player
         if (Utils.isObject(extraInfo.operator)) {
@@ -43,9 +48,20 @@ IOTypeTools.setOutputType('exp', {
         else actor.addExperience(outputJson.value)
     },
     getIcon (outputJson, toolsCb, extraInfo) {
+        let received = toolsCb.getState().state === EnumObject.outputState.received
         let pos = extraInfo.pos
-        let ret = {}
-        return ret
+        return [
+            [extraInfo.prefix + 'main', {
+                type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
+                bitmap: 'clear', source: { id: VanillaItemID.experience_bottle, count: outputJson.value },
+                clicker: {
+                    onClick: (!received) ? Utils.debounce(function () {
+                            if (toolsCb.getState().state === EnumObject.outputState.received) return
+                            toolsCb.sendPacket({ type: 'receive' })
+                        }, 500) : null
+                }
+            }]
+        ]
     },
     getDesc (outputJson, toolsCb, extraInfo) {
         

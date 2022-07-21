@@ -61,7 +61,7 @@ const IOTypeTools = {
     getInputTypeName (type) {
         let inputType = this.inputType[type]
         if (!Utils.isObject(inputType)) return ''
-        return TranAPI.t(inputType.name)
+        return TranAPI.translate(inputType.name)
     },
     getInputTypeCb (type) {
         let inputType = this.inputType[type]
@@ -100,6 +100,7 @@ const IOTypeTools = {
         let inputType = this.inputType[type]
         if (!Utils.isObject(inputType)) return InvalidId
         let inputId = Utils.getUUID()
+        while (this.isInputIdLoaded(inputId)) inputId = Utils.getUUID()
         this.inputObject[inputId] = {
             loaded: false,
             cache: {},
@@ -140,7 +141,7 @@ const IOTypeTools = {
         if (typeof inputObject.onUnload === 'function') {
             inputObject.onUnload()
         }
-        this.inputObject[inputId] = null
+        delete this.inputObject[inputId]
         let list = this.typedInputList[type]
         let index = list.indexOf(inputId)
         if (index >= 0) list.splice(index, 1)
@@ -232,7 +233,7 @@ const IOTypeTools = {
     getOutputTypeName (type) {
         let outputType = this.outputType[type]
         if (!Utils.isObject(outputType)) return ''
-        return TranAPI.t(outputType.name)
+        return TranAPI.translate(outputType.name)
     },
     getOutputTypeCb (type) {
         let outputType = this.outputType[type]
@@ -271,6 +272,7 @@ const IOTypeTools = {
         let outputType = this.outputType[type]
         if (!Utils.isObject(outputType)) return InvalidId
         let outputId = Utils.getUUID()
+        while (this.isOutputIdLoaded(outputId)) outputId = Utils.getUUID()
         this.outputObject[outputId] = {
             loaded: false,
             cache: {},
@@ -311,7 +313,7 @@ const IOTypeTools = {
         if (typeof outputObject.onUnload === 'function') {
             outputObject.onUnload()
         }
-        this.outputObject[outputId] = null
+        delete this.outputObject[outputId]
         let list = this.typedOutputList[type]
         let index = list.indexOf(outputId)
         if (index >= 0) list.splice(index, 1)
@@ -320,7 +322,7 @@ const IOTypeTools = {
         if (!this.isOutputIdLoaded(outputId)) return null
         if (!Utils.isObject(extraInfo)) extraInfo = {}
         let methods = [
-            'onCustomCall', 'onPacket', 'onReceive'
+            'onCustomCall', 'onPacket', 'onReceive', 'onFastReceive'
         ]
         if (methods.indexOf(method) < 0) return
         let outputObject = this.outputObject[outputId]

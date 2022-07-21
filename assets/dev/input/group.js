@@ -1,4 +1,4 @@
-/// <reference path='../interaction.js'/>
+/// <reference path='../Integration.js'/>
 
 const $input_group_Tools = {
     /**
@@ -14,16 +14,32 @@ const $input_group_Tools = {
     },
     /**
      * @param { CQTypes.IOTypeToolsCb<CQTypes.InputStateObject> } toolsCb 
+     * @param { Array<Nullable<CQTypes.inputId>> } loadedIOArray 
      * @param { number } index 
      * @param { object } extraInfo 
      * @param { CQTypes.InputStateObject } inputStateObject 
      */
-    setState (toolsCb, index, extraInfo, inputStateObject) {
+    setState (toolsCb, loadedIOArray, index, extraInfo, inputStateObject) {
         if (!Utils.isObject(inputStateObject)) return
         let stateObj = toolsCb.getState()
         if (!Array.isArray(stateObj.list)) stateObj.list = []
+        let oldStateObj = Utils.isObject(stateObj.list[index]) ? stateObj.list[index] : { state: EnumObject.inputState.unfinished }
         stateObj.list[index] = inputStateObject
+        if (inputStateObject.state === EnumObject.inputState.finished) {
+            stateObj.state = EnumObject.inputState.finished
+            stateObj.wasFinished = true
+        }
         toolsCb.setState(extraInfo, stateObj)
+        try {
+            Callback.invokeCallback('CustomQuests.onInputStateChanged',
+                loadedIOArray[index],
+                Utils.deepCopy(inputStateObject),
+                Utils.deepCopy(oldStateObj),
+                Utils.deepCopy(extraInfo)
+            )
+        } catch (err) {
+            Utils.log('Error in Callback \'CustomQuests.onInputStateChanged\' (input/group.js):\n' + err, 'ERROR', true)
+        }
     },
     /**
      * @param { Array<Nullable<CQTypes.inputId>> } loadedIOArray 
@@ -40,8 +56,7 @@ IOTypeTools.setInputType('group', {
     en: 'group'
 }, {
     resolveJson (inputJson, refsArray, bitmapNameObject) {
-        inputJson.icon = Utils.deepCopy(Utils.resolveRefs(inputJson.icon, refsArray))
-        if (!Utils.isObject(inputJson.icon)) inputJson.icon = {}
+        inputJson.icon = Utils.resolveIconJson(inputJson.icon, refsArray, bitmapNameObject)
         if (!Array.isArray(inputJson.list)) return null
         inputJson.list.forEach(function (tInputJson, index, self) {
             if (!Utils.isObject(tInputJson) || typeof tInputJson.type !== 'string') {
@@ -63,13 +78,24 @@ IOTypeTools.setInputType('group', {
     },
     onLoad (inputJson, toolsCb, cache) {
         let stateObj = toolsCb.getState()
-        if (Array.isArray(stateObj.list)) {
+        if (stateObj.state === EnumObject.inputState.repeat_unfinished && stateObj.wasFinished) {
             for (let index = 0; index < inputJson.list.length; index++) {
-                if (!Utils.isObject(stateObj.list[index])) continue
-                if (stateObj.list[index].state === EnumObject.inputState.finished) {
-                    stateObj.state = EnumObject.inputState.finished
-                    toolsCb.setState({}, stateObj)
-                    return
+                stateObj.list[index] = {
+                    state: EnumObject.inputState.repeat_unfinished
+                }
+            }
+            stateObj.wasFinished = false
+            toolsCb.setState({}, stateObj)
+        } else {
+            if (Array.isArray(stateObj.list)) {
+                for (let index = 0; index < inputJson.list.length; index++) {
+                    if (!Utils.isObject(stateObj.list[index])) continue
+                    if (stateObj.list[index].state === EnumObject.inputState.finished) {
+                        stateObj.state = EnumObject.inputState.finished
+                        stateObj.wasFinished = true
+                        toolsCb.setState({}, stateObj)
+                        return
+                    }
                 }
             }
         }
@@ -88,7 +114,7 @@ IOTypeTools.setInputType('group', {
                 getPlayerList: toolsCb.getPlayerList,
                 getConnectedClientList: toolsCb.getConnectedClientList,
                 getState: $input_group_Tools.getState.bind(null, toolsCb, index),
-                setState: $input_group_Tools.setState.bind(null, toolsCb, index)
+                setState: $input_group_Tools.setState.bind(null, toolsCb, cache.input, index)
             }, $input_group_Tools.onUnload.bind(null, cache.input, index, obj[tInputJson.type]))
             obj[tInputJson.type].push(cache.input[index])
             IOTypeTools.loadInput(cache.input[index])
@@ -104,14 +130,14 @@ IOTypeTools.setInputType('group', {
     },
     getIcon (inputJson, toolsCb, extraInfo) {
         let pos = extraInfo.pos
-        let ret = {}
-        ret[extraInfo.prefix + 'main'] = {
-			type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-            bitmap: (typeof inputJson.icon.bitmap === 'string') ? inputJson.icon.bitmap : 'clear',
-            source: Utils.transferItemFromJson(inputJson.icon),
-			clicker: {}
-        }
-        return ret
+        return [
+            [extraInfo.prefix + 'main', {
+                type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
+                bitmap: (typeof inputJson.icon.bitmap === 'string') ? inputJson.icon.bitmap : 'clear',
+                source: Utils.transferItemFromJson(inputJson.icon),
+                clicker: {}
+            }]
+        ]
     },
     getDesc (inputJson, toolsCb, extraInfo) {
         
