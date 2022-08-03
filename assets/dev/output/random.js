@@ -1,8 +1,6 @@
-/// <reference path='../Integration.js'/>
+/// <reference path='../IOTypeTools.js'/>
 
-IOTypeTools.setOutputType('random', {
-    en: 'random'
-}, {
+IOTypeTools.setOutputType('random', TranAPI.getTranslation('outputType.random'), {
     resolveJson (outputJson, refsArray, bitmapNameObject) {
         return outputJson
     },
@@ -23,7 +21,7 @@ IOTypeTools.setOutputType('random', {
         let ret = {}
         return ret
     },
-    getDesc (outputJson, toolsCb, extraInfo) {
+    getDescription (outputJson, toolsCb, extraInfo) {
         
     }
 }, {

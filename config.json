@@ -4,7 +4,6 @@
     "for_team": true
   },
   "contents": {
-    "path": "custom",
-    "dev": false
+    "path": "custom"
   }
 }

@@ -55,19 +55,52 @@ const $TeamUi = {
             icon: { type: 'slot', visual: true, x: 430, y: 90, size: 80, bitmap: 'clear', source: {}, darken: false },
             name: { type: 'text', x: 530, y: 90, text: '', font: { color: $Color.BLACK, size: 30 } },
             subname: { type: 'text', x: 530, y: 130, text: '', font: { color: $Color.GRAY, size: 20 } },
+            exit: { type: 'button', x: 850, y: 110, z: 1, bitmap: 'button_long_up', bitmap2: 'button_long_down', scale: 100 / 50,
+                clicker: {
+                    onClick: Utils.debounce(function () {
+                        if (!Utils.isObject(Store.localCache.team)) return
+                        Utils.dialog({
+                            title: TranAPI.translate('gui.team.exit'),
+                            text: TranAPI.translate('gui.team.exit.warn')
+                        }, function () {
+                            ClientSystem.exitTeam()
+                        })
+                    }, 500)
+                }
+            },
+            exit_text: { type: 'text', x: 900, y: 110, z: 2, text: TranAPI.translate('gui.team.exit'), font: { color: $Color.BLACK, size: 20, align: 1 } },
             noteam_text: { type: 'text', x: 700, y: 135, text: TranAPI.translate('gui.team.noTeam'), font: { color: $Color.BLACK, size: 30, align: 1 } },
             noteam_subtext: { type: 'text', x: 700, y: 190, text: TranAPI.translate('gui.team.joinOrCreate'), font: { color: $Color.GRAY, size: 20, align: 1 } },
             noteam_create: { type: 'button', x: 600, y: 270, z: 1, bitmap: 'button_long_up', bitmap2: 'button_long_down', scale: 200 / 50,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         if (Utils.isObject(Store.localCache.team)) return
-                        alert('Create a team')
-                        /** @todo */
-                        ClientSystem.createTeam({
-                            bitmap: { id: 'VanillaItemID.iron_axe', count: 1 },
-                            name: 'Test team\ndescription',
-                            password: '123',
-                            setting: {}
+                        Utils.getInput({
+                            title: TranAPI.translate('gui.team.create'),
+                            hint: TranAPI.translate('gui.team.create.enterName'),
+                            button: TranAPI.translate('gui.team.create.next'),
+                            mutiLine: true
+                        }, function (name) {
+                            if (name.length <= 3 || name.length > 100) {
+                                alert(TranAPI.translate('gui.team.create.fail.nameLength'))
+                                return
+                            }
+                            Utils.getInput({
+                                title: TranAPI.translate('gui.team.create'),
+                                hint: TranAPI.translate('gui.team.enterPassword'),
+                                button: TranAPI.translate('gui.team.create.next')
+                            }, function (password) {
+                                if (password.length < 6) {
+                                    alert(TranAPI.translate('gui.team.create.fail.passwordLength'))
+                                    return
+                                }
+                                ClientSystem.createTeam({
+                                    bitmap: { id: 'VanillaBlockID.grass', count: 1 },
+                                    name: name,
+                                    password: password,
+                                    setting: {}
+                                })
+                            })
                         })
                     }, 500)
                 }
@@ -118,6 +151,8 @@ const $TeamUi = {
             elements['icon'].x = 430
             elements['name'].x = 530
             elements['subname'].x = 530
+            elements['exit'].x = 850
+            elements['exit_text'].x = 900
             elements['noteam_text'].x = 700 + 2000
             elements['noteam_subtext'].x = 700 + 2000
             elements['noteam_create'].x = 600 + 2000
@@ -129,6 +164,8 @@ const $TeamUi = {
             elements['icon'].x = 430 + 2000
             elements['name'].x = 530 + 2000
             elements['subname'].x = 530 + 2000
+            elements['exit'].x = 850 + 2000
+            elements['exit_text'].x = 900 + 2000
             elements['noteam_text'].x = 700
             elements['noteam_subtext'].x = 700
             elements['noteam_create'].x = 600
@@ -225,7 +262,7 @@ const $TeamUi = {
                     type: 'image', x: pos[0], y: pos[1], bitmap: 'clear', width: 1000, height: 100,
                     clicker: {
                         onClick: Utils.debounce(function () {
-                            alert(index)
+                            alert(obj.name)
                         }, 500)
                     }
                 }],

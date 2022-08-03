@@ -1,10 +1,8 @@
-/// <reference path='../Integration.js'/>
+/// <reference path='../IOTypeTools.js'/>
 
-IOTypeTools.setInputType('exp', {
-    en: 'experience'
-}, {
+IOTypeTools.setInputType('exp', TranAPI.getTranslation('inputType.exp'), {
     resolveJson (inputJson, refsArray, bitmapNameObject) {
-        if (typeof inputJson.value !== 'number' || inputJson.value < 0) inputJson.data = 1
+        if (typeof inputJson.value !== 'number' || inputJson.value < 0) inputJson.value = 1
         return inputJson
     },
     onLoad (inputJson, toolsCb, cache) {
@@ -35,10 +33,23 @@ IOTypeTools.setInputType('exp', {
                 value = inputJson.value
                 actor.setLevel(level - cost)
             }
+        } else {
+            let exp = actor.getExperience()
+            if (value + exp < inputJson.value) {
+                value += exp
+                actor.setExperience(0)
+            } else {
+                let cost = inputJson.value - value
+                value = inputJson.value
+                actor.setExperience(exp - cost)
+            }
         }
         if (value !== (stateObj.value || 0)) {
-            if (value >= inputJson.value) stateObj.state = EnumObject.inputState.finished
-            stateObj.value = 0
+            stateObj.value = value
+            if (value >= inputJson.value) {
+                stateObj.state = EnumObject.inputState.finished
+                stateObj.value = 0
+            }
             toolsCb.setState({}, stateObj)
         }
     },
@@ -57,24 +68,79 @@ IOTypeTools.setInputType('exp', {
         }
     },
     getIcon (inputJson, toolsCb, extraInfo) {
-        let finished = toolsCb.getState().state === EnumObject.inputState.finished
+        let stateObj = toolsCb.getState()
+        let finished = stateObj.state === EnumObject.inputState.finished
         let submit = inputJson.submit
         let pos = extraInfo.pos
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: 'clear', source: { id: VanillaItemID.experience_bottle, count: inputJson.value },
+                bitmap: 'clear', source: {
+                    id: VanillaItemID.experience_bottle,
+                    count: submit ? 1 : inputJson.value
+                },
                 clicker: {
                     onClick: (submit && !finished) ? Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.inputState.finished) return
                         toolsCb.sendPacket({ type: 'submit' })
-                    }, 500) : null
+                    }, 500) : null,
+                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
                 }
-            }]
+            }],
+            [extraInfo.prefix + 'text', submit ? {
+                type: 'text',
+                x: pos[0] + (40 / 80) * extraInfo.size,
+                y: pos[1] + (40 / 80) * extraInfo.size,
+                z: 2,
+                text: Number(finished ? inputJson.value : (stateObj.value || 0)) + '/' + Number(inputJson.value),
+                font: { color: android.graphics.Color.WHITE, size: 20, align: 1 }
+            } : null]
         ]
     },
-    getDesc (inputJson, toolsCb, extraInfo) {
-        
+    getDescription (inputJson, toolsCb, extraInfo) {
+        let prefix = extraInfo.prefix
+        let maxY = extraInfo.posY + 200
+        let elements = [
+            [prefix + 'slot', {
+                type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
+                bitmap: 'clear', source: {
+                    id: VanillaItemID.experience_bottle,
+                    count: inputJson.value
+                }
+            }],
+            [prefix + 'text', {
+                type: 'text', x: 500, y: extraInfo.posY + 120,
+                text: TranAPI.translate(inputJson.isLevel ? 'inputType.exp.isLevel' : 'inputType.exp.notLevel'),
+                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+            }]
+        ]
+        if (inputJson.submit) {
+            let stateObj = toolsCb.getState()
+            let finished = stateObj.state === EnumObject.inputState.finished
+            elements.push([prefix + 'submit', {
+                type: 'text', x: 500, y: maxY - 30,
+                text: Utils.replace(TranAPI.translate('inputType.exp.submited'), [
+                    ['{value}', finished ? inputJson.value : (stateObj.value || 0)]
+                ]),
+                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+            }])
+            maxY += 50
+        }
+        QuestUiTools.resolveText(TranAPI.translate(inputJson.description), function (str) {
+            if (typeof str !== 'string') return 1
+            return QuestUiTools.getTextWidth(str, 40) / 900
+        }).forEach(function (str, index) {
+            elements.push([prefix + 'desc_' + index, {
+                type: 'text', x: 50, y: maxY, text: str,
+                font: { color: android.graphics.Color.BLACK, size: 40 }
+            }])
+            maxY += 50
+        })
+        maxY += 20
+        return {
+            maxY: maxY,
+            elements: elements
+        }
     }
 }, {
     allowRepeat: true,

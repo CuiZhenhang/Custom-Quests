@@ -6,7 +6,6 @@ IMPORT('ChargeItem')
 const Setting = (function () {
     let Setting = {
         path: __config__.getString('contents.path'),
-        dev: __config__.getBool('contents.dev'),
         saveForTeam: __config__.getBool('save.for_team')
     }
     return Setting
@@ -63,9 +62,9 @@ const Store = (function () {
             playerList: {}
         },
         localCache: {
-            resolvedJson: null,
-            jsonConfig: null,
-            saveData: null,
+            resolvedJson: {},
+            jsonConfig: {},
+            saveData: {},
             team: null,
             teamPlayerList: null,
             isAdmin: false,

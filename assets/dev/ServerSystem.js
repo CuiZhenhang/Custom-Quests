@@ -535,6 +535,11 @@ const ServerSystem = {
         })
         if (Setting.saveForTeam) {
             let saveId = team.saveId
+            runOnMainThread(function () {
+                client.send('CustomQuests.Client.setLocalCache', {
+                    saveData: beforeDelete ? {} : ServerSystem.getSaveData(saveId)
+                })
+            })
             if (beforeDelete) {
                 delete Store.cache.playerList[saveId]
             } else {
@@ -616,7 +621,8 @@ const ServerSystem = {
             runOnMainThread(function () {
                 Network.getClientForPlayer(player).send('CustomQuests.Client.setLocalCache', {
                     team: null,
-                    teamPlayerList: that.getTeamPlayerList(teamId)
+                    teamPlayerList: that.getTeamPlayerList(teamId),
+                    saveData: {}
                 })
             })
         }

@@ -1,0 +1,35 @@
+{
+    "type": "quest",
+    "id": "end",
+    "pos": [280, 350],
+    "size": 100,
+    "icon": { "bitmap": "task_check" },
+    "parent": [
+        "type_check",
+        "type_item",
+        "type_exp",
+        "type_dimension",
+        "type_location",
+        "type_kill",
+        "type_command",
+        "type_message"
+    ],
+    "inner": {
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "Chapter 1 ends",
+            "ru": "Chapter 1 ends",
+            "zh": "第一章结束"
+        },
+        "text": {
+            "en": "Congratulations, you've completed all the other quests in Chapter 1!",
+            "ru": "Congratulations, you've completed all the other quests in Chapter 1!",
+            "zh": "恭喜，你已完成了第一章的所有其它任务！"
+        }
+    }
+}

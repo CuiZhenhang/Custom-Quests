@@ -1,14 +1,23 @@
 {
-    "id": "Chapter1",
+    "id": "chapter1",
     "name": {
-        "en": "Chapter 1: Quest Type",
-        "zh": "第一章：任务类型"
+        "en": "Chapter 1: Basic Usage",
+        "ru": "Chapter 1: Basic Usage",
+        "zh": "第一章：基础用法"
     },
     "icon": {
-        "id": 2
+        "id": "vblock:stone"
     },
     "quest": [
+        "main/chapter1/start.json",
+        "main/chapter1/type_check.json",
         "main/chapter1/type_item.json",
-        "main/chapter1/type_exp.json"
+        "main/chapter1/type_exp.json",
+        "main/chapter1/type_dimension.json",
+        "main/chapter1/type_location.json",
+        "main/chapter1/type_kill.json",
+        "main/chapter1/type_command.json",
+        "main/chapter1/type_message.json",
+        "main/chapter1/end.json"
     ]
 }

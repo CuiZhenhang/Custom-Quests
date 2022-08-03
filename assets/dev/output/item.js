@@ -1,8 +1,6 @@
-/// <reference path='../Integration.js'/>
+/// <reference path='../IOTypeTools.js'/>
 
-IOTypeTools.setOutputType('item', {
-    en: 'item'
-}, {
+IOTypeTools.setOutputType('item', TranAPI.getTranslation('outputType.item'), {
     resolveJson (outputJson, refsArray, bitmapNameObject) {
         if (typeof outputJson.id !== 'string' && typeof outputJson.id !== 'number') return null
         if (typeof outputJson.count !== 'number' || outputJson.count <= 0) outputJson.count = 1
@@ -62,15 +60,49 @@ IOTypeTools.setOutputType('item', {
                 source: Utils.transferItemFromJson(outputJson),
                 clicker: {
                     onClick: (!received) ? Utils.debounce(function () {
-                            if (toolsCb.getState().state === EnumObject.outputState.received) return
-                            toolsCb.sendPacket({ type: 'receive' })
-                        }, 500) : null
+                        if (toolsCb.getState().state === EnumObject.outputState.received) return
+                        toolsCb.sendPacket({ type: 'receive' })
+                    }, 500) : null,
+                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
                 }
             }]
         ]
     },
-    getDesc (outputJson, toolsCb, extraInfo) {
-        
+    getDescription (outputJson, toolsCb, extraInfo) {
+        let source = Utils.transferItemFromJson(outputJson)
+        let prefix = extraInfo.prefix
+        let maxY = extraInfo.posY + 200
+        let elements = [
+            [prefix + 'slot', {
+                type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
+                bitmap: (typeof outputJson.bitmap === 'string') ? outputJson.bitmap : 'clear',
+                source: source,
+                clicker: {
+                    onClick: Utils.debounce(function () { Integration.openRecipeUI(source, false) }, 500),
+                    onLongClick: Utils.debounce(function () { Integration.openRecipeUI(source, true) }, 500)
+                }
+            }],
+            [prefix + 'name', {
+                type: 'text', x: 500, y: extraInfo.posY + 120,
+                text: Item.getName(source.id, source.data).split('\n')[0].replace(/\u00A7./g, ''),
+                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+            }]
+        ]
+        QuestUiTools.resolveText(TranAPI.translate(outputJson.description), function (str) {
+            if (typeof str !== 'string') return 1
+            return QuestUiTools.getTextWidth(str, 40) / 900
+        }).forEach(function (str, index) {
+            elements.push([prefix + 'desc_' + index, {
+                type: 'text', x: 50, y: maxY, text: str,
+                font: { color: android.graphics.Color.BLACK, size: 40 }
+            }])
+            maxY += 50
+        })
+        maxY += 20
+        return {
+            maxY: maxY,
+            elements: elements
+        }
     }
 }, {
     allowRepeat: true,

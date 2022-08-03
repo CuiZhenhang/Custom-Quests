@@ -1,30 +1,68 @@
 {
     "type": "quest",
     "id": "type_item",
-    "pos": [110, 110],
-    "size": 80,
+    "pos": [150, 200],
+    "size": 100,
     "icon": {
         "id": "vblock:planks"
     },
+    "parent": [
+        "start"
+    ],
     "inner": {
-        "input": [{
-            "type": "item",
-            "id": "vblock:planks",
-            "count": 20
-        }],
-        "output": [{
-            "type": "item",
-            "id": "vitem:diamond",
-            "count": 3,
-            "autoReceive": true
-        }],
+        "input": [
+            {
+                "type": "item",
+                "id": "vblock:planks",
+                "data": 0,
+                "count": 20,
+                "description": {
+                    "en": "This task type requires the player to get certain items. \nFor this task, the player needs to get 20 oak planks.",
+                    "ru": "This task type requires the player to get certain items. \nFor this task, the player needs to get 20 oak planks.",
+                    "zh": "该任务类型需要玩家获得特定物品。\n对于该任务，需要玩家获得20个橡木木板。"
+                }
+            },
+            {
+                "type": "item",
+                "id": "vblock:planks",
+                "count": 16,
+                "submit": true,
+                "description": {
+                    "en": "For this task, players are required to submit 16 planks.",
+                    "ru": "For this task, players are required to submit 16 planks.",
+                    "zh": "对于该任务，需要玩家提交16个木板。"
+                }
+            }
+        ],
+        "output": [
+            {
+                "type": "item",
+                "id": "vitem:stick",
+                "count": 3,
+                "autoReceive": true,
+                "description": {
+                    "en": "This reward type gives the player specific items. \nFor this reward, the player will be given 3 sticks when claiming it. \nIn addition, the reward is automatically claimed.",
+                    "ru": "This reward type gives the player specific items. \nFor this reward, the player will be given 3 sticks when claiming it. \nIn addition, the reward is automatically claimed.",
+                    "zh": "该奖励类型给予玩家特定物品。\n对于该奖励，在领取时会给玩家3个木棍。\n另外，该奖励自动领取。"
+                }
+            },
+            {
+                "type": "item",
+                "id": "vblock:planks",
+                "count": 20,
+                "data": 0,
+                "description": {
+                    "en": "For this reward, the player will be given 20 oak planks when claimed.",
+                    "ru": "For this reward, the player will be given 20 oak planks when claimed.",
+                    "zh": "对于该奖励，在领取时会给玩家20个橡木木板。"
+                }
+            }
+        ],
         "name": {
-            "en": "item",
-            "zh": "物品"
+            "en": "Type 'item'",
+            "ru": "Type 'item'",
+            "zh": "类型 “item”"
         },
-        "text": {
-            "en": "",
-            "zh": ""
-        }
+        "text": ""
     }
 }

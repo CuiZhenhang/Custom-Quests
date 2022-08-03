@@ -1,18 +1,17 @@
-/// <reference path='../Integration.js'/>
+/// <reference path='../IOTypeTools.js'/>
 
 Network.addClientPacket('CustomQuests.output.message', function (packetData) {
     let message = ''
     if (typeof packetData.message === 'string') {
         message = packetData.message
     } else if (Utils.isObject(packetData.message)) {
-        message = TranAPI.t(packetData.message)
+        message = TranAPI.translate(packetData.message)
     }
-    Game.message(message)
+    if (packetData.isAlert) alert(message)
+    else Game.message(message)
 })
 
-IOTypeTools.setOutputType('message', {
-    en: 'message'
-}, {
+IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'), {
     onLoad (outputJson, toolsCb, cache) {
         if (outputJson.autoReceive) {
             toolsCb.setState({}, {
@@ -41,7 +40,8 @@ IOTypeTools.setOutputType('message', {
             client = toolsCb.getConnectedClientList()
         }
         client.send('CustomQuests.output.message', {
-            message: outputJson.message
+            message: outputJson.message,
+            isAlert: Boolean(outputJson.isAlert)
         })
     },
     getIcon (outputJson, toolsCb, extraInfo) {
@@ -53,15 +53,38 @@ IOTypeTools.setOutputType('message', {
                 bitmap: 'reward_message',
                 clicker: {
                     onClick: (!received) ? Utils.debounce(function () {
-                            if (toolsCb.getState().state === EnumObject.outputState.received) return
-                            toolsCb.sendPacket({ type: 'receive' })
-                        }, 500) : null
+                        if (toolsCb.getState().state === EnumObject.outputState.received) return
+                        toolsCb.sendPacket({ type: 'receive' })
+                    }, 500) : null,
+                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
                 }
             }]
         ]
     },
-    getDesc (outputJson, toolsCb, extraInfo) {
-        
+    getDescription (outputJson, toolsCb, extraInfo) {
+        let prefix = extraInfo.prefix
+        let maxY = extraInfo.posY + 70
+        let elements = [
+            [prefix + 'text', {
+                type: 'text', x: 500, y: extraInfo.posY - 10, text: TranAPI.translate('outputType.message.text'),
+                font: { color: android.graphics.Color.BLACK, size: 40, align: 1 }
+            }]
+        ]
+        QuestUiTools.resolveText(TranAPI.translate(outputJson.description), function (str) {
+            if (typeof str !== 'string') return 1
+            return QuestUiTools.getTextWidth(str, 40) / 900
+        }).forEach(function (str, index) {
+            elements.push([prefix + 'desc_' + index, {
+                type: 'text', x: 50, y: maxY, text: str,
+                font: { color: android.graphics.Color.BLACK, size: 40 }
+            }])
+            maxY += 50
+        })
+        maxY += 20
+        return {
+            maxY: maxY,
+            elements: elements
+        }
     }
 }, {
     allowRepeat: true,

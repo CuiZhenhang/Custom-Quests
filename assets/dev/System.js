@@ -5,21 +5,31 @@ const System = {
     resolveInputJson (inputJson, refsArray, bitmapNameObject) {
         if (!Utils.isObject(inputJson)) return null
         if (typeof inputJson.type !== 'string') return null
+        let description = Utils.resolveTextJson(inputJson.description)
         let inputTypeCb = IOTypeTools.getInputTypeCb(inputJson.type)
-        if (typeof inputTypeCb.resolveJson !== 'function') return inputJson
+        if (typeof inputTypeCb.resolveJson !== 'function') {
+            inputJson.description = description
+            return inputJson
+        }
         let resolvedJson = inputTypeCb.resolveJson(inputJson, refsArray, bitmapNameObject)
         if (!Utils.isObject(resolvedJson)) return null
         if (typeof resolvedJson.type !== 'string') return null
+        resolvedJson.description = description
         return resolvedJson
     },
     resolveOutputJson (outputJson, refsArray, bitmapNameObject) {
         if (!Utils.isObject(outputJson)) return null
         if (typeof outputJson.type !== 'string') return null
+        let description = Utils.resolveTextJson(outputJson.description)
         let outputTypeCb = IOTypeTools.getOutputTypeCb(outputJson.type)
-        if (typeof outputTypeCb.resolveJson !== 'function') return outputJson
+        if (typeof outputTypeCb.resolveJson !== 'function') {
+            outputJson.description = description
+            return outputJson
+        }
         let resolvedJson = outputTypeCb.resolveJson(outputJson, refsArray, bitmapNameObject)
         if (!Utils.isObject(resolvedJson)) return null
         if (typeof resolvedJson.type !== 'string') return null
+        resolvedJson.description = description
         return resolvedJson
     },
     resolveJson: (function () {
@@ -141,7 +151,6 @@ const System = {
                 resolvedMainJson.chapter[chapterId] = resolvedChapterJson
                 resolvedChapterJson.quest = {}
                 resolvedChapterJson.name = Utils.resolveTextJson(chapterJson.name)
-                resolvedChapterJson.description = Utils.resolveTextJson(chapterJson.description)
                 resolvedChapterJson.icon = Utils.resolveIconJson(chapterJson.icon, refsArray, bitmapNameObject)
                 resolvedChapterJson.background = Utils.deepCopy(chapterJson.background)
                 if (Array.isArray(resolvedChapterJson.background)) {
@@ -496,7 +505,7 @@ const System = {
                 cb.onQuestInputStateChanged(questData.inputState, oldQuestInputState)
             }
             if (oldQuestInputState <= EnumObject.questInputState.unfinished && questInputState >= EnumObject.questInputState.finished) {
-                questData.outputState = EnumObject.questOutputState.unreceived
+                questData.outputState = questJson.inner.output.length ? EnumObject.questOutputState.unreceived : EnumObject.questOutputState.received
                 if (typeof cb.onQuestOutputStateChanged === 'function') {
                     cb.onQuestOutputStateChanged(questData.outputState, EnumObject.questOutputState.locked)
                 }

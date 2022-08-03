@@ -9,7 +9,14 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
     if (typeof packetData.index !== 'number') return
     if (!Utils.isObject(packetData.data)) return
     let saveId = ServerSystem.getSaveId(client.getPlayerUid())
-    if (!ServerSystem.isSaveIdValid(saveId)) return
+    if (!ServerSystem.isSaveIdValid(saveId)) {
+        if (Setting.saveForTeam && !Utils.isObject(ServerSystem.getTeam(client.getPlayerUid()))) {
+            client.send('CustomQuests.Client.alert', {
+                text: ['$alert.no_team']
+            })
+        }
+        return
+    }
     let loadedQuest = ServerSystem.getLoadedQuest(saveId, packetData.sourceId, packetData.chapterId, packetData.questId)
     if (packetData.type === 'input') {
         if (!Array.isArray(loadedQuest.input)) return
@@ -28,6 +35,26 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
             packetData: packetData.data
         })
     }
+})
+
+Network.addServerPacket('CustomQuests.Server.receiveAllQuest', function (client, packetData) {
+    if (typeof packetData.sourceId !== 'string') return
+    if (!Utils.isObject(packetData.extraInfo)) packetData.extraInfo = {}
+    let player = client.getPlayerUid()
+    let saveId = ServerSystem.getSaveId(player)
+    if (!ServerSystem.isSaveIdValid(saveId)) {
+        if (Setting.saveForTeam && !Utils.isObject(ServerSystem.getTeam(client.getPlayerUid()))) {
+            client.send('CustomQuests.Client.alert', {
+                text: ['$alert.no_team']
+            })
+        }
+        return
+    }
+    packetData.extraInfo.operator = {
+        type: 'player',
+        player: player
+    }
+    ServerSystem.receiveAllQuest(saveId, packetData.sourceId, packetData.extraInfo)
 })
 
 Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packetData) {

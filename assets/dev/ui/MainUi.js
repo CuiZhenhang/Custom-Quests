@@ -14,6 +14,18 @@ const $MainUi = {
     chapterId: null,
     /** @type { Nullable<CQTypes.ResolvedChapterJson> } */
     chapterJson: null,
+    chapterGroup: {
+        exist: false,
+        /** @type { Nullable<CQTypes.chapterId> } */
+        chapterId: null,
+        /** @type { Array<string> } */
+        newElements: []
+    },
+    chapterUiUpdateRequest: {
+        exist: false,
+        timeFirst: 0,
+        timeLast: 0
+    },
     questUi: {
         /** @type { Nullable<CQTypes.questId> } */
         questId: null,
@@ -47,7 +59,32 @@ const $MainUi = {
                     }, 500)
                 }
             },
-            show_list: { type: 'button', x: 8, y: 60 + ($ScreenHeight - 60)/2 - 16, bitmap: 'arrow_right', scale: 32/64,
+            team: { type: 'button', x: 72, y: 12, z: 1, bitmap: 'team', scale: 36 / 32,
+                clicker: {
+                    onClick: Utils.debounce(function () {
+                        QuestUi.openTeamUi()
+                    }, 500)
+                }
+            },
+            team_remind: {
+                type: 'image',
+                x: 72 + 36 * (55 / 80),
+                y: 12 + 36 * (5 / 80),
+                z: 2,
+                width: 36 * (20 / 80),
+                height: 36 * (20 / 80),
+                bitmap: 'remind'
+            },
+            fast_receive: { type: 'button', x: 122, y: 12, bitmap: 'fast_receive', scale: 36 / 16,
+                clicker: {
+                    onClick: Utils.debounce(function () {
+                        if (typeof $MainUi.sourceId === 'string' && Utils.isObject($MainUi.mainJson)) {
+                            ClientSystem.receiveAllQuest($MainUi.sourceId, {})
+                        }
+                    }, 1000)
+                }
+            },
+            show_list: { type: 'button', x: 8, y: 60 + ($ScreenHeight - 60)/2 - 16, bitmap: 'arrow_right', scale: 32 / 64,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         $MainUi.openChapterListUi()
@@ -75,7 +112,8 @@ const $MainUi = {
         ],
         elements: {
             close: { type: 'closeButton', x: 860, y: 20, bitmap: 'X', bitmap2: 'XPress', scale: 120/19 },
-            title: { type: 'text', x: 60, y: 40, text: TranAPI.translate('gui.chapterList'), font: { color: $Color.BLACK, size: 60 } }
+            title: { type: 'text', x: 60, y: 40, text: TranAPI.translate('gui.chapterList'), font: { color: $Color.BLACK, size: 60 } },
+            group_frame: { type: 'frame', x: 200 + 2000, y: 0, z: 10, width: 800, height: 200, bitmap: 'classic_frame_bg_light', scale: 2 }
         }
     }, null, {
         closeOnBackPressed: true
@@ -88,6 +126,10 @@ const $MainUi = {
             { type: 'bitmap', x: 0 + 2000, y: 0, width: 1000, height: 1000 * (1/2), bitmap: 'clear' }
         ],
         elements: {}
+    }, {
+        onOpen (ui) {
+            ui.refresh()
+        }
     }),
     /** @type { QuestUi['open'] } */
     open (sourceId) {
@@ -97,6 +139,7 @@ const $MainUi = {
             this.mainJson = Store.localCache.resolvedJson[sourceId]
             this.chapterId = null
             this.chapterJson = null
+            if (this.chapterListUi.isOpened()) this.chapterListUi.close()
             if (!Utils.isObject(this.mainJson)) return
         }
         this.mainUi.content.drawing[3].text = TranAPI.translate(this.mainJson.name)
@@ -114,19 +157,26 @@ const $MainUi = {
     },
     openChapterListUi () {
         let ui = this.chapterListUi
+        if ($MainUi.chapterGroup.exist) {
+            ui.content.elements['group_frame'].x = 200 + 2000
+            $MainUi.chapterGroup.exist = false
+            $MainUi.chapterGroup.chapterId = null
+            $MainUi.chapterGroup.newElements.length = 0
+        }
         ui.content.drawing.splice(2)
         ui.clearNewElements()
         if (!Utils.isObject(this.mainJson)) {
             ui.open(true)
             return
         }
-        /** @type { {[chapterId: CQTypes.chapterId]: { name: CQTypes.TextJson, icon: CQTypes.IconJson, list: Array<chapterId> }} } */
+        /** @type { {[chapterId: CQTypes.chapterId]: { name: CQTypes.TextJson, icon: CQTypes.IconJson, list: Array<CQTypes.chapterId> }} } */
         let groupObj = {}
         /** @type { {[chapterId: CQTypes.chapterId]: boolean} } */
         let vis = {}
         if (Array.isArray(this.mainJson.group)) {
             this.mainJson.group.forEach(function (groupJson) {
                 if (groupJson.list.length === 0) return
+                if (Utils.isObject(groupObj[groupJson.list[0]])) return
                 groupObj[groupJson.list[0]] = groupJson
                 groupJson.list.forEach(function (chapterId) {
                     vis[chapterId] = true
@@ -134,16 +184,35 @@ const $MainUi = {
             })
         }
         let height = 140
+        let maxY = height
         let uuid = Utils.getUUID()
         for (let chapterId in this.mainJson.chapter) {
-            let heightBak = height
             if (Utils.isObject(groupObj[chapterId])) {
                 let groupJson = groupObj[chapterId]
-                /** @todo */
+                ui.addElements([
+                    [uuid + '_' + chapterId + '_icon', {
+                        type: 'slot', visual: true, bitmap: groupJson.icon.bitmap || 'clear',
+                        source: Utils.transferItemFromJson(groupJson.icon),
+                        darken: Boolean(groupJson.icon.darken),
+                        x: 10, y: height + 10, z: 1, size: 180
+                    }],
+                    [uuid + '_' + chapterId + '_name', {
+                        type: 'text', text: TranAPI.translate(groupJson.name),
+                        font: { color: $Color.BLACK, size: 60 },
+                        x: 200, y: height + 70, z: 1
+                    }],
+                    [uuid + '_' + chapterId + '_btn', {
+                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 180,
+                        clicker: {
+                            onClick: Utils.debounce(this.toggleChapterGroup.bind(this, groupJson, height), 500)
+                        }
+                    }]
+                ])
+                let tmpY = height + 200 + groupJson.list.length * 200
+                if (tmpY > maxY) maxY = tmpY
             } else {
                 if (vis[chapterId]) continue
                 let chapterJson = this.mainJson.chapter[chapterId]
-                let chapterIdBak = chapterId
                 ui.addElements([
                     [uuid + '_' + chapterId + '_icon', {
                         type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'clear',
@@ -157,12 +226,9 @@ const $MainUi = {
                         x: 200, y: height + 70, z: 1
                     }],
                     [uuid + '_' + chapterId + '_btn', {
-                        type: 'image', x: 10, y: height + 10, z: 11, bitmap: 'clear', width: 980, height: 180,
+                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 180,
                         clicker: {
-                            onClick: Utils.debounce(function () {
-                                $MainUi.updateChapterUi(chapterIdBak)
-                                alert(TranAPI.translate(chapterJson.description))
-                            }, 500)
+                            onClick: Utils.debounce(this.updateChapterUi.bind(this, chapterId), 500)
                         }
                     }]
                 ])
@@ -174,10 +240,66 @@ const $MainUi = {
                 width: 5, color: $Color.GRAY
             })
             height += 200
+            if (height > maxY) maxY = height
         }
-        ui.content.drawing[1].height = Math.max(height, 1000*($ScreenHeight - 60)/200)
-        ui.ui.getLocation().scrollY = ui.content.drawing[1].height * (200/1000)
+        ui.content.drawing[1].height = Math.max(maxY, 1000*($ScreenHeight - 60)/200)
+        ui.ui.getLocation().scrollY = Math.max(maxY + 10, 1000*($ScreenHeight - 60)/200) * (200/1000)
         ui.open(true)
+    },
+    /** @type { (groupJson: { name: CQTypes.TextJson, icon: CQTypes.IconJson, list: Array<CQTypes.chapterId> }, height: number) => void } */
+    toggleChapterGroup (groupJson, height) {
+        let ui = this.chapterListUi
+        if (this.chapterGroup.exist) {
+            ui.content.elements['group_frame'].x = 200 + 2000
+            ui.clearNewElements(this.chapterGroup.newElements)
+            this.chapterGroup.exist = false
+            this.chapterGroup.newElements.length = 0
+            if (this.chapterGroup.chapterId === groupJson.list[0]) {
+                this.chapterGroup.chapterId = null
+                ui.refresh()
+                return
+            }
+            this.chapterGroup.chapterId = null
+        }
+        if (!Utils.isObject(this.mainJson)) return
+        this.chapterGroup.exist = true
+        this.chapterGroup.chapterId = groupJson.list[0]
+        let listHeight = 0
+        let uuid = Utils.getUUID()
+        let that = this
+        groupJson.list.forEach(function (chapterId) {
+            let chapterJson = that.mainJson.chapter[chapterId]
+            if (!Utils.isObject(chapterJson)) return
+            that.chapterGroup.newElements.push(
+                uuid + '_group_' + chapterId + '_icon',
+                uuid + '_group_' + chapterId + '_name',
+                uuid + '_group_' + chapterId + '_btn'
+                )
+            ui.addElements([
+                [uuid + '_group_' + chapterId + '_icon', {
+                    type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'clear',
+                    source: Utils.transferItemFromJson(chapterJson.icon),
+                    darken: Boolean(chapterJson.icon.darken),
+                    x: 210, y: height + 200 + listHeight + 10, z: 11, size: 180
+                }],
+                [uuid + '_group_' + chapterId + '_name', {
+                    type: 'text', text: TranAPI.translate(chapterJson.name),
+                    font: { color: $Color.BLACK, size: 60 },
+                    x: 400, y: height + 200 + listHeight + 70, z: 11
+                }],
+                [uuid + '_group_' + chapterId + '_btn', {
+                    type: 'image', x: 210, y: height + 200 + listHeight + 10, z: 12, bitmap: 'clear', width: 780, height: 180,
+                    clicker: {
+                        onClick: Utils.debounce(that.updateChapterUi.bind(that, chapterId), 500)
+                    }
+                }]
+            ])
+            listHeight += 200
+        })
+        ui.content.elements['group_frame'].x = 200
+        ui.content.elements['group_frame'].y = height + 200
+        ui.content.elements['group_frame'].height = listHeight
+        ui.refresh()
     },
     /** @type { (chapterId: CQTypes.chapterId) => void } */
     updateChapterUi (chapterId) {
@@ -185,6 +307,7 @@ const $MainUi = {
         if (typeof chapterId !== 'string') return
         this.chapterId = chapterId
         this.chapterJson = this.mainJson.chapter[chapterId]
+        this.chapterUiUpdateRequest.exist = false
         let ui = this.chapterUi
         ui.content.drawing.splice(3)
         ui.clearNewElements()
@@ -233,19 +356,19 @@ const $MainUi = {
                 if (saveData.inputState === EnumObject.questInputState.locked && questJson.hidden) return
                 questJson.parent.forEach(function (path) {
                     if (path[0] !== that.sourceId || path[1] !== that.chapterId) return
-                    let width = typeof path[3] === 'number' ? path[3] : 5
                     let tQuestJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
                     if (!Utils.isObject(tQuestJson) || tQuestJson.type !== 'quest') return
                     let posParent = [tQuestJson.pos[0] + tQuestJson.size/2, tQuestJson.pos[1] + tQuestJson.size/2]
                     let tInputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, path[0], path[1], path[2])
                     if (tInputState === EnumObject.questInputState.locked && tQuestJson.hidden) return
                     let color = $Color.GRAY
-                    if (saveData.inputState >= EnumObject.questInputState.finished) {
+                    if (saveData.inputState >= EnumObject.questInputState.unfinished) {
                         if (tInputState >= EnumObject.questInputState.finished) color = $Color.rgb(100, 220, 100)
-                        else if (tInputState === EnumObject.questInputState.unfinished) color = $Color.rgb(0, 200, 200)
-                        else color = $Color.rgb(200, 200, 0)
+                    } else {
+                        if (tInputState >= EnumObject.questInputState.finished) color = $Color.rgb(0, 200, 200)
+                        else if (tInputState === EnumObject.questInputState.unfinished) color = $Color.rgb(200, 200, 0)
                     }
-                    QuestUiTools.getDependencyLine(posParent, posChild, width, color).forEach(function (drawing) {
+                    QuestUiTools.getDependencyLine(posParent, posChild, path[3], color).forEach(function (drawing) {
                         ui.content.drawing.push(drawing)
                     })
                 })
@@ -272,11 +395,11 @@ const $MainUi = {
                 sendInputPacket: ClientSystem.sendInputPacket.bind(ClientSystem, sourceId, chapterId, questId),
                 sendOutputPacket: ClientSystem.sendOutputPacket.bind(ClientSystem, sourceId, chapterId, questId),
                 openParentListUi: function () {
-                    alert('[WIP] Open Parent List UI')
+                    alert(TranAPI.translate('alert.WIP'))
                     /** @todo */
                 },
                 openChildListUi: function () {
-                    alert('[WIP] Open Child List UI')
+                    alert(TranAPI.translate('alert.WIP'))
                     /** @todo */
                 }
             })
@@ -287,6 +410,17 @@ const $MainUi = {
         } catch (err) {
             Utils.log('Error in function \'$MainUi.openQuestUi\' (ui/MainUi.js):\n' + err, 'ERROR')
         }
+    },
+    /** @type { (chapterId: CQTypes.chapterId) => void } */
+    addChapterUiUpdateRequest (chapterId) {
+        if (chapterId !== this.chapterId) return
+        if (!this.chapterUi.isOpened()) return
+        let time = Date.now()
+        if (!this.chapterUiUpdateRequest.exist) {
+            this.chapterUiUpdateRequest.exist = true
+            this.chapterUiUpdateRequest.timeFirst = time
+        }
+        this.chapterUiUpdateRequest.timeLast = time
     },
     /** @type { (questId: CQTypes.questId) => void } */
     addQuestUiUpdateRequest (questId) {
@@ -300,6 +434,23 @@ const $MainUi = {
         this.questUi.updateRequest.timeLast = time
     }
 }
+
+Callback.addCallback('LocalTick', function () {
+    if (!$MainUi.chapterUiUpdateRequest.exist) return
+    if (!$MainUi.chapterUi.isOpened()) {
+        $MainUi.chapterUiUpdateRequest.exist = false
+        return
+    }
+    let time = Date.now()
+    if (time - $MainUi.chapterUiUpdateRequest.timeFirst >= 1000 /* 1s */) {
+        $MainUi.updateChapterUi($MainUi.chapterId)
+        return
+    }
+    if (time - $MainUi.chapterUiUpdateRequest.timeLast >= 200 /* 0.2s */) {
+        $MainUi.updateChapterUi($MainUi.chapterId)
+        return
+    }
+})
 
 Callback.addCallback('LocalTick', function () {
     if (!$MainUi.questUi.updateRequest.exist) return
@@ -333,7 +484,7 @@ Callback.addCallback('CustomQuests.onLocalQuestInputStateChanged', function (pat
     if (typeof $MainUi.sourceId !== 'string' || typeof $MainUi.chapterId !== 'string') return
     if (path[0] !== $MainUi.sourceId || path[1] !== $MainUi.chapterId) return
     if (!$MainUi.chapterUi.isOpened()) return
-    $MainUi.updateChapterUi(path[1])
+    $MainUi.addChapterUiUpdateRequest(path[1])
     if (path[2] === $MainUi.questUi.questId) {
         $MainUi.addQuestUiUpdateRequest(path[2])
     }
@@ -342,9 +493,23 @@ Callback.addCallback('CustomQuests.onLocalQuestOutputStateChanged', function (pa
     if (typeof $MainUi.sourceId !== 'string' || typeof $MainUi.chapterId !== 'string') return
     if (path[0] !== $MainUi.sourceId || path[1] !== $MainUi.chapterId) return
     if (!$MainUi.chapterUi.isOpened()) return
-    $MainUi.updateChapterUi(path[1])
+    $MainUi.addChapterUiUpdateRequest(path[1])
     if (path[2] === $MainUi.questUi.questId) {
         $MainUi.addQuestUiUpdateRequest(path[2])
+    }
+})
+Callback.addCallback('CustomQuests.onLocalCacheChanged', function (packetData, oldLocalCache) {
+    if ($MainUi.chapterUi.isOpened() &&
+        typeof $MainUi.chapterId === 'string' &&
+        (Utils.isObject(packetData.saveData) || packetData.saveData === null)
+    ) {
+        $MainUi.addChapterUiUpdateRequest($MainUi.chapterId)
+        $MainUi.addQuestUiUpdateRequest($MainUi.questUi.questId)
+    }
+    if (Utils.isObject(packetData.team) || packetData.team === null) {
+        let hasTeam = Utils.isObject(packetData.team)
+        $MainUi.mainUi.content.elements['team_remind'].x = 72 + 36 * (55 / 80) + (hasTeam ? 2000 : 0)
+        $MainUi.mainUi.refresh()
     }
 })
 QuestUi.open = $MainUi.open.bind($MainUi)

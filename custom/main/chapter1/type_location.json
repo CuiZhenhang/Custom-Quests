@@ -1,0 +1,37 @@
+{
+    "type": "quest",
+    "id": "type_location",
+    "pos": [550, 200],
+    "size": 100,
+    "icon": {
+        "id": "vblock:end_portal_frame"
+    },
+    "parent": [
+        "start"
+    ],
+    "inner": {
+        "input": [
+            {
+                "type": "location",
+                "icon": {
+                    "id": "vblock:end_portal_frame"
+                },
+                "dimension": 2,
+                "pos": [0, 64, 0],
+                "radius": [10, 1000, 10],
+                "description": {
+                    "en": "This task type requires the player to reach a specified location.\nFor this task, the player is required to reach the specified range of the end.",
+                    "ru": "This task type requires the player to reach a specified location.\nFor this task, the player is required to reach the specified range of the end.",
+                    "zh": "该任务类型需要玩家到达指定位置。\n对于该任务，需要玩家到达末地的指定范围。"
+                }
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "Type 'location'",
+            "ru": "Type 'location'",
+            "zh": "类型 “location”"
+        },
+        "text": ""
+    }
+}

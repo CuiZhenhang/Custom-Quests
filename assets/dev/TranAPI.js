@@ -14,7 +14,7 @@ const TranAPI = {
     },
     getTranslation (str) {
         /** @type { ReturnType<TranAPI['getTranslation']> } */
-        let ret = {}
+        let ret = { 'en': str }
         for (let lang in this.translation) {
             if (this.translation[lang] && typeof this.translation[lang][str] === 'string') {
                 ret[lang] = this.translation[lang][str]

@@ -1,0 +1,41 @@
+{
+    "type": "quest",
+    "id": "type_message",
+    "pos": [400, 350],
+    "size": 100,
+    "icon": {
+        "id": "vblock:skull",
+        "data": 3
+    },
+    "parent": [
+        "start"
+    ],
+    "inner": {
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [
+            {
+                "type": "message",
+                "message": {
+                    "en": "This is the information displayed by the 'message' reward type.",
+                    "ru": "This is the information displayed by the 'message' reward type.",
+                    "zh": "这是“message”奖励类型显示的信息。"
+                },
+                "description": {
+                    "en": "This reward type will display some information when claimed.",
+                    "ru": "This reward type will display some information when claimed.",
+                    "zh": "该奖励类型在领取时会显示一些信息。"
+                }
+            }
+        ],
+        "name": {
+            "en": "Type 'message'",
+            "ru": "Type 'message'",
+            "zh": "类型 “message”"
+        },
+        "text": ""
+    }
+}

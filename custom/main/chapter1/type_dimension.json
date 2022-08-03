@@ -1,0 +1,35 @@
+{
+    "type": "quest",
+    "id": "type_dimension",
+    "pos": [550, 100],
+    "size": 100,
+    "icon": {
+        "id": "vblock:grass"
+    },
+    "parent": [
+        "start"
+    ],
+    "inner": {
+        "input": [
+            {
+                "type": "visit_dimension",
+                "icon": {
+                    "id": "vblock:grass"
+                },
+                "dimension": 0,
+                "description": {
+                    "en": "This task type requires the player to reach the specified dimension. \nFor this task, the player is required to reach the Overworld.",
+                    "ru": "This task type requires the player to reach the specified dimension. \nFor this task, the player is required to reach the Overworld.",
+                    "zh": "该任务类型需要玩家到达指定维度。\n对于该任务，需要玩家到达主世界。"
+                }
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "Type 'visit_dimension'",
+            "ru": "Type 'visit_dimension'",
+            "zh": "类型 “visit_dimension”"
+        },
+        "text": ""
+    }
+}

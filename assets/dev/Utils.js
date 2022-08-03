@@ -27,7 +27,7 @@ const Utils = {
         }
     },
     isObject (obj) {
-        if (typeof obj !== 'object') return false
+        if (typeof obj !== 'object' && typeof obj !== 'function') return false
         if (obj === null) return false
         return true
     },
@@ -75,17 +75,21 @@ const Utils = {
         if (typeof id === 'number') {
             return Network.inRemoteWorld() ? Network.serverToLocalId(id) : id
         }
-        if (id.match(/^item[a-z]*(:|.)/i)) {
-            return ItemID[id.replace(/^item[a-z]*(:|.)/i, '')] || ItemID.missing_item
+        if ((/^(v|m)[a-z]*item[a-z]*(:|.)/i).test(id)) {
+            id = id.replace(/^(v|m)[a-z]*item[a-z]*(:|.)/i, '')
+            return VanillaItemID[id] || ItemID[id] || ItemID.missing_item
         }
-        if (id.match(/^block[a-z]*(:|.)/i)) {
-            return BlockID[id.replace(/^block[a-z]*(:|.)/i, '')] || ItemID.missing_item
+        if ((/^(v|m)[a-z]*block[a-z]*(:|.)/i).test(id)) {
+            id = id.replace(/^(v|m)[a-z]*block[a-z]*(:|.)/i, '')
+            return VanillaBlockID[id] || BlockID[id] || ItemID.missing_item
         }
-        if (id.match(/^v[a-z]*item[a-z]*(:|.)/i)) {
-            return VanillaItemID[id.replace(/^v[a-z]*item[a-z]*(:|.)/i, '')] || ItemID.missing_item
+        if ((/^item[a-z]*(:|.)/i).test(id)) {
+            id = id.replace(/^item[a-z]*(:|.)/i, '')
+            return ItemID[id] || VanillaItemID[id] || ItemID.missing_item
         }
-        if (id.match(/^v[a-z]*block[a-z]*(:|.)/i)) {
-            return VanillaBlockID[id.replace(/^v[a-z]*block[a-z]*(:|.)/i, '')] || ItemID.missing_item
+        if ((/^block[a-z]*(:|.)/i).test(id)) {
+            id = id.replace(/^block[a-z]*(:|.)/i, '')
+            return BlockID[id] || VanillaBlockID[id] || ItemID.missing_item
         }
         return ItemID.missing_item
     },
@@ -95,10 +99,18 @@ const Utils = {
         Callback.addCallback('PostLoaded', function () {
             new java.lang.Thread(new java.lang.Runnable({
                 run () {
-                    for (let name in VanillaItemID) idFromItem[VanillaItemID[name]] = 'vitem:' + name
-                    for (let name in VanillaBlockID) idFromItem[VanillaBlockID[name]] = 'vblock:' + name
-                    for (let name in ItemID) idFromItem[ItemID[name]] = 'item:' + name
-                    for (let name in BlockID) idFromItem[BlockID[name]] = 'block:' + name
+                    for (let name in VanillaItemID) {
+                        idFromItem[VanillaItemID[name]] = 'vitem:' + name
+                    }
+                    for (let name in VanillaBlockID) {
+                        idFromItem[VanillaBlockID[name]] = 'vblock:' + name
+                    }
+                    for (let name in ItemID) {
+                        idFromItem[ItemID[name]] = 'item:' + name
+                    }
+                    for (let name in BlockID) {
+                        idFromItem[BlockID[name]] = 'block:' + name
+                    }
                 }
             })).start()
         })
@@ -230,7 +242,7 @@ const Utils = {
     },
     resolveRefs (value, refsArray) {
         if (typeof value !== 'string') return value
-        if (!value.match(/^ref:/i)) return value
+        if (!(/^ref:/i).test(value)) return value
         let that = this
         let refId = value.replace(/^ref:/i, '')
         let ret = value

@@ -1,0 +1,38 @@
+{
+    "type": "quest",
+    "id": "type_kill",
+    "pos": [550, 300],
+    "size": 100,
+    "icon": {
+        "id": "vitem:iron_sword"
+    },
+    "parent": [
+        "start"
+    ],
+    "inner": {
+        "input": [
+            {
+                "type": "kill",
+                "icon": {
+                    "id": "vblock:skull",
+                    "count": 3,
+                    "data": 4
+                },
+                "entityId": 33,
+                "count": 3,
+                "description": {
+                    "en": "This task type requires the player to kill the specified entity. \nFor this task, the player needs to kill 3 creepers.",
+                    "ru": "This task type requires the player to kill the specified entity. \nFor this task, the player needs to kill 3 creepers.",
+                    "zh": "该任务类型需要玩家击杀指定生物。\n对于该任务，需要玩家击杀3个苦力怕。"
+                }
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "Type 'kill'",
+            "ru": "Type 'kill'",
+            "zh": "类型 “kill”"
+        },
+        "text": ""
+    }
+}

@@ -1,0 +1,39 @@
+{
+    "type": "quest",
+    "id": "type_command",
+    "pos": [410, 60],
+    "size": 80,
+    "icon": {
+        "bitmap": "reward_command"
+    },
+    "parent": [
+        "start"
+    ],
+    "inner": {
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [
+            {
+                "type": "command",
+                "commands": [
+                    "effect @p speed 60 1 true",
+                    "effect @p haste 30 0 true"
+                ],
+                "description": {
+                    "en": "This reward type will execute commands when claimed. \nFor this reward, it will give the recipient a buff of Speed 2 and Haste 1.",
+                    "ru": "This reward type will execute commands when claimed. \nFor this reward, it will give the recipient a buff of Speed 2 and Haste 1.",
+                    "zh": "该奖励类型在领取时会执行指令。\n对于该奖励，领取时会给领取者速度2、急迫1的buff。"
+                }
+            }
+        ],
+        "name": {
+            "en": "Type 'command'",
+            "ru": "Type 'command'",
+            "zh": "类型 “command”"
+        },
+        "text": ""
+    }
+}

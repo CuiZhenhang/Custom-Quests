@@ -31,7 +31,7 @@ const IOTypeTools = {
         let methods = [
             'resolveJson', 'onPacket', 'onCustomCall',
             'onLoad', 'onUnload', 'onTick',
-            'getIcon', 'getDesc', 'onEdit'
+            'getIcon', 'getDescription', 'onEdit'
         ]
         methods.forEach(function (method) {
             if (typeof inputTypeCb[method] === 'function') {
@@ -203,7 +203,8 @@ const IOTypeTools = {
         let methods = [
             'resolveJson', 'onPacket', 'onCustomCall',
             'onLoad', 'onUnload', 'onReceive',
-            'getIcon', 'getDesc', 'onEdit'
+            'onFastReceive',
+            'getIcon', 'getDescription', 'onEdit'
         ]
         methods.forEach(function (method) {
             if (typeof outputTypeCb[method] === 'function') {
@@ -223,8 +224,8 @@ const IOTypeTools = {
     },
     getAllOutputType () {
         let ret = []
-        for (let type in this.inputType) {
-            if (Utils.isObject(this.inputType[type])) {
+        for (let type in this.outputType) {
+            if (Utils.isObject(this.outputType[type])) {
                 ret.push(type)
             }
         }
@@ -322,7 +323,8 @@ const IOTypeTools = {
         if (!this.isOutputIdLoaded(outputId)) return null
         if (!Utils.isObject(extraInfo)) extraInfo = {}
         let methods = [
-            'onCustomCall', 'onPacket', 'onReceive', 'onFastReceive'
+            'onCustomCall', 'onPacket', 'onReceive',
+            'onFastReceive'
         ]
         if (methods.indexOf(method) < 0) return
         let outputObject = this.outputObject[outputId]
@@ -348,9 +350,9 @@ const IOTypeTools = {
     }
 }
 
-Callback.addCallback('LocalTick', function () {
+Callback.addCallback('ServerPlayerTick', function () {
     /* 0.5s */
-    if (Math.random() * 10 < 1 && !Network.inRemoteWorld()) {
+    if (Math.random() * 10 < 1 && Math.random() * Network.getConnectedPlayers().length < 1) {
         try {
             let playerList = Network.getConnectedPlayers()
             let playerInventory = {}
@@ -378,7 +380,7 @@ Callback.addCallback('LocalTick', function () {
                 })
             })
         } catch (err) {
-            Utils.log('Error in Callback \'LocalTick\' (IOTypeTools.js):\n' + err, 'ERROR', true)
+            Utils.log('Error in Callback \'ServerPlayerTick\' (IOTypeTools.js):\n' + err, 'ERROR', true)
         }
     }
 })

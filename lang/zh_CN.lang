@@ -1,0 +1,90 @@
+mod.dialog=欢迎使用 Custom Quests.\n模组作者 Cui Zhenhang.
+
+item.quest_book=任务书
+item.quest_book_admin=任务管理书
+item.quest_book_editor=任务编辑书
+item.missing_item=未知物品
+
+message.questFinished=任务已完成：§a[{questName}]§r。
+
+Utils.dialog.confirm=确认
+Utils.dialog.cancel=取消
+
+Integration.RecipeViewer.noRecipe=RecipeViewer 无配方。
+Integration.RecipeViewer.oldVersion=RecipeViewer 版本过低。
+Integration.RecipeViewer.disabled=RecipeViewer 未启用。
+
+alert.WIP=[WIP] 该功能未完成.
+alert.no_team=您没有团队。\n请加入或创建一个团队。
+
+gui.task=任务
+gui.reward=奖励
+gui.chapterList=章节列表
+gui.team=团队
+gui.team.search=搜索
+gui.team.search.title=搜索团队名称
+gui.team.search.hint=输入关键字
+gui.team.noTeam=你没有团队
+gui.team.joinOrCreate=加入或创建一个团队
+gui.team.create=创建
+gui.team.create.enterName=请输入你的团队的名称
+gui.team.create.next=下一步
+gui.team.create.fail.nameLength=失败：名称长度不合法
+gui.team.create.fail.passwordLength=失败：密码长度不合法
+gui.team.joinTeam=加入团队
+gui.team.enterPassword=请输入团队密码
+gui.team.applicationSent=申请已发送
+gui.team.exit=推出
+gui.team.exit.warn=你真的要退出这个团队吗
+gui.team.playerState.absent=缺席
+gui.team.playerState.member=成员
+gui.team.playerState.admin=管理员
+gui.team.playerState.owner=所有者
+gui.description.inputType=任务类型：{name}
+gui.description.outputType=奖励类型：{name}
+
+
+inputType.group=任务组
+
+inputType.check=勾选
+
+inputType.item=物品
+inputType.item.submited=已提交 {count} 个物品
+
+inputType.exp=经验
+inputType.exp.isLevel=等级而非经验值。
+inputType.exp.notLevel=经验值而非等级。
+inputType.exp.submited=已提交 {value} 经验
+
+inputType.visit_dimension=访问维度
+inputType.visit_dimension.text=访问特定维度
+inputType.visit_dimension.dimensionId=维度 id：{id}
+
+inputType.location=到达位置
+inputType.location.text=到达特定位置
+inputType.location.dimensionId=维度 id：{id}
+inputType.location.ignoreDimension=任意维度
+
+inputType.kill=击杀生物
+inputType.kill.text=击杀特定生物
+inputType.kill.entity=生物 id：{id}，数量：{count}
+inputType.kill.killed=已击杀 {count} 个
+
+outputType.random=随机奖励
+
+outputType.select=选择奖励
+
+outputType.empty=无奖励
+outputType.empty.text=无奖励
+
+outputType.item=物品
+
+outputType.exp=经验
+outputType.exp.isLevel=等级而非经验值。
+outputType.exp.notLevel=经验值而非等级。
+
+outputType.command=指令
+outputType.command.text=运行特定指令。
+
+outputType.message=消息
+outputType.message.text=显示特定消息。

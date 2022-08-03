@@ -1,8 +1,6 @@
-/// <reference path='../Integration.js'/>
+/// <reference path='../IOTypeTools.js'/>
 
-IOTypeTools.setOutputType('select', {
-    en: 'select'
-}, {
+IOTypeTools.setOutputType('select', TranAPI.getTranslation('outputType.select'), {
     resolveJson (outputJson, refsArray, bitmapNameObject) {
         return outputJson
     },
@@ -23,7 +21,7 @@ IOTypeTools.setOutputType('select', {
         let ret = {}
         return ret
     },
-    getDesc (outputJson, toolsCb, extraInfo) {
+    getDescription (outputJson, toolsCb, extraInfo) {
         
     }
 }, {

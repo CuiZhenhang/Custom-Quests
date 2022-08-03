@@ -1,11 +1,12 @@
 {
-    "id": "Chapter2",
+    "id": "chapter2",
     "name": {
-        "en": "Chapter 2: Reward Type",
-        "zh": "第二章：奖励类型"
+        "en": "Chapter 2: Advanced Usage",
+        "ru": "Chapter 2: Advanced Usage",
+        "zh": "第二章：进阶用法"
     },
     "icon": {
-        "id": "item:quest_book"
+        "id": "vblock:grass"
     },
     "quest": [
         

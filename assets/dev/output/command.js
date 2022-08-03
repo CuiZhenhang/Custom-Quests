@@ -1,8 +1,6 @@
-/// <reference path='../Integration.js'/>
+/// <reference path='../IOTypeTools.js'/>
 
-IOTypeTools.setOutputType('command', {
-    en: 'command'
-}, {
+IOTypeTools.setOutputType('command', TranAPI.getTranslation('outputType.command'), {
     resolveJson (outputJson, refsArray, bitmapNameObject) {
         if (!Array.isArray(outputJson.commands)) return null
         return outputJson
@@ -58,15 +56,38 @@ IOTypeTools.setOutputType('command', {
                 bitmap: 'reward_command',
                 clicker: {
                     onClick: (!received) ? Utils.debounce(function () {
-                            if (toolsCb.getState().state === EnumObject.outputState.received) return
-                            toolsCb.sendPacket({ type: 'receive' })
-                        }, 500) : null
+                        if (toolsCb.getState().state === EnumObject.outputState.received) return
+                        toolsCb.sendPacket({ type: 'receive' })
+                    }, 500) : null,
+                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
                 }
             }]
         ]
     },
-    getDesc (outputJson, toolsCb, extraInfo) {
-        
+    getDescription (outputJson, toolsCb, extraInfo) {
+        let prefix = extraInfo.prefix
+        let maxY = extraInfo.posY + 70
+        let elements = [
+            [prefix + 'text', {
+                type: 'text', x: 500, y: extraInfo.posY - 10, text: TranAPI.translate('outputType.command.text'),
+                font: { color: android.graphics.Color.BLACK, size: 40, align: 1 }
+            }]
+        ]
+        QuestUiTools.resolveText(TranAPI.translate(outputJson.description), function (str) {
+            if (typeof str !== 'string') return 1
+            return QuestUiTools.getTextWidth(str, 40) / 900
+        }).forEach(function (str, index) {
+            elements.push([prefix + 'desc_' + index, {
+                type: 'text', x: 50, y: maxY, text: str,
+                font: { color: android.graphics.Color.BLACK, size: 40 }
+            }])
+            maxY += 50
+        })
+        maxY += 20
+        return {
+            maxY: maxY,
+            elements: elements
+        }
     }
 }, {
     allowRepeat: true,

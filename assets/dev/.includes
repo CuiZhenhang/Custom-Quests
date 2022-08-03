@@ -10,6 +10,7 @@ input/exp.js
 input/visit_dimension.js
 input/location.js
 input/kill.js
+output/empty.js
 output/item.js
 output/exp.js
 output/command.js
@@ -23,10 +24,10 @@ QuestUi.js
 
 ui/MainUi.js
 ui/QuestUi.js
-ui/QuestListUi.js
 ui/TeamUi.js
+ui/QuestListUi.js
 ui/ItemChooseUi.js
 
-Interaction.js
+Integration.js
 instance.js
 share.js

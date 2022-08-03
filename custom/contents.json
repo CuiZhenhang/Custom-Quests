@@ -1,6 +1,7 @@
 {
     "name": {
         "en": "Example",
+        "ru": "Example",
         "zh": "样例"
     },
     "main": [
@@ -9,17 +10,34 @@
         {
             "id": "chapter3",
             "name": {
-                "en": "Chapter 3",
-                "zh": "第3章"
-            },
-            "description": {
-                "en": "Description of Chapter 3",
-                "zh": "第3章的介绍"
+                "en": "Chapter 3: Undecided",
+                "ru": "Chapter 3: Undecided",
+                "zh": "第3章：未定"
             },
             "icon": {
-                "id": 1
+                "id": "vitem:diamond"
             },
             "quest": []
         }
-    ]
+    ],
+    "group": [
+        {
+            "name": {
+                "en": "Group 1",
+                "ru": "Group 1",
+                "zh": "第一组"
+            },
+            "icon": {
+                "id": "item:quest_book"
+            },
+            "list": [
+                "chapter1",
+                "chapter2"
+            ]
+        }
+    ],
+    "config": {
+        "textMessage": true,
+        "guiMessage": true
+    }
 }

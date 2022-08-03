@@ -1,8 +1,6 @@
-/// <reference path='../Integration.js'/>
+/// <reference path='../IOTypeTools.js'/>
 
-IOTypeTools.setOutputType('exp', {
-    en: 'exp'
-}, {
+IOTypeTools.setOutputType('exp', TranAPI.getTranslation('outputType.exp'), {
     resolveJson (outputJson, refsArray, bitmapNameObject) {
         if (typeof outputJson.value !== 'number' || outputJson.value < 0) outputJson.value = 1
         return outputJson
@@ -56,15 +54,46 @@ IOTypeTools.setOutputType('exp', {
                 bitmap: 'clear', source: { id: VanillaItemID.experience_bottle, count: outputJson.value },
                 clicker: {
                     onClick: (!received) ? Utils.debounce(function () {
-                            if (toolsCb.getState().state === EnumObject.outputState.received) return
-                            toolsCb.sendPacket({ type: 'receive' })
-                        }, 500) : null
+                        if (toolsCb.getState().state === EnumObject.outputState.received) return
+                        toolsCb.sendPacket({ type: 'receive' })
+                    }, 500) : null,
+                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
                 }
             }]
         ]
     },
-    getDesc (outputJson, toolsCb, extraInfo) {
-        
+    getDescription (outputJson, toolsCb, extraInfo) {
+        let prefix = extraInfo.prefix
+        let maxY = extraInfo.posY + 200
+        let elements = [
+            [prefix + 'slot', {
+                type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
+                bitmap: 'clear', source: {
+                    id: VanillaItemID.experience_bottle,
+                    count: outputJson.value
+                }
+            }],
+            [prefix + 'text', {
+                type: 'text', x: 500, y: extraInfo.posY + 120,
+                text: TranAPI.translate(outputJson.isLevel ? 'outputType.exp.isLevel' : 'outputType.exp.notLevel'),
+                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+            }]
+        ]
+        QuestUiTools.resolveText(TranAPI.translate(outputJson.description), function (str) {
+            if (typeof str !== 'string') return 1
+            return QuestUiTools.getTextWidth(str, 40) / 900
+        }).forEach(function (str, index) {
+            elements.push([prefix + 'desc_' + index, {
+                type: 'text', x: 50, y: maxY, text: str,
+                font: { color: android.graphics.Color.BLACK, size: 40 }
+            }])
+            maxY += 50
+        })
+        maxY += 20
+        return {
+            maxY: maxY,
+            elements: elements
+        }
     }
 }, {
     allowRepeat: true,

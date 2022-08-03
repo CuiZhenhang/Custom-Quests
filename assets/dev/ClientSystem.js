@@ -3,7 +3,7 @@
 /** @type { ClientSystem } */
 const ClientSystem = {
     sendInputPacket (sourceId, chapterId, questId, index, packetData) {
-        const questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
+        let questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
         if (!Utils.isObject(questJson)) return
         if (questJson.type !== 'quest') return
         if (index >= questJson.inner.input.length) return
@@ -16,7 +16,7 @@ const ClientSystem = {
         })
     },
     sendOutputPacket (sourceId, chapterId, questId, index, packetData) {
-        const questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
+        let questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
         if (!Utils.isObject(questJson)) return
         if (questJson.type !== 'quest') return
         if (index >= questJson.inner.output.length) return
@@ -25,6 +25,14 @@ const ClientSystem = {
                 type: 'output',
                 sourceId: sourceId, chapterId: chapterId, questId: questId, index: index,
                 data: packetData
+            })
+        })
+    },
+    receiveAllQuest (sourceId, extraInfo) {
+        runOnClientThread(function () {
+            Network.sendToServer('CustomQuests.Server.receiveAllQuest', {
+                sourceId: sourceId,
+                extraInfo: extraInfo
             })
         })
     },
@@ -89,10 +97,14 @@ const ClientSystem = {
 Callback.addCallback('CustomQuests.onLocalQuestInputStateChanged', function (path, newState, oldState) {
     if (newState === oldState) return
     if (newState === EnumObject.questInputState.finished) {
-        const questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
+        let config = Store.localCache.jsonConfig[path[0]]
+        if (!Utils.isObject(config)) return
+        let questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
         if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
-        Game.message('§e<CustomQuests>§r ' + Utils.replace(TranAPI.translate('message.questFinished'), [
-            ['{questName}', TranAPI.translate(questJson.inner.name)]
-        ]))
+        if (config.textMessage) {
+            Game.message('§e<CustomQuests>§r ' + Utils.replace(TranAPI.translate('message.questFinished'), [
+                ['{questName}', TranAPI.translate(questJson.inner.name)]
+            ]))
+        }
     }
 })
