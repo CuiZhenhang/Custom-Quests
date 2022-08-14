@@ -9,6 +9,13 @@
         "id": "vblock:grass"
     },
     "quest": [
-        
-    ]
+        "main/chapter2/ref.json",
+        "main/chapter2/bitmaps.json"
+    ],
+    "background": [null, 1],
+    "ref": {
+        "my_block_grass": {
+            "id": "vblock:grass"
+        }
+    }
 }

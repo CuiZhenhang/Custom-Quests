@@ -1,4 +1,4 @@
-mod.dialog=欢迎使用 Custom Quests.\n模组作者 Cui Zhenhang.
+mod.dialog=欢迎使用 Custom Quests。\n模组作者 Cui Zhenhang。
 
 item.quest_book=任务书
 item.quest_book_admin=任务管理书
@@ -34,7 +34,7 @@ gui.team.create.fail.passwordLength=失败：密码长度不合法
 gui.team.joinTeam=加入团队
 gui.team.enterPassword=请输入团队密码
 gui.team.applicationSent=申请已发送
-gui.team.exit=推出
+gui.team.exit=退出
 gui.team.exit.warn=你真的要退出这个团队吗
 gui.team.playerState.absent=缺席
 gui.team.playerState.member=成员

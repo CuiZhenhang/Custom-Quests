@@ -1,7 +1,7 @@
 /// <reference path='./instance.js'/>
 
 ModAPI.registerAPI('CustomQuestsAPI', {
-    version: '2.0.0-beta.2',
+    version: '2.0.1-alpha',
     invalidId: InvalidId,
     EnumObject: Utils.deepCopy(EnumObject),
     Store: Store,

@@ -21,9 +21,26 @@ const ServerSystem = {
     resolvedJson: (function () {
         Callback.addCallback('PostLoaded', function () {
             ServerSystem.resolvedJson = System.resolveJson(ServerSystem.json).json
+            ServerSystem.rootQuest = {}
+            let rootQuest = ServerSystem.rootQuest
+            for (let sourceId in ServerSystem.resolvedJson) {
+                rootQuest[sourceId] = {}
+                let mainJson = ServerSystem.resolvedJson[sourceId]
+                for (let chapterId in mainJson.chapter) {
+                    rootQuest[sourceId][chapterId] = {}
+                    let chapterJson = mainJson.chapter[chapterId]
+                    for (let questId in chapterJson.quest) {
+                        let questJson = chapterJson.quest[questId]
+                        if (questJson.type === 'quest' && questJson.parent.length === 0) {
+                            rootQuest[sourceId][chapterId][questId] = true
+                        }
+                    }
+                }
+            }
         })
         return null
     })(),
+    rootQuest: {},
     loadedQuest: (function () {
         Callback.addCallback('LevelSelected', function () {
             ServerSystem.loadedQuest = {}
@@ -99,23 +116,13 @@ const ServerSystem = {
             if (loaded) {
                 Store.cache.playerLoaded[player] = true
                 if (obj.player.indexOf(player) <= -1) obj.player.push(player)
-                try {
-                    let client = Network.getClientForPlayer(player)
-                    obj.client.add(client)
-                } catch (err) {
-                    Utils.log('Error in setPlayerLoaded (ServerSystem.js):\n' + err, 'ERROR', false)
-                }
+                obj.client.add(Network.getClientForPlayer(player))
                 this.loadAllQuest(saveId)
             } else {
                 Store.cache.playerLoaded[player] = false
                 let index = obj.player.indexOf(player)
                 if (index >= 0) obj.player.splice(index, 1)
-                try {
-                    let client = Network.getClientForPlayer(player)
-                    obj.client.remove(client)
-                } catch (err) {
-                    Utils.log('Error in setPlayerLoaded (ServerSystem.js):\n' + err, 'ERROR', false)
-                }
+                obj.client.remove(Network.getClientForPlayer(player))
                 if (obj.player.length === 0) {
                     this.unloadAllLoadedQuest(saveId)
                 }
@@ -303,17 +310,44 @@ const ServerSystem = {
         })
     },
     loadAllQuest (saveId, isRelaod) {
-        /** @todo bfs */
         if (!this.isSaveIdValid(saveId)) return
         if (isRelaod) this.unloadAllLoadedQuest(saveId)
+        /** @type { Array<[CQTypes.sourceId, CQTypes.chapterId, CQTypes.questId]> } */
+        let stack = []
+        let numberIn = {}
         let json = this.resolvedJson
-        for (let sourceId in json) {
-            let mainJson = json[sourceId]
-            for (let chapterId in mainJson.chapter) {
-                let chapterJson = mainJson.chapter[chapterId]
-                for (let questId in chapterJson.quest) {
+        let data = Store.saved.data[saveId]
+        if (!Utils.isObject(data)) return
+        for (let sourceId in this.rootQuest) {
+            numberIn[sourceId] = {}
+            for (let chapterId in this.rootQuest[sourceId]) {
+                numberIn[sourceId][chapterId] = {}
+                for (let questId in this.rootQuest[sourceId][chapterId]) {
+                    if (!this.rootQuest[sourceId][chapterId][questId]) continue
+                    numberIn[sourceId][chapterId][questId] = -1
+                    stack.push([sourceId, chapterId, questId])
                     this.loadQuest(saveId, sourceId, chapterId, questId)
                 }
+            }
+        }
+        let that = this
+        while (stack.length) {
+            let path = stack.pop()
+            let inputState = System.getQuestInputState(json, data, path[0], path[1], path[2])
+            if (inputState >= EnumObject.questInputState.finished) {
+                System.getChild(json, path[0], path[1], path[2]).forEach(function (child) {
+                    if (!Utils.isObject(numberIn[child[0]])) numberIn[child[0]] = {}
+                    if (!Utils.isObject(numberIn[child[0]][child[1]])) numberIn[child[0]][child[1]] = {}
+                    if (numberIn[child[0]][child[1]][child[2]] < 0) return
+                    let tQuestJson = System.getQuestJson(json, child[0], child[1], child[2])
+                    if (tQuestJson.type !== 'quest') return
+                    if (typeof numberIn[child[0]][child[1]][child[2]] !== 'number') numberIn[child[0]][child[1]][child[2]] = 0
+                    if (++numberIn[child[0]][child[1]][child[2]] >= tQuestJson.parent.length) {
+                        numberIn[child[0]][child[1]][child[2]] = -1;
+                        stack.push([child[0], child[1], child[2]])
+                        that.loadQuest(saveId, child[0], child[1], child[2])
+                    }
+                })
             }
         }
     },
@@ -520,11 +554,7 @@ const ServerSystem = {
             let player = Number(iPlayer)
             if (!this.isPlayerLoaded(player)) continue
             playerList.push(player)
-            try {
-                client.add(Network.getClientForPlayer(player))
-            } catch (err) {
-                Utils.log('Error in updateTeam (ServerSystem.js):\n' + err, 'ERROR', false)
-            }
+            client.add(Network.getClientForPlayer(player))
         }
         let that = this
         runOnMainThread(function () {

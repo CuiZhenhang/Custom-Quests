@@ -130,12 +130,14 @@ Network.addClientPacket('CustomQuests.Client.resolveJson', function (packetData)
     let obj = System.resolveJson(packetData.json)
     Store.localCache.resolvedJson = obj.json
     Store.localCache.jsonConfig = obj.config
-    if (Array.isArray(packetData.bitmaps)) packetData.bitmaps.forEach(function (bitmapObject) {
-        if (!Utils.isObject(bitmapObject)) return
-        if (typeof bitmapObject.name !== 'string') return
-        if (typeof bitmapObject.base64 !== 'string') return
-        Utils.putTextureSourceFromBase64(bitmapObject.name, bitmapObject.base64)
-    })
+    if (Array.isArray(obj.bitmaps)) {
+        obj.bitmaps.forEach(function (bitmapObject) {
+            if (!Utils.isObject(bitmapObject)) return
+            if (typeof bitmapObject.name !== 'string') return
+            if (typeof bitmapObject.base64 !== 'string') return
+            Utils.putTextureSourceFromBase64('cq_custom_bitmap:' + bitmapObject.name, bitmapObject.base64)
+        })
+    }
 })
 
 Network.addClientPacket('CustomQuests.Client.setLocalCache', function (packetData) {

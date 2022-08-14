@@ -161,6 +161,7 @@ const QuestUiTools = {
         return function (posParent, posChild, width, color) {
             if (typeof width !== 'number' || width <= 0) width = 10
             let argb = [(color >>> 24) & 0xff, (color >>> 16) & 0xff, (color >>> 8) & 0xff, (color >>> 0) & 0xff]
+            if (argb[0] > 0xcc) argb[0] = 0xcc
             let deltaPos = [posChild[0] - posParent[0], posChild[1] - posParent[1]]
             let dis = Math.sqrt(deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1])
             if (dis <= width) return []

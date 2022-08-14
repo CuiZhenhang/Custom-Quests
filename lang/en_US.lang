@@ -1,4 +1,4 @@
-mod.dialog=Welcome to use Custom Quests.\nMod author Cui Zhenhang.
+mod.dialog=Welcome to use Custom Quests. \nMod author Cui Zhenhang.
 
 item.quest_book=Quests Book
 item.quest_book_admin=Quests Admin Book
@@ -15,7 +15,7 @@ Integration.RecipeViewer.oldVersion=RecipeViewer is old version.
 Integration.RecipeViewer.disabled=RecipeViewer is disabled.
 
 alert.WIP=[WIP] It's not completed.
-alert.no_team=You hava no team.\nPlease join or create a team.
+alert.no_team=You hava no team. \nPlease join or create a team.
 
 gui.task=Task
 gui.reward=Reward

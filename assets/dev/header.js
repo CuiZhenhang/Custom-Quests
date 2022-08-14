@@ -86,6 +86,10 @@ const Store = (function () {
 Saver.addSavesScope('CustomQuests-v2', function (scope) {
     if (!Utils.isObject(scope)) return
     Store.saved = scope
+    for (let saveId in Store.saved.data) {
+        if (!Utils.isObject(Store.saved.data[saveId])) continue
+        System.invalidateSaveData(ServerSystem.resolvedJson, Store.saved.data[saveId])
+    }
 }, function () {
     return JSON.parse(JSON.stringify(Store.saved, function (key, value) {
         if (value === null) return undefined

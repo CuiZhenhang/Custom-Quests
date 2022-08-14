@@ -225,7 +225,6 @@ declare namespace CQTypes {
         quest: {[questId: questId]: ResolvedQuestJson | QuestJsonElement}
         name: TextJson
         icon: IconJson
-        /** @todo */
         background?: ChapterJson['background']
     }
 
@@ -636,6 +635,7 @@ interface System {
     getChild (json: CQTypes.AllResolvedMainJson, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): Array<CQTypes.PathArray>
     getInputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): CQTypes.InputStateObject
     getOutputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): CQTypes.OutputStateObject
+    invalidateSaveData (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData): void
     getQuestInputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestInputState
     getQuestOutputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestOutputState
     getQuestSaveData (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestSaveData
@@ -659,6 +659,13 @@ interface ServerSystem {
      */
     json: CQTypes.AllMainJson
     resolvedJson: CQTypes.AllResolvedMainJson
+    rootQuest: {
+        [sourceId: CQTypes.sourceId]: {
+            [chapterId: CQTypes.chapterId]: {
+                [questId: CQTypes.questId]: boolean
+            }
+        }
+    },
     loadedQuest: {
         [saveId: CQTypes.saveId]: {
             [sourceId: CQTypes.sourceId]: {

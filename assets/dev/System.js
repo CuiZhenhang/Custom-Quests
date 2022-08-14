@@ -399,6 +399,60 @@ const System = {
         let questData = chapterData[questId]
         return Utils.deepCopy(questData.output[index]) || DEFAULT
     },
+    invalidateSaveData (json, data) {
+        for (let sourceId in data) {
+            let mainJson = json[sourceId]
+            if (!Utils.isObject(mainJson)) continue
+            let mainData = data[sourceId]
+            for (let chapterId in mainData) {
+                let chapterJson = mainJson.chapter[chapterId]
+                if (!Utils.isObject(chapterJson)) continue
+                let chapterData = mainData[chapterId]
+                for (let questId in chapterData) {
+                    let questJson = chapterJson.quest[questId]
+                    if (!Utils.isObject(questJson) || questJson.type !== 'quest') continue
+                    let questData = chapterData[questId]
+                    if (questData.inputState === EnumObject.questInputState.locked) continue
+                    let state = EnumObject.questInputState.finished
+                    for (let i = 0; i < questJson.inner.input.length; i++) {
+                        let tempState = (questData.input[i] || {state: EnumObject.inputState.unfinished}).state
+                        if (tempState === EnumObject.inputState.unfinished) {
+                            state = EnumObject.questInputState.unfinished
+                            break
+                        } else if (tempState === EnumObject.inputState.repeat_unfinished) {
+                            state = EnumObject.questInputState.repeat_unfinished
+                        }
+                    }
+                    switch (questData.inputState) {
+                        case EnumObject.questInputState.finished: {
+                            if (state !== EnumObject.questInputState.finished) {
+                                questData.inputState = state
+                                questData.outputState = EnumObject.questOutputState.locked
+                            }
+                            break
+                        }
+                        case EnumObject.questInputState.unfinished:
+                        case EnumObject.questInputState.repeat_unfinished: {
+                            if (state === EnumObject.questInputState.finished) {
+                                questData.inputState = EnumObject.inputState.finished
+                                questData.outputState = EnumObject.questOutputState.received
+                                for (let i = 0; i < questJson.inner.output.length; i++) {
+                                    let tempState = (questData.output[i] || {state: EnumObject.outputState.unreceived}).state
+                                    if (tempState <= EnumObject.outputState.unreceived) {
+                                        questData.outputState = EnumObject.questOutputState.unreceived
+                                        break
+                                    } else if (tempState >= EnumObject.outputState.repeat_unreceived) {
+                                        questData.outputState = EnumObject.questOutputState.repeat_unreceived
+                                    }
+                                }
+                            }
+                            break
+                        }
+                    }
+                }
+            }
+        }
+    },
     getQuestInputState (json, data, sourceId, chapterId, questId) {
         let DEFAULT = EnumObject.questInputState.locked
         if (!this.isQuestExist(json, sourceId, chapterId, questId)) return DEFAULT

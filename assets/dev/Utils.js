@@ -283,21 +283,17 @@ const Utils = {
         }
         return ret
     },
-    putTextureSourceFromBase64: (function () {
-        // /** @type { com.zhekasmirnov.innercore.api.mod.ui.TextureSource } */
-        // let TextureSource = WRAP_JAVA("com.zhekasmirnov.innercore.api.mod.ui.TextureSource").instance
-        return function (name, encodedString) {
-            if (typeof name !== 'string') return
-            if (typeof encodedString !== 'string') return
-            try {
-                let encodeByte = android.util.Base64.decode(encodedString, 0)
-                let bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
-                UI.TextureSource.put(name, bitmap)
-            } catch (err) {
-                this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
-            }
+    putTextureSourceFromBase64 (name, encodedString) {
+        if (typeof name !== 'string') return
+        if (typeof encodedString !== 'string') return
+        try {
+            let encodeByte = android.util.Base64.decode(encodedString, 0)
+            let bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
+            UI.TextureSource.put(name, bitmap)
+        } catch (err) {
+            this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
         }
-    })(),
+    },
     getInput ({text, hint, title, button, mutiLine}, cb){
         UI.getContext().runOnUiThread(new java.lang.Runnable({
             run () {
