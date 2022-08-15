@@ -277,6 +277,7 @@ declare namespace CQTypes {
         input: Array<Nullable<InputStateObject>>
         outputState: QuestOutputState
         output: Array<Nullable<OutputStateObject>>
+        time?: number
     }
     interface SaveData {
         [sourceId: sourceId]: {
@@ -466,7 +467,7 @@ interface Store {
         playerList: {
             [saveId: CQTypes.saveId]: {
                 player: Array<number>
-                client: NetworkConnectedClientList
+                client: Nullable<NetworkConnectedClientList>
             }
         }
     }
@@ -497,7 +498,7 @@ interface Utils {
     log (message: string, type: string, hasAlert?: boolean): void
     getUUID (): string
     md5 (str: string): string
-    isObject (obj: object): boolean
+    isObject (obj: any): obj is object
     deepCopy <T = object>(obj: T): T
     debounce <T extends any[], RT = any, TT = any>(func: (this: TT, ...args: T) => RT, wait: number, func2?: Nullable<(this: TT, ...args: T) => RT>, ths?: TT): (...args: T) => RT
     operate (a: number, operator: string, b: number, defaultValue?: boolean): boolean
@@ -517,7 +518,7 @@ interface Utils {
     getExtraTypeCb (type: string, from: 'fromJson'): CQTypes.extraTypeCb['fromJson'] | Utils['voidFunc']
     getExtraTypeCb (type: string, from: 'fromItem'): CQTypes.extraTypeCb['fromItem'] | Utils['voidFunc']
     getExtraTypeCb (type: string, from: 'isPassed'): CQTypes.extraTypeCb['isPassed'] | Utils['voidFunc']
-    transferItemFromJson (itemJson: CQTypes.ItemJson): ItemInstance
+    transferItemFromJson (itemJson: {id?: string | number, count?: number, data?: number, extra?: CQTypes.ExtraJson[]}): ItemInstance
     transferItemFromItem (item: ItemInstance): CQTypes.ItemJson
     isItemExtraPassed (item: ItemInstance, extraJsonArray: CQTypes.ExtraJson[] | CQTypes.ExtraJson): boolean
     readContents (path: string): CQTypes.MainJson | {}
@@ -567,15 +568,15 @@ interface IOTypeTools {
     typedInputList: {[type: string]: Array<CQTypes.inputId>}
     getAllInputIdByType (type: string | Array<string>): Array<CQTypes.inputId>
     createInputId (inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.InputStateObject>, onUnload?: () => void): CQTypes.inputId
-    isInputIdLoaded (inputId: CQTypes.inputId): boolean
+    isInputIdLoaded (inputId: CQTypes.inputId | null): boolean
     loadInput (inputId: CQTypes.inputId): void
     unloadInput (inputId: CQTypes.inputId): void
     callInputTypeCb (inputId: CQTypes.inputId, method: string, extraInfo: object): unknown
-    callInputTypeCb (inputId: CQTypes.inputId, method: 'onCustomCall', extraInfo: Parameters<CQTypes.InputTypeCb['onCustomCall']>[3]): ReturnType<CQTypes.InputTypeCb['onCustomCall']>
-    callInputTypeCb (inputId: CQTypes.inputId, method: 'onPacket', extraInfo: Parameters<CQTypes.InputTypeCb['onPacket']>[3]): ReturnType<CQTypes.InputTypeCb['onPacket']>
-    callInputTypeCb (inputId: CQTypes.inputId, method: 'onTick', extraInfo: Parameters<CQTypes.InputTypeCb['onTick']>[3]): ReturnType<CQTypes.InputTypeCb['onTick']>
+    callInputTypeCb (inputId: CQTypes.inputId, method: 'onCustomCall', extraInfo: Parameters<Exclude<CQTypes.InputTypeCb['onCustomCall'], undefined>>[3]): ReturnType<Exclude<CQTypes.InputTypeCb['onCustomCall'], undefined>>
+    callInputTypeCb (inputId: CQTypes.inputId, method: 'onPacket', extraInfo: Parameters<Exclude<CQTypes.InputTypeCb['onPacket'], undefined>>[3]): ReturnType<Exclude<CQTypes.InputTypeCb['onPacket'], undefined>>
+    callInputTypeCb (inputId: CQTypes.inputId, method: 'onTick', extraInfo: Parameters<Exclude<CQTypes.InputTypeCb['onTick'], undefined>>[3]): ReturnType<Exclude<CQTypes.InputTypeCb['onTick'], undefined>>
     getPlayerListByInputId (inputId: CQTypes.inputId, online?: boolean): number[]
-    getInputJsonByInputId (inputId: CQTypes.inputId): CQTypes.IOTypes.InputJson
+    getInputJsonByInputId (inputId: CQTypes.inputId): Nullable<CQTypes.IOTypes.InputJson>
     /**
      * Direct access to this property is not recommended
      */
@@ -609,16 +610,16 @@ interface IOTypeTools {
     typedOutputList: {[type: string]: Array<CQTypes.inputId>}
     getAllOutputIdByType (type: string | Array<string>): Array<CQTypes.outputId>
     createOutputId (outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.OutputStateObject>, onUnload?: () => void): CQTypes.outputId
-    isOutputIdLoaded (outputId: CQTypes.outputId): boolean
+    isOutputIdLoaded (outputId: CQTypes.outputId | null): boolean
     loadOutput (outputId: CQTypes.outputId): void
     unloadOutput (outputId: CQTypes.outputId): void
     callOutputTypeCb (outputId: CQTypes.outputId, method: string, extraInfo: object): unknown
-    callOutputTypeCb (outputId: CQTypes.outputId, method: 'onCustomCall', extraInfo: Parameters<CQTypes.OutputTypeCb['onCustomCall']>[3]): ReturnType<CQTypes.OutputTypeCb['onCustomCall']>
-    callOutputTypeCb (outputId: CQTypes.outputId, method: 'onPacket', extraInfo: Parameters<CQTypes.OutputTypeCb['onPacket']>[3]): ReturnType<CQTypes.OutputTypeCb['onPacket']>
-    callOutputTypeCb (outputId: CQTypes.outputId, method: 'onFastReceive', extraInfo: Parameters<CQTypes.OutputTypeCb['onFastReceive']>[3]): ReturnType<CQTypes.OutputTypeCb['onFastReceive']>
-    callOutputTypeCb (outputId: CQTypes.outputId, method: 'onReceive', extraInfo: Parameters<CQTypes.OutputTypeCb['onReceive']>[3]): ReturnType<CQTypes.OutputTypeCb['onReceive']>
+    callOutputTypeCb (outputId: CQTypes.outputId, method: 'onCustomCall', extraInfo: Parameters<Exclude<CQTypes.OutputTypeCb['onCustomCall'], undefined>>[3]): ReturnType<Exclude<CQTypes.OutputTypeCb['onCustomCall'], undefined>>
+    callOutputTypeCb (outputId: CQTypes.outputId, method: 'onPacket', extraInfo: Parameters<Exclude<CQTypes.OutputTypeCb['onPacket'], undefined>>[3]): ReturnType<Exclude<CQTypes.OutputTypeCb['onPacket'], undefined>>
+    callOutputTypeCb (outputId: CQTypes.outputId, method: 'onFastReceive', extraInfo: Parameters<Exclude<CQTypes.OutputTypeCb['onFastReceive'], undefined>>[3]): ReturnType<Exclude<CQTypes.OutputTypeCb['onFastReceive'], undefined>>
+    callOutputTypeCb (outputId: CQTypes.outputId, method: 'onReceive', extraInfo: Parameters<Exclude<CQTypes.OutputTypeCb['onReceive'], undefined>>[3]): ReturnType<Exclude<CQTypes.OutputTypeCb['onReceive'], undefined>>
     getPlayerListByOutputId (outputId: CQTypes.outputId, online?: boolean): number[]
-    getOutputJsonByOutputId (outputId: CQTypes.outputId): CQTypes.IOTypes.OutputJson
+    getOutputJsonByOutputId (outputId: CQTypes.outputId): Nullable<CQTypes.IOTypes.OutputJson>
 }
 
 interface System {
@@ -635,7 +636,7 @@ interface System {
     getChild (json: CQTypes.AllResolvedMainJson, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): Array<CQTypes.PathArray>
     getInputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): CQTypes.InputStateObject
     getOutputState (data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): CQTypes.OutputStateObject
-    invalidateSaveData (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData): void
+    validateSaveData (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData): void
     getQuestInputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestInputState
     getQuestOutputState (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestOutputState
     getQuestSaveData (json: CQTypes.AllResolvedMainJson, data: CQTypes.SaveData, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId): CQTypes.QuestSaveData
@@ -750,6 +751,9 @@ interface ClientSystem {
     exitTeam (): void
     deleteTeam (): void
     setPlayerStateForTeam (player: number, state: CQTypes.PlayerState): void
+    changeBitmapTeam (bitmap: CQTypes.team['bitmap']): void
+    renameTeam (name: CQTypes.team['name']): void
+    changePasswordTeam (password: string): void
 }
 
 interface QuestUi {
@@ -767,6 +771,7 @@ interface QuestUi {
     openTeamUi (): void
     openQuestListUi (title: string, questList: Array<CQTypes.PathArray>, onSelect: (path: CQTypes.PathArray) => void): void
     openItemChooseUi (title: string, isValid: (item: ItemInstance) => boolean, onSelect: (item: ItemInstance) => void): void
+    openSelectionUi (title: string | null, selection: Array<{ text: string, darken?: boolean, onSelect: () => boolean }>): void
 }
 
 interface QuestUiTools {
@@ -776,6 +781,8 @@ interface QuestUiTools {
     }>, option?: Nullable<{
         closeOnBackPressed?: boolean
         blockingBackground?: boolean
+        asGameOverlay?: boolean
+        notTouchable?: boolean
     }>): {
         content: UI.Window['content']
         ui: UI.Window
@@ -796,6 +803,7 @@ interface QuestUiTools {
     getDependencyLine (posParent: [x: number, y: number], posChild: [x: number, y: number], width: number, color: number): Array<UI.DrawingElements>
     getTextWidth (text: string, size: number): number
     resolveText (text: string, getWidthRatio: (str: string) => number): Array<string>
+    createAnimator (duration: number, cb: (animator: android.animation.ValueAnimator) => void): android.animation.ValueAnimator
 }
 
 interface Integration {
@@ -803,7 +811,7 @@ interface Integration {
 }
 
 interface CustomQuestsAPI {
-    version: `${number}.${number}.${number}-${string}`
+    version: `${number}.${number}.${number}-${string}` | 'unknow'
     invalidId: CQTypes.invalidId
     EnumObject: EnumObject
     Store: Store

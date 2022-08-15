@@ -162,7 +162,7 @@ const IOTypeTools = {
         return null
     },
     getPlayerListByInputId (inputId, online) {
-        if (!this.isInputIdLoaded(inputId)) return null
+        if (!this.isInputIdLoaded(inputId)) return []
         let inputObject = this.inputObject[inputId]
         if (typeof inputObject.toolsCb.getPlayerList === 'function') {
             return inputObject.toolsCb.getPlayerList(Boolean(online))
@@ -336,7 +336,7 @@ const IOTypeTools = {
         return null
     },
     getPlayerListByOutputId (outputId, online) {
-        if (!this.isOutputIdLoaded(outputId)) return null
+        if (!this.isOutputIdLoaded(outputId)) return []
         let outputObject = this.outputObject[outputId]
         if (typeof outputObject.toolsCb.getPlayerList === 'function') {
             return outputObject.toolsCb.getPlayerList(Boolean(online))

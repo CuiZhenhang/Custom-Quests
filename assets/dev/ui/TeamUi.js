@@ -55,20 +55,73 @@ const $TeamUi = {
             icon: { type: 'slot', visual: true, x: 430, y: 90, size: 80, bitmap: 'clear', source: {}, darken: false },
             name: { type: 'text', x: 530, y: 90, text: '', font: { color: $Color.BLACK, size: 30 } },
             subname: { type: 'text', x: 530, y: 130, text: '', font: { color: $Color.GRAY, size: 20 } },
-            exit: { type: 'button', x: 850, y: 110, z: 1, bitmap: 'button_long_up', bitmap2: 'button_long_down', scale: 100 / 50,
+            operate: { type: 'button', x: 850, y: 110, z: 1, bitmap: 'button_long_up', bitmap2: 'button_long_down', scale: 100 / 50,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         if (!Utils.isObject(Store.localCache.team)) return
-                        Utils.dialog({
-                            title: TranAPI.translate('gui.team.exit'),
-                            text: TranAPI.translate('gui.team.exit.warn')
-                        }, function () {
-                            ClientSystem.exitTeam()
-                        })
+                        let admin = Store.localCache.team.players[Player.get()] >= EnumObject.playerState.admin
+                        QuestUi.openSelectionUi(null, [
+                            {
+                                text: TranAPI.translate('gui.team.operate.exit'),
+                                onSelect () {
+                                    Utils.dialog({
+                                        title: TranAPI.translate('gui.team.operate.exit'),
+                                        text: TranAPI.translate('gui.team.operate.exit.warn')
+                                    }, function () {
+                                        ClientSystem.exitTeam()
+                                    })
+                                    return false
+                                }
+                            }, {
+                                text: TranAPI.translate('gui.team.operate.rename'),
+                                darken: !admin,
+                                onSelect () {
+                                    if (!admin) return true
+                                    Utils.getInput({
+                                        title: TranAPI.translate('gui.team.operate.rename'),
+                                        hint: TranAPI.translate('gui.team.enterName'),
+                                        mutiLine: true
+                                    }, function (name) {
+                                        if (name.length <= 3 || name.length > 100) {
+                                            alert(TranAPI.translate('alert.fail.nameLength'))
+                                            return
+                                        }
+                                        ClientSystem.renameTeam(name)
+                                    })
+                                    return false
+                                }
+                            }, {
+                                text: TranAPI.translate('gui.team.operate.changePassword'),
+                                darken: !admin,
+                                onSelect () {
+                                    if (!admin) return true
+                                    Utils.getInput({
+                                        title: TranAPI.translate('gui.team.operate.changePassword'),
+                                        hint: TranAPI.translate('gui.team.enterPassword')
+                                    }, function (password) {
+                                        if (Utils.md5(password) !== Store.localCache.team.password) {
+                                            alert(TranAPI.translate('alert.fail.passwordWrong'))
+                                            return
+                                        }
+                                        Utils.getInput({
+                                            title: TranAPI.translate('gui.team.operate.changePassword'),
+                                            hint: TranAPI.translate('gui.team.enterNewPassword')
+                                        }, function (password) {
+                                            if (password.length < 3) {
+                                                alert(TranAPI.translate('alert.fail.passwordLength'))
+                                                return
+                                            }
+                                            ClientSystem.changePasswordTeam(password)
+                                        })
+                                    })
+                                    return false
+                                }
+                            }
+                        ])
                     }, 500)
                 }
             },
-            exit_text: { type: 'text', x: 900, y: 110, z: 2, text: TranAPI.translate('gui.team.exit'), font: { color: $Color.BLACK, size: 20, align: 1 } },
+            operate_text: { type: 'text', x: 900, y: 110, z: 2, text: TranAPI.translate('gui.team.operate'), font: { color: $Color.BLACK, size: 20, align: 1 } },
             noteam_text: { type: 'text', x: 700, y: 135, text: TranAPI.translate('gui.team.noTeam'), font: { color: $Color.BLACK, size: 30, align: 1 } },
             noteam_subtext: { type: 'text', x: 700, y: 190, text: TranAPI.translate('gui.team.joinOrCreate'), font: { color: $Color.GRAY, size: 20, align: 1 } },
             noteam_create: { type: 'button', x: 600, y: 270, z: 1, bitmap: 'button_long_up', bitmap2: 'button_long_down', scale: 200 / 50,
@@ -77,12 +130,12 @@ const $TeamUi = {
                         if (Utils.isObject(Store.localCache.team)) return
                         Utils.getInput({
                             title: TranAPI.translate('gui.team.create'),
-                            hint: TranAPI.translate('gui.team.create.enterName'),
+                            hint: TranAPI.translate('gui.team.enterName'),
                             button: TranAPI.translate('gui.team.create.next'),
                             mutiLine: true
                         }, function (name) {
                             if (name.length <= 3 || name.length > 100) {
-                                alert(TranAPI.translate('gui.team.create.fail.nameLength'))
+                                alert(TranAPI.translate('alert.fail.nameLength'))
                                 return
                             }
                             Utils.getInput({
@@ -90,8 +143,8 @@ const $TeamUi = {
                                 hint: TranAPI.translate('gui.team.enterPassword'),
                                 button: TranAPI.translate('gui.team.create.next')
                             }, function (password) {
-                                if (password.length < 6) {
-                                    alert(TranAPI.translate('gui.team.create.fail.passwordLength'))
+                                if (password.length < 3) {
+                                    alert(TranAPI.translate('alert.fail.passwordLength'))
                                     return
                                 }
                                 ClientSystem.createTeam({
@@ -151,8 +204,8 @@ const $TeamUi = {
             elements['icon'].x = 430
             elements['name'].x = 530
             elements['subname'].x = 530
-            elements['exit'].x = 850
-            elements['exit_text'].x = 900
+            elements['operate'].x = 850
+            elements['operate_text'].x = 900
             elements['noteam_text'].x = 700 + 2000
             elements['noteam_subtext'].x = 700 + 2000
             elements['noteam_create'].x = 600 + 2000
@@ -164,8 +217,8 @@ const $TeamUi = {
             elements['icon'].x = 430 + 2000
             elements['name'].x = 530 + 2000
             elements['subname'].x = 530 + 2000
-            elements['exit'].x = 850 + 2000
-            elements['exit_text'].x = 900 + 2000
+            elements['operate'].x = 850 + 2000
+            elements['operate_text'].x = 900 + 2000
             elements['noteam_text'].x = 700
             elements['noteam_subtext'].x = 700
             elements['noteam_create'].x = 600

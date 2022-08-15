@@ -44,7 +44,7 @@ const ClientSystem = {
         })
     },
     createTeam (team) {
-        if (Utils.isObject(this.getTeam())) return
+        if (Utils.isObject(Store.localCache.team)) return
         runOnClientThread(function () {
             Network.sendToServer('CustomQuests.Server.TeamTools', {
                 method: 'create',
@@ -91,6 +91,30 @@ const ClientSystem = {
                 state: state
             })
         })
+    },
+    changeBitmapTeam (bitmap) {
+        runOnClientThread(function () {
+            Network.sendToServer('CustomQuests.Server.TeamTools', {
+                method: 'changeBitmap',
+                bitmap: bitmap
+            })
+        })
+    },
+    renameTeam (name) {
+        runOnClientThread(function () {
+            Network.sendToServer('CustomQuests.Server.TeamTools', {
+                method: 'rename',
+                name: name
+            })
+        })
+    },
+    changePasswordTeam (password) {
+        runOnClientThread(function () {
+            Network.sendToServer('CustomQuests.Server.TeamTools', {
+                method: 'changePassword',
+                password: Utils.md5(password)
+            })
+        })
     }
 }
 
@@ -98,13 +122,11 @@ Callback.addCallback('CustomQuests.onLocalQuestInputStateChanged', function (pat
     if (newState === oldState) return
     if (newState === EnumObject.questInputState.finished) {
         let config = Store.localCache.jsonConfig[path[0]]
-        if (!Utils.isObject(config)) return
+        if (!Utils.isObject(config) || !config.textMessage) return
         let questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
         if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
-        if (config.textMessage) {
-            Game.message('§e<CustomQuests>§r ' + Utils.replace(TranAPI.translate('message.questFinished'), [
-                ['{questName}', TranAPI.translate(questJson.inner.name)]
-            ]))
-        }
+        Game.message('§e<CustomQuests>§r ' + Utils.replace(TranAPI.translate('message.questFinished'), [
+            ['{questName}', TranAPI.translate(questJson.inner.name)]
+        ]))
     }
 })

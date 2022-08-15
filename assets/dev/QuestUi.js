@@ -20,7 +20,8 @@ const QuestUi = {
     },
     openTeamUi () {},
     openQuestListUi (title, questList, onSelect) {},
-    openItemChooseUi (title, isValid, onSelect) {}
+    openItemChooseUi (title, isValid, onSelect) {},
+    openSelectionUi (title, selection) {}
 }
 
 /** @type { QuestUiTools } */
@@ -32,7 +33,7 @@ const QuestUiTools = {
             ui: new UI.Window(content),
             newElements: [],
             addElements (elementsObj) {
-                if (!Utils.isObject(elementsObj)) return
+                if (!Utils.isObject(ret.content.elements) || !Utils.isObject(elementsObj)) return
                 if (Array.isArray(elementsObj)) {
                     elementsObj.forEach(function (elements) {
                         ret.newElements.push(elements[0])
@@ -46,6 +47,7 @@ const QuestUiTools = {
                 }
             },
             clearNewElements (newElements) {
+                if (!Utils.isObject(ret.content.elements)) return
                 let elements = ret.content.elements
                 if (!Array.isArray(newElements)) {
                     ret.newElements.forEach(function (key) {
@@ -72,7 +74,6 @@ const QuestUiTools = {
                 }
             },
             refresh () {
-                if (!ret.ui.isOpened()) return
                 ret.ui.invalidateAllContent()
                 ret.ui.updateWindowLocation()
                 if (typeof ret.ui.updateScrollDimensions === 'function') {
@@ -80,28 +81,30 @@ const QuestUiTools = {
                 }
             },
             open (refresh) {
-                if (ret.isOpened() && refresh) ret.refresh()
-                else ret.ui.open()
+                if (refresh) ret.refresh()
+                if (!ret.isOpened()) ret.ui.open()
             },
             close () { ret.ui.close() },
             isOpened () { return ret.ui.isOpened() }
         }
-        if (!Utils.isObject(eventListener)) eventListener = {}
+        let listener = Utils.isObject(eventListener) ? eventListener : {}
         ret.ui.setEventListener({
             onOpen () {
-                if (typeof eventListener.onOpen === 'function') {
-                    eventListener.onOpen(ret)
+                if (typeof listener.onOpen === 'function') {
+                    listener.onOpen(ret)
                 }
             },
             onClose () {
-                if (typeof eventListener.onClose === 'function') {
-                    eventListener.onClose(ret)
+                if (typeof listener.onClose === 'function') {
+                    listener.onClose(ret)
                 }
             }
         })
         if (!Utils.isObject(option)) option = {}
         if (option.closeOnBackPressed) ret.ui.setCloseOnBackPressed(true)
         if (option.blockingBackground) ret.ui.setBlockingBackground(true)
+        if (option.asGameOverlay) ret.ui.setAsGameOverlay(true)
+        if (option.notTouchable) ret.ui.setTouchable(false)
         return ret
     },
     getQuestIcon (questJson, saveData, option) {
@@ -148,6 +151,7 @@ const QuestUiTools = {
         let Rect = android.graphics.Rect
         let RectF = android.graphics.RectF
         let Paint = android.graphics.Paint
+        let nullPaint = new Paint()
         let lineBitmap = android.graphics.Bitmap.createBitmap(20 * 64, 64, android.graphics.Bitmap.Config.ARGB_8888)
         let lineSrc = new Rect(0, 0, 20 * 64, 64)
         Callback.addCallback('PostLoaded', function () {
@@ -155,7 +159,7 @@ const QuestUiTools = {
             if (bitmap === null) return
             let canvas = new android.graphics.Canvas(lineBitmap)
             for (let x = 0; x < 20; x++) {
-                canvas.drawBitmap(bitmap, x * 64, 0, null)
+                canvas.drawBitmap(bitmap, x * 64, 0, nullPaint)
             }
         })
         return function (posParent, posChild, width, color) {
@@ -185,12 +189,12 @@ const QuestUiTools = {
                             canvas.drawBitmap(lineBitmap,
                                 new Rect(0, 0, Math.floor(w * 64), 64),
                                 new RectF(left * scale, 0, (left + w * width) * scale, width * scale),
-                                null)
+                                nullPaint)
                             break
                         } else {
                             canvas.drawBitmap(lineBitmap, lineSrc,
                                 new RectF(left * scale, 0, (left + 20 * width) * scale, width * scale),
-                                null)
+                                nullPaint)
                             left += 20 * width
                         }
                     }
@@ -315,5 +319,22 @@ const QuestUiTools = {
             })
             return ret
         }
-    })()
+    })(),
+    createAnimator (duration, cb) {
+        if (typeof duration !== 'number' || duration < 0) return
+        if (typeof cb !== 'function') return
+        let animator = android.animation.ValueAnimator.ofFloat([0, 1])
+        animator.setDuration(duration)
+        animator.addUpdateListener({
+            onAnimationUpdate (animator) {
+                cb(animator)
+            }
+        })
+        UI.getContext().runOnUiThread(new java.lang.Runnable({
+            run () {
+                animator.start()
+            }
+        }))
+        return animator
+    }
 }

@@ -15,7 +15,7 @@ const Utils = {
         return uuid[0] + uuid[1] + time
     },
     md5 (str) {
-        if (typeof str !== 'string') return
+        if (typeof str !== 'string') return 'error-md5'
         try {
             let jStr = new java.lang.String(str)
             let secretBytes = java.security.MessageDigest.getInstance('md5').digest(jStr.getBytes('UTF8'))
@@ -23,7 +23,7 @@ const Utils = {
             return String(ret)
         } catch (err) {
             this.log('Error in md5 (Utils.js):\n' + err, 'ERROR', false)
-            return str
+            return 'error-md5'
         }
     },
     isObject (obj) {
@@ -97,22 +97,20 @@ const Utils = {
         /** @type { typeof Utils['idFromItem'] } */
         let idFromItem = {}
         Callback.addCallback('PostLoaded', function () {
-            new java.lang.Thread(new java.lang.Runnable({
-                run () {
-                    for (let name in VanillaItemID) {
-                        idFromItem[VanillaItemID[name]] = 'vitem:' + name
-                    }
-                    for (let name in VanillaBlockID) {
-                        idFromItem[VanillaBlockID[name]] = 'vblock:' + name
-                    }
-                    for (let name in ItemID) {
-                        idFromItem[ItemID[name]] = 'item:' + name
-                    }
-                    for (let name in BlockID) {
-                        idFromItem[BlockID[name]] = 'block:' + name
-                    }
+            Threading.initThread('CustomQuests.initId', function () {
+                for (let name in VanillaItemID) {
+                    idFromItem[VanillaItemID[name]] = 'vitem:' + name
                 }
-            })).start()
+                for (let name in VanillaBlockID) {
+                    idFromItem[VanillaBlockID[name]] = 'vblock:' + name
+                }
+                for (let name in ItemID) {
+                    idFromItem[ItemID[name]] = 'item:' + name
+                }
+                for (let name in BlockID) {
+                    idFromItem[BlockID[name]] = 'block:' + name
+                }
+            })
         })
         return idFromItem
     })(),

@@ -27,6 +27,8 @@ ui/QuestUi.js
 ui/TeamUi.js
 ui/QuestListUi.js
 ui/ItemChooseUi.js
+ui/SelectionUi.js
+ui/AchievementUi.js
 
 Integration.js
 instance.js

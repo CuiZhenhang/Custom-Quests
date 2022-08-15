@@ -1,7 +1,11 @@
 /// <reference path='./instance.js'/>
 
 ModAPI.registerAPI('CustomQuestsAPI', {
-    version: '2.0.1-alpha',
+    version: (function getModVersion () {
+        let json = FileTools.ReadJSON(__dir__ + 'mod.info')
+        if (typeof json !== 'object') return 'unknow'
+        return String(json.version || 'unknow')
+    })(),
     invalidId: InvalidId,
     EnumObject: Utils.deepCopy(EnumObject),
     Store: Store,

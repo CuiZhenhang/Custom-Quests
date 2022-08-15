@@ -45,6 +45,7 @@ const System = {
             let queue = {
                 head: 0,
                 tail: 0,
+                /** @type { number[] } */
                 value: []
             }
 
@@ -101,7 +102,7 @@ const System = {
          * @typedef { {[sourceId: CQTypes.sourceId]: {[chapterId: CQTypes.chapterId]: {[questId: CQTypes.questId]: Array<CQTypes.PathArray>}}} } ChildObject
          * @param { CQTypes.MainJson } mainJson 
          * @param { CQTypes.sourceId } sourceId 
-         * @returns { {json: CQTypes.ResolvedMainJson, config: CQTypes.MainJson['config'], bitmaps: CQTypes.MainJson['bitmaps'], childObject: ChildObject} } 
+         * @returns { Nullable<{json: CQTypes.ResolvedMainJson, config: CQTypes.MainJson['config'], bitmaps: CQTypes.MainJson['bitmaps'], childObject: ChildObject}> } 
          */
         let resolveMainJson = function (mainJson, sourceId) {
             if (!Utils.isObject(mainJson)) return null
@@ -293,6 +294,7 @@ const System = {
         let resolveJson = function (json) {
             /** @type { CQTypes.AllResolvedMainJson } */
             let resolvedJson = {}
+            /** @type { ReturnType<System['resolveJson']>['config'] } */
             let config = {}
             /** @type { ChildObject } */
             let childObject = {}
@@ -399,7 +401,7 @@ const System = {
         let questData = chapterData[questId]
         return Utils.deepCopy(questData.output[index]) || DEFAULT
     },
-    invalidateSaveData (json, data) {
+    validateSaveData (json, data) {
         for (let sourceId in data) {
             let mainJson = json[sourceId]
             if (!Utils.isObject(mainJson)) continue
@@ -434,7 +436,7 @@ const System = {
                         case EnumObject.questInputState.unfinished:
                         case EnumObject.questInputState.repeat_unfinished: {
                             if (state === EnumObject.questInputState.finished) {
-                                questData.inputState = EnumObject.inputState.finished
+                                questData.inputState = EnumObject.questInputState.finished
                                 questData.outputState = EnumObject.questOutputState.received
                                 for (let i = 0; i < questJson.inner.output.length; i++) {
                                     let tempState = (questData.output[i] || {state: EnumObject.outputState.unreceived}).state

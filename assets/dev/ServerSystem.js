@@ -66,8 +66,8 @@ const ServerSystem = {
         this.json[sourceId] = contents
     },
     createSaveId (playerList) {
-        if (!Array.isArray(playerList)) return
-        if (playerList.length === 0) return
+        if (!Array.isArray(playerList)) return InvalidId
+        if (playerList.length === 0) return InvalidId
         let saveId = Utils.getUUID()
         while (this.isSaveIdValid(saveId)) saveId = Utils.getUUID()
         Store.saved.playerList[saveId] = Utils.deepCopy(playerList)
@@ -116,13 +116,13 @@ const ServerSystem = {
             if (loaded) {
                 Store.cache.playerLoaded[player] = true
                 if (obj.player.indexOf(player) <= -1) obj.player.push(player)
-                obj.client.add(Network.getClientForPlayer(player))
+                obj.client && obj.client.add(Network.getClientForPlayer(player))
                 this.loadAllQuest(saveId)
             } else {
                 Store.cache.playerLoaded[player] = false
                 let index = obj.player.indexOf(player)
                 if (index >= 0) obj.player.splice(index, 1)
-                obj.client.remove(Network.getClientForPlayer(player))
+                obj.client && obj.client.remove(Network.getClientForPlayer(player))
                 if (obj.player.length === 0) {
                     this.unloadAllLoadedQuest(saveId)
                 }
@@ -331,8 +331,8 @@ const ServerSystem = {
             }
         }
         let that = this
-        while (stack.length) {
-            let path = stack.pop()
+        let path = null
+        while (path = stack.pop()) {
             let inputState = System.getQuestInputState(json, data, path[0], path[1], path[2])
             if (inputState >= EnumObject.questInputState.finished) {
                 System.getChild(json, path[0], path[1], path[2]).forEach(function (child) {
@@ -340,7 +340,7 @@ const ServerSystem = {
                     if (!Utils.isObject(numberIn[child[0]][child[1]])) numberIn[child[0]][child[1]] = {}
                     if (numberIn[child[0]][child[1]][child[2]] < 0) return
                     let tQuestJson = System.getQuestJson(json, child[0], child[1], child[2])
-                    if (tQuestJson.type !== 'quest') return
+                    if (!Utils.isObject(tQuestJson) || tQuestJson.type !== 'quest') return
                     if (typeof numberIn[child[0]][child[1]][child[2]] !== 'number') numberIn[child[0]][child[1]][child[2]] = 0
                     if (++numberIn[child[0]][child[1]][child[2]] >= tQuestJson.parent.length) {
                         numberIn[child[0]][child[1]][child[2]] = -1;
@@ -362,7 +362,7 @@ const ServerSystem = {
         let client = this.getConnectedClientList(saveId)
         if (client !== null) {
             runOnMainThread(function () {
-                client.send('CustomQuests.Client.setInputState', {
+                client && client.send('CustomQuests.Client.setInputState', {
                     sourceId: sourceId, chapterId: chapterId, questId: questId, index: index,
                     extraInfo: extraInfo, inputStateObject: inputStateObject
                 })
@@ -459,7 +459,7 @@ const ServerSystem = {
         let client = this.getConnectedClientList(saveId)
         if (client !== null) {
             runOnMainThread(function () {
-                client.send('CustomQuests.Client.setOutputState', {
+                client && client.send('CustomQuests.Client.setOutputState', {
                     sourceId: sourceId, chapterId: chapterId, questId: questId, index: index,
                     extraInfo: extraInfo, outputStateObject: outputStateObject
                 })
@@ -591,6 +591,7 @@ const ServerSystem = {
         let teamId = Utils.getUUID()
         while (Utils.isObject(Store.saved.team[teamId])) teamId = Utils.getUUID()
         let saveId = this.createSaveId([player])
+        if (saveId === InvalidId) return
         Store.saved.team[teamId] = {
             id: teamId,
             saveId: saveId,
@@ -611,7 +612,7 @@ const ServerSystem = {
             })
     },
     getTeam (target) {
-        let teamId
+        let teamId = InvalidId
         if (typeof target === 'number') {
             let obj = Store.saved.players[target]
             if (!Utils.isObject(obj)) return null
@@ -702,7 +703,7 @@ const ServerSystem = {
         let team = Store.saved.team[teamId]
         if (!Utils.isObject(team)) return null
         let playerList = this.getPlayerList(team.saveId, false)
-        /** @type { ReturnType<ServerSystem['getTeamPlayerList']> } */
+        /** @type { Exclude<ReturnType<ServerSystem['getTeamPlayerList']>, null> } */
         let ret = []
         let that = this
         playerList.forEach(function (player) {

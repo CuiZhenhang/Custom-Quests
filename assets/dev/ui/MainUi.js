@@ -141,17 +141,17 @@ const $MainUi = {
             this.chapterJson = null
             if (this.chapterListUi.isOpened()) this.chapterListUi.close()
             if (!Utils.isObject(this.mainJson)) return
-        }
-        this.mainUi.content.drawing[3].text = TranAPI.translate(this.mainJson.name)
-        let empty = true
-        for (let chapterId in this.mainJson.chapter) {
-            this.updateChapterUi(chapterId)
-            empty = false
-            break
-        }
-        if (empty) {
-            this.chapterUi.clearNewElements()
-            this.chapterUi.refresh()
+            this.mainUi.content.drawing[3].text = TranAPI.translate(this.mainJson.name)
+            let empty = true
+            for (let chapterId in this.mainJson.chapter) {
+                this.updateChapterUi(chapterId)
+                empty = false
+                break
+            }
+            if (empty) {
+                this.chapterUi.clearNewElements()
+                this.chapterUi.refresh()
+            }
         }
         this.mainUi.open(true)
     },
@@ -301,7 +301,7 @@ const $MainUi = {
         ui.content.elements['group_frame'].height = listHeight
         ui.refresh()
     },
-    /** @type { (chapterId: CQTypes.chapterId) => void } */
+    /** @type { (chapterId: Nullable<CQTypes.chapterId>) => void } */
     updateChapterUi (chapterId) {
         if (!Utils.isObject(this.mainJson)) return
         if (typeof chapterId !== 'string') return
@@ -382,8 +382,9 @@ const $MainUi = {
         }
         ui.refresh()
     },
-    /** @type { (questId: CQTypes.questId) => void } */
+    /** @type { (questId: Nullable<CQTypes.questId>) => void } */
     openQuestUi (questId) {
+        if (!questId) return
         let sourceId = this.sourceId
         let chapterId = this.chapterId
         if (typeof sourceId !== 'string' || typeof chapterId !== 'string') return
@@ -411,9 +412,9 @@ const $MainUi = {
             Utils.log('Error in function \'$MainUi.openQuestUi\' (ui/MainUi.js):\n' + err, 'ERROR')
         }
     },
-    /** @type { (chapterId: CQTypes.chapterId) => void } */
+    /** @type { (chapterId: Nullable<CQTypes.chapterId>) => void } */
     addChapterUiUpdateRequest (chapterId) {
-        if (chapterId !== this.chapterId) return
+        if (!chapterId || chapterId !== this.chapterId) return
         if (!this.chapterUi.isOpened()) return
         let time = Date.now()
         if (!this.chapterUiUpdateRequest.exist) {
@@ -422,9 +423,9 @@ const $MainUi = {
         }
         this.chapterUiUpdateRequest.timeLast = time
     },
-    /** @type { (questId: CQTypes.questId) => void } */
+    /** @type { (questId: Nullable<CQTypes.questId>) => void } */
     addQuestUiUpdateRequest (questId) {
-        if (questId !== this.questUi.questId) return
+        if (!questId || questId !== this.questUi.questId) return
         if (typeof this.questUi.isClosed !== 'function' || this.questUi.isClosed()) return
         let time = Date.now()
         if (!this.questUi.updateRequest.exist) {

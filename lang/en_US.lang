@@ -16,6 +16,9 @@ Integration.RecipeViewer.disabled=RecipeViewer is disabled.
 
 alert.WIP=[WIP] It's not completed.
 alert.no_team=You hava no team. \nPlease join or create a team.
+alert.fail.nameLength=Failed: Name length is illegal
+alert.fail.passwordLength=Failed: Password length is illegal
+alert.fail.passwordWrong=Failed: Password is wrong
 
 gui.task=Task
 gui.reward=Reward
@@ -27,21 +30,25 @@ gui.team.search.hint=Enter some keyword
 gui.team.noTeam=You hava no team
 gui.team.joinOrCreate=Join or create a team
 gui.team.create=Create
-gui.team.create.enterName=Please enter the name of your team
 gui.team.create.next=Next
-gui.team.create.fail.nameLength=Failed: Name length is illegal
-gui.team.create.fail.passwordLength=Failed: Password length is illegal
 gui.team.joinTeam=Join the team
+gui.team.enterName=Please enter the name of your team
 gui.team.enterPassword=Please enter the password of the team
+gui.team.enterNewPassword=Please enter the new password of the team
 gui.team.applicationSent=Application has been sent
-gui.team.exit=Quit
-gui.team.exit.warn=Do you really want to quit the team
+gui.team.operate=Operate
+gui.team.operate.exit=Quit
+gui.team.operate.exit.warn=Do you really want to quit the team
+gui.team.operate.rename=Rename
+gui.team.operate.changePassword=Change Password
 gui.team.playerState.absent=Absent
 gui.team.playerState.member=Member
 gui.team.playerState.admin=Administrator
 gui.team.playerState.owner=Owner
 gui.description.inputType=Task type: {name}
 gui.description.outputType=Reward type: {name}
+gui.selection.title=Please select:
+gui.questFinished=Quest finished!
 
 
 inputType.group=task group

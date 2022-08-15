@@ -71,7 +71,12 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
             if (typeof packetData.teamId !== 'string') return
             let team = ServerSystem.getTeam(packetData.teamId)
             if (!Utils.isObject(team)) return
-            if (packetData.password !== team.password) return
+            if (packetData.password !== team.password) {
+                client.send('CustomQuests.Client.alert', {
+                    text: ['$alert.fail.passwordWrong']
+                })
+                return
+            }
             ServerSystem.setTeam(player, packetData.teamId)
             break
         }
@@ -95,6 +100,30 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
                 teamId = team.id
             }
             ServerSystem.deleteTeam(teamId)
+            break
+        }
+        case 'changeBitmap': {
+            if (!Utils.isObject(packetData.bitmap)) return
+            let team = ServerSystem.getTeam(packetData.teamId)
+            if (!Utils.isObject(team)) return
+            Store.saved.team[team.id].bitmap = packetData.bitmap
+            ServerSystem.updateTeam(team.id)
+            break
+        }
+        case 'rename': {
+            if (typeof packetData.name !== 'string') return
+            let team = ServerSystem.getTeam(packetData.teamId)
+            if (!Utils.isObject(team)) return
+            Store.saved.team[team.id].name = packetData.name
+            ServerSystem.updateTeam(team.id)
+            break
+        }
+        case 'changePassword': {
+            if (typeof packetData.password !== 'string') return
+            let team = ServerSystem.getTeam(packetData.teamId)
+            if (!Utils.isObject(team)) return
+            Store.saved.team[team.id].password = packetData.password
+            ServerSystem.updateTeam(team.id)
             break
         }
     }
