@@ -1,0 +1,6 @@
+{
+    "name":"Custom Quests",
+    "author":"CuiZhenhang",
+    "version": "2.1.0-alpha",
+    "description": "Define quests for your modpack!\n\n\nIf you find bugs during the game, you can e-mail me.\nE-mail me at: 3388365910@qq.com or cuizhenhang0@163.com\n\nThis mod follows semantic versioning.\nThank @桃乐丝 for TranAPI.\nThank @Koltsov Andrey for Russian translation.\nThank @梦桃 for resource.\n\nlinks:\nSemantic versioning https://semver.org/\n@CuiZhenhang https://icmods.mineprogramming.org/search?author=4026\n@桃乐丝 https://icmods.mineprogramming.org/search?author=3545\n@Koltsov Andrey https://m.vk.com/id_andreykoltsov\n@梦桃 lhy122712@outlook.com\n"
+}

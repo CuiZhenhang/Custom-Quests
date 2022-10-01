@@ -1,0 +1,97 @@
+mod.dialog=Welcome to use Custom Quests. \nMod author Cui Zhenhang.
+
+item.quest_book=Quests Book
+item.quest_book_admin=Quests Admin Book
+item.quest_book_editor=Quests Editor Book
+item.missing_item=Missing Item
+
+message.questFinished=Quest finished: §a[{questName}]§r.
+
+Utils.dialog.confirm=Confirm
+Utils.dialog.cancel=Cancel
+
+Integration.RecipeViewer.noRecipe=RecipeViewer has no recipe.
+Integration.RecipeViewer.oldVersion=RecipeViewer is old version.
+Integration.RecipeViewer.disabled=RecipeViewer is disabled.
+
+alert.WIP=[WIP] It's not completed.
+alert.no_team=You hava no team. \nPlease join or create a team.
+alert.fail.nameLength=Failed: Name length is illegal
+alert.fail.passwordLength=Failed: Password length is illegal
+alert.fail.passwordWrong=Failed: Password is wrong
+
+gui.task=Task
+gui.reward=Reward
+gui.chapterList=Chapter List
+gui.team=Team
+gui.team.search=Search
+gui.team.search.title=Search the name of teams
+gui.team.search.hint=Enter some keyword
+gui.team.noTeam=You hava no team
+gui.team.joinOrCreate=Join or create a team
+gui.team.create=Create
+gui.team.create.next=Next
+gui.team.joinTeam=Join the team
+gui.team.enterName=Please enter the name of your team
+gui.team.enterPassword=Please enter the password of the team
+gui.team.enterNewPassword=Please enter the new password of the team
+gui.team.applicationSent=Application has been sent
+gui.team.operate=Operate
+gui.team.operate.exit=Quit
+gui.team.operate.exit.warn=Do you really want to quit the team
+gui.team.operate.rename=Rename
+gui.team.operate.changePassword=Change Password
+gui.team.playerState.absent=Absent
+gui.team.playerState.member=Member
+gui.team.playerState.admin=Administrator
+gui.team.playerState.owner=Owner
+gui.description.inputType=Task type: {name}
+gui.description.outputType=Reward type: {name}
+gui.selection.title=Please select:
+gui.questFinished=Quest finished!
+
+
+inputType.group=task group
+
+inputType.check=check
+
+inputType.item=item
+inputType.item.submited=Submited count: {count}
+
+inputType.exp=experience
+inputType.exp.isLevel=Level but not points.
+inputType.exp.notLevel=Points but not level.
+inputType.exp.submited=Submited value: {value}
+
+inputType.visit_dimension=visit dimension
+inputType.visit_dimension.text=Visit the dimension
+inputType.visit_dimension.dimensionId=Dimension id: {id}
+
+inputType.location=location
+inputType.location.text=Reach the position
+inputType.location.dimensionId=Dimension id: {id}
+inputType.location.ignoreDimension=any dimension
+
+inputType.kill=kill entity
+inputType.kill.text=Kill the entity
+inputType.kill.entity=Entity id: {id}, count: {count}
+inputType.kill.killed=Killed count: {count}
+
+outputType.random=random reward
+
+outputType.select=select reward
+
+outputType.empty=no reward
+outputType.empty.text=No reward
+
+outputType.item=item
+
+outputType.exp=experience
+outputType.exp.isLevel=Level but not points.
+outputType.exp.notLevel=Points but not level.
+
+outputType.command=command
+outputType.command.text=Run commands.
+
+outputType.message=message
+outputType.message.text=Show message.

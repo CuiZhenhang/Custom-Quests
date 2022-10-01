@@ -1,0 +1,29 @@
+{
+    "type": "quest",
+    "id": "bitmaps",
+    "pos": [260, 200],
+    "size": 80,
+    "icon": [
+        { "bitmap": "ach3_0", "id": "vitem:stick" },
+        { "bitmap": "ach3_0", "id": "vitem:stick" },
+        { "bitmap": "ach3_1", "id": "vitem:stick" }
+    ],
+    "inner": {
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "bitmaps",
+            "ru": "bitmaps",
+            "zh": "bitmaps"
+        },
+        "text": {
+            "en": "",
+            "ru": "",
+            "zh": ""
+        }
+    }
+}

@@ -1,0 +1,64 @@
+{
+    "type": "quest",
+    "id": "type_exp",
+    "pos": [150, 300],
+    "size": 100,
+    "icon": {
+        "id": "vitem:experience_bottle"
+    },
+    "parent": [
+        "start"
+    ],
+    "inner": {
+        "input": [
+            {
+                "type": "exp",
+                "value": 2,
+                "isLevel": true,
+                "description": {
+                    "en": "This task type requires the player to gain a certain amount of experience. \nFor this task, the player's experience level needs to reach level 2.",
+                    "ru": "This task type requires the player to gain a certain amount of experience. \nFor this task, the player's experience level needs to reach level 2.",
+                    "zh": "该任务类型需要玩家获得一定经验值。\n对于该任务，需要玩家经验等级到达2级。"
+                }
+            },
+            {
+                "type": "exp",
+                "value": 100,
+                "submit": true,
+                "description": {
+                    "en": "For this task, players are required to submit 100 experience points.",
+                    "ru": "For this task, players are required to submit 100 experience points.",
+                    "zh": "对于该任务，需要玩家提交100点经验值。"
+                }
+            }
+        ],
+        "output": [
+            {
+                "type": "exp",
+                "value": 3,
+                "isLevel": true,
+                "autoReceive": true,
+                "description": {
+                    "en": "This reward type adds experience to the player when claimed. \nFor this reward, it will add 3 levels of experience to the player when claiming it. \nIn addition, the reward is automatically claimed.",
+                    "ru": "This reward type adds experience to the player when claimed. \nFor this reward, it will add 3 levels of experience to the player when claiming it. \nIn addition, the reward is automatically claimed.",
+                    "zh": "该奖励类型在领取时给玩家增加经验值。\n对于该奖励，在领取时会给玩家增加3级经验。\n另外，该奖励自动领取。"
+                }
+            },
+            {
+                "type": "exp",
+                "value": 200,
+                "description": {
+                    "en": "For this reward, 200 experience points will be added to the player upon claiming it.",
+                    "ru": "For this reward, 200 experience points will be added to the player upon claiming it.",
+                    "zh": "对于该奖励，在领取时会给玩家增加200点经验值。"
+                }
+            }
+        ],
+        "name": {
+            "en": "Type 'exp'",
+            "ru": "Type 'exp'",
+            "zh": "类型 “exp”"
+        },
+        "text": ""
+    }
+}

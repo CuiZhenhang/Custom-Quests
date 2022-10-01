@@ -1,0 +1,25 @@
+{
+    "type": "quest",
+    "id": "start",
+    "pos": [280, 50],
+    "size": 100,
+    "icon": { "bitmap": "task_check" },
+    "inner": {
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "Let's start",
+            "ru": "Let's start",
+            "zh": "开始吧"
+        },
+        "text": {
+            "en": "Welcome to Custom Quests. \nThis chapter covers the basic usage of this mod. \nFor most tasks and rewards, long-press their icon to open their introduction interface.",
+            "ru": "Welcome to Custom Quests. \nThis chapter covers the basic usage of this mod. \nFor most tasks and rewards, long-press their icon to open their introduction interface.",
+            "zh": "欢迎使用Custom Quests。\n本章为本模组的基本用法。\n对于大部分的任务和奖励，长按其图标可以打开其介绍界面。"
+        }
+    }
+}
