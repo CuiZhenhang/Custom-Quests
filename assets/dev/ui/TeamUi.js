@@ -121,7 +121,7 @@ const $TeamUi = {
                     }, 500)
                 }
             },
-            operate_text: { type: 'text', x: 900, y: 110, z: 2, text: TranAPI.translate('gui.team.operate'), font: { color: $Color.BLACK, size: 20, align: 1 } },
+            operate_text: { type: 'text', x: 900, y: 115, z: 2, text: TranAPI.translate('gui.team.operate'), font: { color: $Color.BLACK, size: 15, align: 1 } },
             noteam_text: { type: 'text', x: 700, y: 135, text: TranAPI.translate('gui.team.noTeam'), font: { color: $Color.BLACK, size: 30, align: 1 } },
             noteam_subtext: { type: 'text', x: 700, y: 190, text: TranAPI.translate('gui.team.joinOrCreate'), font: { color: $Color.GRAY, size: 20, align: 1 } },
             noteam_create: { type: 'button', x: 600, y: 270, z: 1, bitmap: 'button_long_up', bitmap2: 'button_long_down', scale: 200 / 50,

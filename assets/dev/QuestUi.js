@@ -74,7 +74,6 @@ const QuestUiTools = {
                 }
             },
             refresh () {
-                ret.ui.invalidateAllContent()
                 ret.ui.updateWindowLocation()
                 if (typeof ret.ui.updateScrollDimensions === 'function') {
                     ret.ui.updateScrollDimensions()
@@ -210,7 +209,7 @@ const QuestUiTools = {
         return function (text, size) {
             if (typeof size !== 'number') return NaN
             if (typeof text !== 'string') text = String(text)
-            return font.getTextWidth(text, 1) * (size / baseSize)
+            return font.getTextWidth(text, size) / baseSize
         }
     })(),
     resolveText: (function () {

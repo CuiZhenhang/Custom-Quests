@@ -66,22 +66,22 @@ IOTypeTools.setOutputType('command', TranAPI.getTranslation('outputType.command'
     },
     getDescription (outputJson, toolsCb, extraInfo) {
         let prefix = extraInfo.prefix
-        let maxY = extraInfo.posY + 70
+        let maxY = extraInfo.posY + 60
         let elements = [
             [prefix + 'text', {
                 type: 'text', x: 500, y: extraInfo.posY - 10, text: TranAPI.translate('outputType.command.text'),
-                font: { color: android.graphics.Color.BLACK, size: 40, align: 1 }
+                font: { color: android.graphics.Color.BLACK, size: 30, align: 1 }
             }]
         ]
         QuestUiTools.resolveText(TranAPI.translate(outputJson.description), function (str) {
             if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 40) / 900
+            return QuestUiTools.getTextWidth(str, 30) / 900
         }).forEach(function (str, index) {
             elements.push([prefix + 'desc_' + index, {
                 type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 40 }
+                font: { color: android.graphics.Color.BLACK, size: 30 }
             }])
-            maxY += 50
+            maxY += 40
         })
         maxY += 20
         return {

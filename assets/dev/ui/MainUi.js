@@ -111,7 +111,7 @@ const $MainUi = {
             { type: 'frame', x: 0, y: 0, width: 1000, height: 1000*($ScreenHeight - 60)/300, bitmap: 'classic_frame_bg_light', scale: 2 }
         ],
         elements: {
-            close: { type: 'closeButton', x: 910, y: 20, bitmap: 'X', bitmap2: 'XPress', scale: 70/19 },
+            close: { type: 'closeButton', x: 910, y: 10, bitmap: 'X', bitmap2: 'XPress', scale: 80/19 },
             title: { type: 'text', x: 60, y: 30, text: TranAPI.translate('gui.chapterList'), font: { color: $Color.BLACK, size: 40 } },
             group_frame: { type: 'frame', x: 140 + 2000, y: 0, z: 10, width: 860, height: 140, bitmap: 'classic_frame_bg_light', scale: 2 }
         }

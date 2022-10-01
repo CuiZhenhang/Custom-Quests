@@ -27,9 +27,13 @@ const Utils = {
         }
     },
     isObject (obj) {
-        if (typeof obj !== 'object' && typeof obj !== 'function') return false
-        if (obj === null) return false
-        return true
+        try {
+            if (typeof obj !== 'object' && typeof obj !== 'function') return false
+            if (obj === null) return false
+            return true
+        } catch (err) {
+            return false
+        }
     },
     deepCopy (obj) {
         if (!this.isObject(obj)) return obj
