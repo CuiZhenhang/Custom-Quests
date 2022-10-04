@@ -74,10 +74,13 @@ const QuestUiTools = {
                 }
             },
             refresh () {
-                ret.ui.updateWindowLocation()
-                if (typeof ret.ui.updateScrollDimensions === 'function') {
-                    ret.ui.updateScrollDimensions()
+                if (ret.ui.isOpened()) {
+                    ret.ui.updateWindowLocation()
+                    if (typeof ret.ui.updateScrollDimensions === 'function') {
+                        ret.ui.updateScrollDimensions()
+                    }
                 }
+                ret.ui.invalidateAllContent()
                 ret.ui.forceRefresh()
             },
             open (refresh) {

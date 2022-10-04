@@ -1,0 +1,53 @@
+{
+    "name": {
+        "en": "'eat' test",
+        "ru": "'eat' test",
+        "zh": "'eat' 测试"
+    },
+    "main": [{
+        "id": "chapter1",
+        "name": {
+            "en": "Chapter 1",
+            "ru": "Chapter 1",
+            "zh": "第1章"
+        },
+        "icon": {
+            "id": "vitem:apple"
+        },
+        "quest": [{
+            "type": "quest",
+            "id": "eat_test",
+            "pos": [100, 100],
+            "size": 80,
+            "icon": {
+                "id": "vitem:apple"
+            },
+            "inner": {
+                "input": [
+                    {
+                        "type": "eat",
+                        "id": "vitem:apple",
+                        "count": 3
+                    }
+                ],
+                "output": [
+                    {
+                        "type": "item",
+                        "id": "vitem:apple",
+                        "count": 3
+                    }
+                ],
+                "name": {
+                    "en": "Type 'eat'",
+                    "ru": "Type 'eat'",
+                    "zh": "类型 “eat”"
+                },
+                "text": {
+                    "en": "Please eat 3 apples",
+                    "ru": "Please eat 3 apples",
+                    "zh": "请食用 3 个苹果"
+                }
+            }
+        }]
+    }]
+}

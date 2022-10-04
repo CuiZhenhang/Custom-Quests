@@ -81,16 +81,20 @@ const $MainUi = {
                         if (typeof $MainUi.sourceId === 'string' && Utils.isObject($MainUi.mainJson)) {
                             ClientSystem.receiveAllQuest($MainUi.sourceId, {})
                         }
-                    }, 1000)
+                    }, 1000),
+                    onLongClick: Utils.debounce(function () {
+                        alert(TranAPI.translate('alert.fast_receive.description'))
+                    }, 500)
                 }
             },
-            show_list: { type: 'button', x: 8, y: 60 + ($ScreenHeight - 60)/2 - 16, bitmap: 'arrow_right', scale: 32 / 64,
+            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'clear', width: 32, height: ($ScreenHeight - 60) / 2,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         $MainUi.openChapterListUi()
                     }, 500)
                 }
-            }
+            },
+            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'arrow_right', scale: 32 / 64 }
         }
     }, {
         onOpen (ui) {
@@ -152,6 +156,10 @@ const $MainUi = {
                 this.chapterUi.clearNewElements()
                 this.chapterUi.refresh()
             }
+        } else {
+            if (typeof this.chapterId === 'string') {
+                this.updateChapterUi(this.chapterId)
+            }
         }
         this.mainUi.open(true)
     },
@@ -172,14 +180,14 @@ const $MainUi = {
         /** @type { {[chapterId: CQTypes.chapterId]: { name: CQTypes.TextJson, icon: CQTypes.IconJson, list: Array<CQTypes.chapterId> }} } */
         let groupObj = {}
         /** @type { {[chapterId: CQTypes.chapterId]: boolean} } */
-        let vis = {}
+        let visInGroup = {}
         if (Array.isArray(this.mainJson.group)) {
             this.mainJson.group.forEach(function (groupJson) {
                 if (groupJson.list.length === 0) return
-                if (Utils.isObject(groupObj[groupJson.list[0]])) return
+                if (groupObj[groupJson.list[0]]) return
                 groupObj[groupJson.list[0]] = groupJson
                 groupJson.list.forEach(function (chapterId) {
-                    vis[chapterId] = true
+                    visInGroup[chapterId] = true
                 })
             })
         }
@@ -187,7 +195,7 @@ const $MainUi = {
         let maxY = height
         let uuid = Utils.getUUID()
         for (let chapterId in this.mainJson.chapter) {
-            if (Utils.isObject(groupObj[chapterId])) {
+            if (groupObj[chapterId]) {
                 let groupJson = groupObj[chapterId]
                 ui.addElements([
                     [uuid + '_' + chapterId + '_icon', {
@@ -211,7 +219,7 @@ const $MainUi = {
                 let tmpY = height + (groupJson.list.length + 1) * 140
                 if (tmpY > maxY) maxY = tmpY
             } else {
-                if (vis[chapterId]) continue
+                if (visInGroup[chapterId]) continue
                 let chapterJson = this.mainJson.chapter[chapterId]
                 ui.addElements([
                     [uuid + '_' + chapterId + '_icon', {
@@ -242,8 +250,8 @@ const $MainUi = {
             height += 140
             if (height > maxY) maxY = height
         }
-        ui.content.drawing[1].height = Math.max(maxY, 1000*($ScreenHeight - 60)/300)
-        ui.ui.getLocation().scrollY = Math.max(maxY + 10, 1000*($ScreenHeight - 60)/300) * (300/1000)
+        ui.content.drawing[1].height = Math.max(maxY + 10, 1000*($ScreenHeight - 60)/300)
+        ui.ui.getLocation().scrollY = ui.content.drawing[1].height * (300/1000)
         ui.open(true)
     },
     /** @type { (groupJson: { name: CQTypes.TextJson, icon: CQTypes.IconJson, list: Array<CQTypes.chapterId> }, height: number) => void } */
@@ -274,7 +282,7 @@ const $MainUi = {
                 uuid + '_group_' + chapterId + '_icon',
                 uuid + '_group_' + chapterId + '_name',
                 uuid + '_group_' + chapterId + '_btn'
-                )
+            )
             ui.addElements([
                 [uuid + '_group_' + chapterId + '_icon', {
                     type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'clear',
@@ -362,11 +370,10 @@ const $MainUi = {
                     let tInputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, path[0], path[1], path[2])
                     if (tInputState === EnumObject.questInputState.locked && tQuestJson.hidden) return
                     let color = $Color.GRAY
-                    if (saveData.inputState >= EnumObject.questInputState.unfinished) {
-                        if (tInputState >= EnumObject.questInputState.finished) color = $Color.rgb(100, 220, 100)
-                    } else {
-                        if (tInputState >= EnumObject.questInputState.finished) color = $Color.rgb(0, 200, 200)
-                        else if (tInputState === EnumObject.questInputState.unfinished) color = $Color.rgb(200, 200, 0)
+                    if (tInputState >= EnumObject.questInputState.finished) {
+                        if (saveData.inputState >= EnumObject.questInputState.finished) color = $Color.rgb(100, 220, 100)
+                        else if (saveData.inputState === EnumObject.questInputState.unfinished) color = $Color.rgb(0, 200, 200)
+                        else color = $Color.rgb(200, 200, 0)
                     }
                     QuestUiTools.getDependencyLine(posParent, posChild, path[3], color).forEach(function (drawing) {
                         ui.content.drawing.push(drawing)
@@ -392,16 +399,23 @@ const $MainUi = {
             let questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
             if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
             let saveData = System.getQuestSaveData(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId)
+            let that = this
             let obj = QuestUi.openQuestUi(questJson, saveData, {
                 sendInputPacket: ClientSystem.sendInputPacket.bind(ClientSystem, sourceId, chapterId, questId),
                 sendOutputPacket: ClientSystem.sendOutputPacket.bind(ClientSystem, sourceId, chapterId, questId),
                 openParentListUi: function () {
-                    alert(TranAPI.translate('alert.WIP'))
-                    /** @todo */
+                    QuestUi.openQuestListUi(TranAPI.translate('gui.parentList.title'), questJson.parent, function (path) {
+                        that.open(path[0])
+                        that.updateChapterUi(path[1])
+                        that.openQuestUi(path[2])
+                    })
                 },
                 openChildListUi: function () {
-                    alert(TranAPI.translate('alert.WIP'))
-                    /** @todo */
+                    QuestUi.openQuestListUi(TranAPI.translate('gui.childList.title'), questJson.child, function (path) {
+                        that.open(path[0])
+                        that.updateChapterUi(path[1])
+                        that.openQuestUi(path[2])
+                    })
                 }
             })
             this.questUi.questId = questId

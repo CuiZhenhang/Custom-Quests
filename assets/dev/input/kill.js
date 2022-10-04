@@ -4,7 +4,7 @@ IOTypeTools.setInputType('kill', TranAPI.getTranslation('inputType.kill'), {
     resolveJson (inputJson, refsArray, bitmapNameObject) {
         inputJson.icon = Utils.resolveIconJson(inputJson.icon, refsArray, bitmapNameObject)
         if (typeof inputJson.entityId !== 'number') return null
-        if (typeof inputJson.count !== 'number' || inputJson.count < 0) inputJson.count = 1
+        if (typeof inputJson.count !== 'number' || inputJson.count < 1) inputJson.count = 1
         return inputJson
     },
     onLoad (inputJson, toolsCb, cache) {

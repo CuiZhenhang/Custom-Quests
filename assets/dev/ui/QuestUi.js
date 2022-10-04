@@ -34,6 +34,9 @@ const $QuestUi = {
                         if (typeof $QuestUi.openParentListUi === 'function') {
                             $QuestUi.openParentListUi()
                         }
+                    }, 500),
+                    onLongClick: Utils.debounce(function () {
+                        alert(TranAPI.translate('alert.description.show_parent'))
                     }, 500)
                 }
             },
@@ -43,6 +46,9 @@ const $QuestUi = {
                         if (typeof $QuestUi.openChildListUi === 'function') {
                             $QuestUi.openChildListUi()
                         }
+                    }, 500),
+                    onLongClick: Utils.debounce(function () {
+                        alert(TranAPI.translate('alert.description.show_child'))
                     }, 500)
                 }
             }

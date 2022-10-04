@@ -667,22 +667,19 @@ const ServerSystem = {
         team.players[player] = state
         if (state === EnumObject.playerState.absent) {
             // exit team
-            let list = []
-            for (let iPlayer in team.players) {
-                if (team.players[iPlayer] >= EnumObject.playerState.member) {
-                    list.push(Number(iPlayer))
-                }
-            }
+            let list = Store.saved.playerList[team.saveId]
+            let index = list.indexOf(player)
+            if (index !== -1) list.splice(index, 1)
             if (list.length === 0) {
                 this.deleteTeam(teamId)
                 return
             }
-            Store.saved.playerList[team.saveId] = list
             if (this.getPlayerList(team.saveId, true).length === 0) {
                 this.unloadAllLoadedQuest(team.saveId)
             }
         } else if (oldState === EnumObject.playerState.absent) {
             // join team
+            Store.saved.playerList[team.saveId].push(player)
             this.loadAllQuest(team.saveId)
         }
     },
@@ -729,7 +726,7 @@ Callback.addCallback('ServerPlayerLoaded', function (player) {
         }
     }
     let obj = Store.saved.players[player]
-    if (!obj.bookGived) {
+    if (!obj.bookGived && Setting.giveBook) {
         new PlayerActor(player).addItemToInventory(ItemID.quest_book, 1, 0, null, true)
         obj.bookGived = true
     }
@@ -756,8 +753,7 @@ Callback.addCallback('ServerPlayerLoaded', function (player) {
 })
 
 Callback.addCallback('ServerPlayerTick', function (player) {
-    /* 30s */
-    if (Math.random() * 600 < 1) {
+    if (Math.random() * 600 < 1 /* 30s */) {
         try {
             let saveId = ServerSystem.getSaveId(player)
             if (!ServerSystem.isSaveIdValid(saveId)) return
