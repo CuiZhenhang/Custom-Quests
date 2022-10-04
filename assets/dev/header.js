@@ -1,10 +1,12 @@
 /// <reference path='../declarations/custom-quests-v2.d.ts'/>
-/// <reference path='../lib/ChargeItem.js'/>
+/// <reference path='../declarations/ChargeItem.d.ts'/>
 /// <reference path='./share.js'/>
 
 IMPORT('ChargeItem')
+
 const Setting = (function () {
     let Setting = {
+        giveBook: __config__.getBool('give_book'),
         path: __config__.getString('contents.path'),
         saveForTeam: __config__.getBool('save.for_team')
     }

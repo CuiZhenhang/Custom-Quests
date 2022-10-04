@@ -99,7 +99,7 @@ IOTypeTools.setInputType('exp', TranAPI.getTranslation('inputType.exp'), {
     },
     getDescription (inputJson, toolsCb, extraInfo) {
         let prefix = extraInfo.prefix
-        let maxY = extraInfo.posY + 200
+        let maxY = extraInfo.posY + 190
         let elements = [
             [prefix + 'slot', {
                 type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
@@ -111,7 +111,7 @@ IOTypeTools.setInputType('exp', TranAPI.getTranslation('inputType.exp'), {
             [prefix + 'text', {
                 type: 'text', x: 500, y: extraInfo.posY + 120,
                 text: TranAPI.translate(inputJson.isLevel ? 'inputType.exp.isLevel' : 'inputType.exp.notLevel'),
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }]
         ]
         if (inputJson.submit) {
@@ -122,19 +122,19 @@ IOTypeTools.setInputType('exp', TranAPI.getTranslation('inputType.exp'), {
                 text: Utils.replace(TranAPI.translate('inputType.exp.submited'), [
                     ['{value}', finished ? inputJson.value : (stateObj.value || 0)]
                 ]),
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }])
-            maxY += 50
+            maxY += 40
         }
         QuestUiTools.resolveText(TranAPI.translate(inputJson.description), function (str) {
             if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 40) / 900
+            return QuestUiTools.getTextWidth(str, 30) / 900
         }).forEach(function (str, index) {
             elements.push([prefix + 'desc_' + index, {
                 type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 40 }
+                font: { color: android.graphics.Color.BLACK, size: 30 }
             }])
-            maxY += 50
+            maxY += 40
         })
         maxY += 20
         return {

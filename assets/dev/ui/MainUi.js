@@ -81,16 +81,20 @@ const $MainUi = {
                         if (typeof $MainUi.sourceId === 'string' && Utils.isObject($MainUi.mainJson)) {
                             ClientSystem.receiveAllQuest($MainUi.sourceId, {})
                         }
-                    }, 1000)
+                    }, 1000),
+                    onLongClick: Utils.debounce(function () {
+                        alert(TranAPI.translate('alert.fast_receive.description'))
+                    }, 500)
                 }
             },
-            show_list: { type: 'button', x: 8, y: 60 + ($ScreenHeight - 60)/2 - 16, bitmap: 'arrow_right', scale: 32 / 64,
+            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'clear', width: 32, height: ($ScreenHeight - 60) / 2,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         $MainUi.openChapterListUi()
                     }, 500)
                 }
-            }
+            },
+            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'arrow_right', scale: 32 / 64 }
         }
     }, {
         onOpen (ui) {
@@ -105,15 +109,15 @@ const $MainUi = {
         blockingBackground: true
     }),
     chapterListUi: QuestUiTools.createUi({
-        location: { x: 0, y: 60, width: 200, height: $ScreenHeight - 60, scrollY: 140 * (200/1000) },
+        location: { x: 0, y: 60, width: 300, height: $ScreenHeight - 60, scrollY: 100 * (300/1000) },
         drawing: [
             { type: 'background', color: $Color.TRANSPARENT },
-            { type: 'frame', x: 0, y: 0, width: 1000, height: 1000*($ScreenHeight - 60)/200, bitmap: 'classic_frame_bg_light', scale: 2 }
+            { type: 'frame', x: 0, y: 0, width: 1000, height: 1000*($ScreenHeight - 60)/300, bitmap: 'classic_frame_bg_light', scale: 2 }
         ],
         elements: {
-            close: { type: 'closeButton', x: 860, y: 20, bitmap: 'X', bitmap2: 'XPress', scale: 120/19 },
-            title: { type: 'text', x: 60, y: 40, text: TranAPI.translate('gui.chapterList'), font: { color: $Color.BLACK, size: 60 } },
-            group_frame: { type: 'frame', x: 200 + 2000, y: 0, z: 10, width: 800, height: 200, bitmap: 'classic_frame_bg_light', scale: 2 }
+            close: { type: 'closeButton', x: 910, y: 10, bitmap: 'X', bitmap2: 'XPress', scale: 80/19 },
+            title: { type: 'text', x: 60, y: 30, text: TranAPI.translate('gui.chapterList'), font: { color: $Color.BLACK, size: 40 } },
+            group_frame: { type: 'frame', x: 140 + 2000, y: 0, z: 10, width: 860, height: 140, bitmap: 'classic_frame_bg_light', scale: 2 }
         }
     }, null, {
         closeOnBackPressed: true
@@ -152,13 +156,17 @@ const $MainUi = {
                 this.chapterUi.clearNewElements()
                 this.chapterUi.refresh()
             }
+        } else {
+            if (typeof this.chapterId === 'string') {
+                this.updateChapterUi(this.chapterId)
+            }
         }
         this.mainUi.open(true)
     },
     openChapterListUi () {
         let ui = this.chapterListUi
         if ($MainUi.chapterGroup.exist) {
-            ui.content.elements['group_frame'].x = 200 + 2000
+            ui.content.elements['group_frame'].x = 140 + 2000
             $MainUi.chapterGroup.exist = false
             $MainUi.chapterGroup.chapterId = null
             $MainUi.chapterGroup.newElements.length = 0
@@ -172,61 +180,61 @@ const $MainUi = {
         /** @type { {[chapterId: CQTypes.chapterId]: { name: CQTypes.TextJson, icon: CQTypes.IconJson, list: Array<CQTypes.chapterId> }} } */
         let groupObj = {}
         /** @type { {[chapterId: CQTypes.chapterId]: boolean} } */
-        let vis = {}
+        let visInGroup = {}
         if (Array.isArray(this.mainJson.group)) {
             this.mainJson.group.forEach(function (groupJson) {
                 if (groupJson.list.length === 0) return
-                if (Utils.isObject(groupObj[groupJson.list[0]])) return
+                if (groupObj[groupJson.list[0]]) return
                 groupObj[groupJson.list[0]] = groupJson
                 groupJson.list.forEach(function (chapterId) {
-                    vis[chapterId] = true
+                    visInGroup[chapterId] = true
                 })
             })
         }
-        let height = 140
+        let height = 100
         let maxY = height
         let uuid = Utils.getUUID()
         for (let chapterId in this.mainJson.chapter) {
-            if (Utils.isObject(groupObj[chapterId])) {
+            if (groupObj[chapterId]) {
                 let groupJson = groupObj[chapterId]
                 ui.addElements([
                     [uuid + '_' + chapterId + '_icon', {
                         type: 'slot', visual: true, bitmap: groupJson.icon.bitmap || 'clear',
                         source: Utils.transferItemFromJson(groupJson.icon),
                         darken: Boolean(groupJson.icon.darken),
-                        x: 10, y: height + 10, z: 1, size: 180
+                        x: 10, y: height + 10, z: 1, size: 120
                     }],
                     [uuid + '_' + chapterId + '_name', {
                         type: 'text', text: TranAPI.translate(groupJson.name),
-                        font: { color: $Color.BLACK, size: 60 },
-                        x: 200, y: height + 70, z: 1
+                        font: { color: $Color.BLACK, size: 40 },
+                        x: 140, y: height + 50, z: 1
                     }],
                     [uuid + '_' + chapterId + '_btn', {
-                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 180,
+                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 120,
                         clicker: {
                             onClick: Utils.debounce(this.toggleChapterGroup.bind(this, groupJson, height), 500)
                         }
                     }]
                 ])
-                let tmpY = height + 200 + groupJson.list.length * 200
+                let tmpY = height + (groupJson.list.length + 1) * 140
                 if (tmpY > maxY) maxY = tmpY
             } else {
-                if (vis[chapterId]) continue
+                if (visInGroup[chapterId]) continue
                 let chapterJson = this.mainJson.chapter[chapterId]
                 ui.addElements([
                     [uuid + '_' + chapterId + '_icon', {
                         type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'clear',
                         source: Utils.transferItemFromJson(chapterJson.icon),
                         darken: Boolean(chapterJson.icon.darken),
-                        x: 10, y: height + 10, z: 1, size: 180
+                        x: 10, y: height + 10, z: 1, size: 120
                     }],
                     [uuid + '_' + chapterId + '_name', {
                         type: 'text', text: TranAPI.translate(chapterJson.name),
-                        font: { color: $Color.BLACK, size: 60 },
-                        x: 200, y: height + 70, z: 1
+                        font: { color: $Color.BLACK, size: 40 },
+                        x: 140, y: height + 50, z: 1
                     }],
                     [uuid + '_' + chapterId + '_btn', {
-                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 180,
+                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 120,
                         clicker: {
                             onClick: Utils.debounce(this.updateChapterUi.bind(this, chapterId), 500)
                         }
@@ -239,18 +247,18 @@ const $MainUi = {
                 x2: 990, y2: height,
                 width: 5, color: $Color.GRAY
             })
-            height += 200
+            height += 140
             if (height > maxY) maxY = height
         }
-        ui.content.drawing[1].height = Math.max(maxY, 1000*($ScreenHeight - 60)/200)
-        ui.ui.getLocation().scrollY = Math.max(maxY + 10, 1000*($ScreenHeight - 60)/200) * (200/1000)
+        ui.content.drawing[1].height = Math.max(maxY + 10, 1000*($ScreenHeight - 60)/300)
+        ui.ui.getLocation().scrollY = ui.content.drawing[1].height * (300/1000)
         ui.open(true)
     },
     /** @type { (groupJson: { name: CQTypes.TextJson, icon: CQTypes.IconJson, list: Array<CQTypes.chapterId> }, height: number) => void } */
     toggleChapterGroup (groupJson, height) {
         let ui = this.chapterListUi
         if (this.chapterGroup.exist) {
-            ui.content.elements['group_frame'].x = 200 + 2000
+            ui.content.elements['group_frame'].x = 140 + 2000
             ui.clearNewElements(this.chapterGroup.newElements)
             this.chapterGroup.exist = false
             this.chapterGroup.newElements.length = 0
@@ -274,30 +282,30 @@ const $MainUi = {
                 uuid + '_group_' + chapterId + '_icon',
                 uuid + '_group_' + chapterId + '_name',
                 uuid + '_group_' + chapterId + '_btn'
-                )
+            )
             ui.addElements([
                 [uuid + '_group_' + chapterId + '_icon', {
                     type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'clear',
                     source: Utils.transferItemFromJson(chapterJson.icon),
                     darken: Boolean(chapterJson.icon.darken),
-                    x: 210, y: height + 200 + listHeight + 10, z: 11, size: 180
+                    x: 150, y: height + 140 + listHeight + 10, z: 11, size: 120
                 }],
                 [uuid + '_group_' + chapterId + '_name', {
                     type: 'text', text: TranAPI.translate(chapterJson.name),
-                    font: { color: $Color.BLACK, size: 60 },
-                    x: 400, y: height + 200 + listHeight + 70, z: 11
+                    font: { color: $Color.BLACK, size: 40 },
+                    x: 280, y: height + 140 + listHeight + 50, z: 11
                 }],
                 [uuid + '_group_' + chapterId + '_btn', {
-                    type: 'image', x: 210, y: height + 200 + listHeight + 10, z: 12, bitmap: 'clear', width: 780, height: 180,
+                    type: 'image', x: 150, y: height + 140 + listHeight + 10, z: 12, bitmap: 'clear', width: 840, height: 120,
                     clicker: {
                         onClick: Utils.debounce(that.updateChapterUi.bind(that, chapterId), 500)
                     }
                 }]
             ])
-            listHeight += 200
+            listHeight += 140
         })
-        ui.content.elements['group_frame'].x = 200
-        ui.content.elements['group_frame'].y = height + 200
+        ui.content.elements['group_frame'].x = 140
+        ui.content.elements['group_frame'].y = height + 140
         ui.content.elements['group_frame'].height = listHeight
         ui.refresh()
     },
@@ -362,11 +370,10 @@ const $MainUi = {
                     let tInputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, path[0], path[1], path[2])
                     if (tInputState === EnumObject.questInputState.locked && tQuestJson.hidden) return
                     let color = $Color.GRAY
-                    if (saveData.inputState >= EnumObject.questInputState.unfinished) {
-                        if (tInputState >= EnumObject.questInputState.finished) color = $Color.rgb(100, 220, 100)
-                    } else {
-                        if (tInputState >= EnumObject.questInputState.finished) color = $Color.rgb(0, 200, 200)
-                        else if (tInputState === EnumObject.questInputState.unfinished) color = $Color.rgb(200, 200, 0)
+                    if (tInputState >= EnumObject.questInputState.finished) {
+                        if (saveData.inputState >= EnumObject.questInputState.finished) color = $Color.rgb(100, 220, 100)
+                        else if (saveData.inputState === EnumObject.questInputState.unfinished) color = $Color.rgb(0, 200, 200)
+                        else color = $Color.rgb(200, 200, 0)
                     }
                     QuestUiTools.getDependencyLine(posParent, posChild, path[3], color).forEach(function (drawing) {
                         ui.content.drawing.push(drawing)
@@ -392,16 +399,23 @@ const $MainUi = {
             let questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
             if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
             let saveData = System.getQuestSaveData(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId)
+            let that = this
             let obj = QuestUi.openQuestUi(questJson, saveData, {
                 sendInputPacket: ClientSystem.sendInputPacket.bind(ClientSystem, sourceId, chapterId, questId),
                 sendOutputPacket: ClientSystem.sendOutputPacket.bind(ClientSystem, sourceId, chapterId, questId),
                 openParentListUi: function () {
-                    alert(TranAPI.translate('alert.WIP'))
-                    /** @todo */
+                    QuestUi.openQuestListUi(TranAPI.translate('gui.parentList.title'), questJson.parent, function (path) {
+                        that.open(path[0])
+                        that.updateChapterUi(path[1])
+                        that.openQuestUi(path[2])
+                    })
                 },
                 openChildListUi: function () {
-                    alert(TranAPI.translate('alert.WIP'))
-                    /** @todo */
+                    QuestUi.openQuestListUi(TranAPI.translate('gui.childList.title'), questJson.child, function (path) {
+                        that.open(path[0])
+                        that.updateChapterUi(path[1])
+                        that.openQuestUi(path[2])
+                    })
                 }
             })
             this.questUi.questId = questId

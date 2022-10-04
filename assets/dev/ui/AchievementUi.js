@@ -33,7 +33,7 @@ const $AchievementUi = {
     popWaiting () {
         let now = Date.now()
         let ret = this.waiting.shift()
-        while (ret && ret.time < now - 30*1000) ret = this.waiting.shift()
+        while (ret && ret.time < now - 30*1000 /* 30s */) ret = this.waiting.shift()
         if (!ret) return null
         return {
             icon: ret.icon,
@@ -60,6 +60,7 @@ const $AchievementUi = {
         display.slot.bitmap = obj.icon.bitmap || 'clear'
         display.slot.source = Utils.transferItemFromJson(obj.icon)
         display.name.text = obj.name
+        let that = this
         QuestUiTools.createAnimator(1000, function (animator) {
             let posX = 1000 - animator.getAnimatedValue() * 1000
             let deltaX = posX - display.bg.x
@@ -90,6 +91,7 @@ const $AchievementUi = {
                                 display.title.x += deltaX
                                 display.name.x += deltaX
                                 display.exist = false
+                                that.update()
                             }
                         })
                         this.remove = true
@@ -119,17 +121,17 @@ for (let index = 0; index < displayLength; index++) {
             bitmap: 'achievement_bg', width: 1000, height: 64 * bit
         },
         slot: {
-            type: 'slot', x: 16 * bit + 2000, y: index * 200 + 16 * bit, z: 2,
-            size: 32 * bit, visual: true, bitmap: 'clear', source: {}
+            type: 'slot', x: 8 * bit + 2000, y: index * 200 + 8 * bit, z: 2,
+            size: 48 * bit, visual: true, bitmap: 'clear', source: {}
         },
         title: {
-            type: 'text', x: 59 * bit + 2000, y: index * 200 + 10 * bit, z: 2,
+            type: 'text', x: 59 * bit + 2000, y: index * 200 + 12 * bit, z: 2,
             text: TranAPI.translate('gui.questFinished'),
-            font: { color: $Color.YELLOW, size: 20 * bit }
+            font: { color: $Color.YELLOW, size: 16 * bit }
         },
         name: {
-            type: 'text', x: 59 * bit + 2000, y: index * 200 + 34 * bit, z: 2,
-            text: '', font: { color: $Color.WHITE, size: 20 * bit }
+            type: 'text', x: 59 * bit + 2000, y: index * 200 + 36 * bit, z: 2,
+            text: '', font: { color: $Color.WHITE, size: 16 * bit }
         }
     }
     $AchievementUi.achievementUi.addElements([

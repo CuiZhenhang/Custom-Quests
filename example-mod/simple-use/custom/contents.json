@@ -9,13 +9,8 @@
             "en": "Chapter 1",
             "zh": "第1章"
         },
-        "description": {
-            "en": "Description of Chapter 1",
-            "zh": "第1章的介绍文字"
-        },
         "icon": {
-            "id": "vitem:stick",
-            "count": 16
+            "id": "vitem:stick"
         },
         "quest": []
     }]

@@ -1,5 +1,6 @@
 {
   "enabled": true,
+  "give_book": true,
   "save": {
     "for_team": true
   },

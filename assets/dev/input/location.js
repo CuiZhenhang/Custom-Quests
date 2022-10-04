@@ -82,41 +82,41 @@ IOTypeTools.setInputType('location', TranAPI.getTranslation('inputType.location'
             ]
         }
         let prefix = extraInfo.prefix
-        let maxY = extraInfo.posY + 270
+        let maxY = extraInfo.posY + 220
         let elements = [
             [prefix + 'text', {
                 type: 'text', x: 500, y: extraInfo.posY - 10, text: TranAPI.translate('inputType.location.text'),
-                font: { color: android.graphics.Color.BLACK, size: 40, align: 1 }
+                font: { color: android.graphics.Color.BLACK, size: 30, align: 1 }
             }],
             [prefix + 'pos_x', {
-                type: 'text', x: 500, y: extraInfo.posY + 40, text: 'x: [' + pos.x.join(' ~ ') + ']',
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                type: 'text', x: 500, y: extraInfo.posY + 30, text: 'x: [' + pos.x.join(' ~ ') + ']',
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }],
             [prefix + 'pos_y', {
-                type: 'text', x: 500, y: extraInfo.posY + 90, text: 'y: [' + pos.y.join(' ~ ') + ']',
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                type: 'text', x: 500, y: extraInfo.posY + 70, text: 'y: [' + pos.y.join(' ~ ') + ']',
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }],
             [prefix + 'pos_z', {
-                type: 'text', x: 500, y: extraInfo.posY + 140, text: 'z: [' + pos.z.join(' ~ ') + ']',
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                type: 'text', x: 500, y: extraInfo.posY + 110, text: 'z: [' + pos.z.join(' ~ ') + ']',
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }],
             [prefix + 'id', {
-                type: 'text', x: 500, y: extraInfo.posY + 190,
+                type: 'text', x: 500, y: extraInfo.posY + 150,
                 text: Utils.replace(TranAPI.translate('inputType.location.dimensionId'), [
                     ['{id}', inputJson.ignoreDimension ? TranAPI.translate('inputType.location.ignoreDimension') : inputJson.dimension]
                 ]),
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }]
         ]
         QuestUiTools.resolveText(TranAPI.translate(inputJson.description), function (str) {
             if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 40) / 900
+            return QuestUiTools.getTextWidth(str, 30) / 900
         }).forEach(function (str, index) {
             elements.push([prefix + 'desc_' + index, {
                 type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 40 }
+                font: { color: android.graphics.Color.BLACK, size: 30 }
             }])
-            maxY += 50
+            maxY += 40
         })
         maxY += 20
         return {

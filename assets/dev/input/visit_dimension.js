@@ -41,29 +41,29 @@ IOTypeTools.setInputType('visit_dimension', TranAPI.getTranslation('inputType.vi
     },
     getDescription (inputJson, toolsCb, extraInfo) {
         let prefix = extraInfo.prefix
-        let maxY = extraInfo.posY + 120
+        let maxY = extraInfo.posY + 100
         let elements = [
             [prefix + 'text', {
                 type: 'text', x: 500, y: extraInfo.posY - 10, text: TranAPI.translate('inputType.visit_dimension.text'),
-                font: { color: android.graphics.Color.BLACK, size: 40, align: 1 }
+                font: { color: android.graphics.Color.BLACK, size: 30, align: 1 }
             }],
             [prefix + 'id', {
-                type: 'text', x: 500, y: extraInfo.posY + 40,
+                type: 'text', x: 500, y: extraInfo.posY + 30,
                 text: Utils.replace(TranAPI.translate('inputType.visit_dimension.dimensionId'), [
                     ['{id}', inputJson.dimension]
                 ]),
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }]
         ]
         QuestUiTools.resolveText(TranAPI.translate(inputJson.description), function (str) {
             if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 40) / 900
+            return QuestUiTools.getTextWidth(str, 30) / 900
         }).forEach(function (str, index) {
             elements.push([prefix + 'desc_' + index, {
                 type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 40 }
+                font: { color: android.graphics.Color.BLACK, size: 30 }
             }])
-            maxY += 50
+            maxY += 40
         })
         maxY += 20
         return {

@@ -149,9 +149,12 @@ const IOTypeTools = {
     callInputTypeCb (inputId, method, extraInfo) {
         if (!this.isInputIdLoaded(inputId)) return null
         if (!Utils.isObject(extraInfo)) extraInfo = {}
-        let methods = [
-            'onCustomCall', 'onPacket', 'onTick'
-        ]
+        let methods =  []
+        if (!Network.inRemoteWorld()) {
+            methods = methods.concat([
+                'onCustomCall', 'onPacket', 'onTick'
+            ])
+        }
         if (methods.indexOf(method) < 0) return
         let inputObject = this.inputObject[inputId]
         let type = inputObject.json.type
@@ -322,10 +325,13 @@ const IOTypeTools = {
     callOutputTypeCb (outputId, method, extraInfo) {
         if (!this.isOutputIdLoaded(outputId)) return null
         if (!Utils.isObject(extraInfo)) extraInfo = {}
-        let methods = [
-            'onCustomCall', 'onPacket', 'onReceive',
-            'onFastReceive'
-        ]
+        let methods = []
+        if (!Network.inRemoteWorld()) {
+            methods = methods.concat([
+                'onCustomCall', 'onPacket', 'onReceive',
+                'onFastReceive'
+            ])
+        }
         if (methods.indexOf(method) < 0) return
         let outputObject = this.outputObject[outputId]
         let type = outputObject.json.type

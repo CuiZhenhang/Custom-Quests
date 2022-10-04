@@ -441,7 +441,7 @@ interface EnumObject {
 
 interface Store {
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     saved: {
         players: {
@@ -460,7 +460,7 @@ interface Store {
         exist: {[saveId: CQTypes.saveId]: boolean}
     }
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     cache: {
         playerLoaded: {[player: number]: boolean},
@@ -485,7 +485,7 @@ interface Store {
 interface TranAPI {
     lang: string
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     translation: {[lang: string]: {[str: string]: string}}
     addTranslation (str: string, params: {[lang: string]: string}): void
@@ -505,12 +505,12 @@ interface Utils {
     replace (str: string, replaceArray: Array<[key: string, str: string]>): string
     transferIdFromJson (id: CQTypes.ItemJson['id']): number
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     idFromItem: {[id: number]: string}
     transferIdFromItem (id: number): string
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     extraType: {[type: string]: CQTypes.extraTypeCb}
     setExtraTypeCb (type: string, extraTypeCb: CQTypes.extraTypeCb): void
@@ -536,7 +536,7 @@ interface Utils {
 
 interface IOTypeTools {
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     inputType: {
         [type: string]: {
@@ -551,7 +551,7 @@ interface IOTypeTools {
     getInputTypeCb (type: string): CQTypes.InputTypeCb
     getInputTypeConfig (type: string): Nullable<CQTypes.InputTypeConfig>
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     inputObject: {
         [inputId: CQTypes.inputId]: {
@@ -563,7 +563,7 @@ interface IOTypeTools {
         }
     }
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     typedInputList: {[type: string]: Array<CQTypes.inputId>}
     getAllInputIdByType (type: string | Array<string>): Array<CQTypes.inputId>
@@ -578,7 +578,7 @@ interface IOTypeTools {
     getPlayerListByInputId (inputId: CQTypes.inputId, online?: boolean): number[]
     getInputJsonByInputId (inputId: CQTypes.inputId): Nullable<CQTypes.IOTypes.InputJson>
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     outputType: {
         [type: string]: {
@@ -593,7 +593,7 @@ interface IOTypeTools {
     getOutputTypeCb (type: string): CQTypes.OutputTypeCb
     getOutputTypeConfig (type: string): Nullable<CQTypes.OutputTypeConfig>
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     outputObject: {
         [outputId: CQTypes.outputId]: {
@@ -605,7 +605,7 @@ interface IOTypeTools {
         }
     }
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     typedOutputList: {[type: string]: Array<CQTypes.inputId>}
     getAllOutputIdByType (type: string | Array<string>): Array<CQTypes.outputId>
@@ -656,7 +656,7 @@ interface System {
 
 interface ServerSystem {
     /**
-     * Direct access to this property is not recommended
+     * Directly access to this property is not recommended
      */
     json: CQTypes.AllMainJson
     resolvedJson: CQTypes.AllResolvedMainJson

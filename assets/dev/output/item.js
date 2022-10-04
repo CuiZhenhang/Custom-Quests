@@ -71,7 +71,7 @@ IOTypeTools.setOutputType('item', TranAPI.getTranslation('outputType.item'), {
     getDescription (outputJson, toolsCb, extraInfo) {
         let source = Utils.transferItemFromJson(outputJson)
         let prefix = extraInfo.prefix
-        let maxY = extraInfo.posY + 200
+        let maxY = extraInfo.posY + 190
         let elements = [
             [prefix + 'slot', {
                 type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
@@ -85,18 +85,18 @@ IOTypeTools.setOutputType('item', TranAPI.getTranslation('outputType.item'), {
             [prefix + 'name', {
                 type: 'text', x: 500, y: extraInfo.posY + 120,
                 text: Item.getName(source.id, source.data).split('\n')[0].replace(/\u00A7./g, ''),
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }]
         ]
         QuestUiTools.resolveText(TranAPI.translate(outputJson.description), function (str) {
             if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 40) / 900
+            return QuestUiTools.getTextWidth(str, 30) / 900
         }).forEach(function (str, index) {
             elements.push([prefix + 'desc_' + index, {
                 type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 40 }
+                font: { color: android.graphics.Color.BLACK, size: 30 }
             }])
-            maxY += 50
+            maxY += 40
         })
         maxY += 20
         return {

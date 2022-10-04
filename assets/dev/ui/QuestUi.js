@@ -34,6 +34,9 @@ const $QuestUi = {
                         if (typeof $QuestUi.openParentListUi === 'function') {
                             $QuestUi.openParentListUi()
                         }
+                    }, 500),
+                    onLongClick: Utils.debounce(function () {
+                        alert(TranAPI.translate('alert.description.show_parent'))
                     }, 500)
                 }
             },
@@ -43,6 +46,9 @@ const $QuestUi = {
                         if (typeof $QuestUi.openChildListUi === 'function') {
                             $QuestUi.openChildListUi()
                         }
+                    }, 500),
+                    onLongClick: Utils.debounce(function () {
+                        alert(TranAPI.translate('alert.description.show_child'))
                     }, 500)
                 }
             }
@@ -81,7 +87,7 @@ const $QuestUi = {
         this.questUi.clearNewElements()
         let location = this.questUi.ui.getLocation()
         let content = this.questUi.content
-        location.scrollY = (280 + Math.floor(numIO/5 - 0.1)*100 + 50*text.length) * (600/1000)
+        location.scrollY = (280 + Math.floor(numIO/5 - 0.1)*100 + 40*text.length) * (600/1000)
         location.height = Math.min(location.scrollY, $ScreenHeight)
         location.y = ($ScreenHeight - location.height)/2
         content.drawing[1].height = location.scrollY * (1000/600)
@@ -94,8 +100,8 @@ const $QuestUi = {
         }))
         this.questUi.addElements(text.map(function (str, index) {
             return [uuid + '_desc_' + index, {
-                type: 'text', text: str, font: {color: $Color.BLACK, size: 40},
-                x: 20, y: content.drawing[5].y2 + 10 + 50*index
+                type: 'text', text: str, font: {color: $Color.BLACK, size: 30},
+                x: 20, y: content.drawing[5].y2 + 10 + 40*index
             }]
         }))
         let that = this
@@ -188,7 +194,7 @@ const $QuestUi = {
     /** @type { (str: string) => number } */
     getWidthRatio (str) {
         if (typeof str !== 'string') return 1
-        return QuestUiTools.getTextWidth(str, 40) / 960
+        return QuestUiTools.getTextWidth(str, 30) / 960
     },
     /** @type { (uuid: string) => boolean } */
     isClosed (uuid) {

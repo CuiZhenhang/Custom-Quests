@@ -4,7 +4,7 @@ IOTypeTools.setInputType('kill', TranAPI.getTranslation('inputType.kill'), {
     resolveJson (inputJson, refsArray, bitmapNameObject) {
         inputJson.icon = Utils.resolveIconJson(inputJson.icon, refsArray, bitmapNameObject)
         if (typeof inputJson.entityId !== 'number') return null
-        if (typeof inputJson.count !== 'number' || inputJson.count < 0) inputJson.count = 1
+        if (typeof inputJson.count !== 'number' || inputJson.count < 1) inputJson.count = 1
         return inputJson
     },
     onLoad (inputJson, toolsCb, cache) {
@@ -58,37 +58,37 @@ IOTypeTools.setInputType('kill', TranAPI.getTranslation('inputType.kill'), {
         let stateObj = toolsCb.getState()
         let finished = stateObj.state === EnumObject.inputState.finished
         let prefix = extraInfo.prefix
-        let maxY = extraInfo.posY + 170
+        let maxY = extraInfo.posY + 140
         let elements = [
             [prefix + 'text', {
                 type: 'text', x: 500, y: extraInfo.posY - 10, text: TranAPI.translate('inputType.kill.text'),
-                font: { color: android.graphics.Color.BLACK, size: 40, align: 1 }
+                font: { color: android.graphics.Color.BLACK, size: 30, align: 1 }
             }],
             [prefix + 'id', {
-                type: 'text', x: 500, y: extraInfo.posY + 40,
+                type: 'text', x: 500, y: extraInfo.posY + 30,
                 text: Utils.replace(TranAPI.translate('inputType.kill.entity'), [
                     ['{id}', inputJson.entityId],
                     ['{count}', inputJson.count],
                 ]),
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }],
             [prefix + 'data', {
-                type: 'text', x: 500, y: extraInfo.posY + 90,
+                type: 'text', x: 500, y: extraInfo.posY + 70,
                 text: Utils.replace(TranAPI.translate('inputType.kill.killed'), [
                     ['{count}', Number(finished ? inputJson.count : (stateObj.count || 0))]
                 ]),
-                font: { color: android.graphics.Color.GRAY, size: 40, align: 1 }
+                font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }]
         ]
         QuestUiTools.resolveText(TranAPI.translate(inputJson.description), function (str) {
             if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 40) / 900
+            return QuestUiTools.getTextWidth(str, 30) / 900
         }).forEach(function (str, index) {
             elements.push([prefix + 'desc_' + index, {
                 type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 40 }
+                font: { color: android.graphics.Color.BLACK, size: 30 }
             }])
-            maxY += 50
+            maxY += 40
         })
         maxY += 20
         return {
