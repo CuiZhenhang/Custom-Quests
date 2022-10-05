@@ -64,7 +64,7 @@ const $QuestListUi = {
         ],
         elements: {
             close: { type: 'closeButton', x: 910, y: 10, bitmap: 'X', bitmap2: 'XPress', scale: 80/19 },
-            title: { type: 'text', x: 60, y: 30, text: TranAPI.translate('gui.sourceList'), font: { color: $Color.BLACK, size: 40 } }
+            title: { type: 'text', x: 60, y: 30, text: TranAPI.translate('gui.questList.sourceList'), font: { color: $Color.BLACK, size: 40 } }
         }
     }, null, {
         closeOnBackPressed: true
@@ -93,7 +93,7 @@ const $QuestListUi = {
             break
         }
         if (empty) {
-            ui.content.elements['name'].text = ''
+            this.questListUi.content.elements['name'].text = TranAPI.translate('gui.questList.empty')
             this.questListUi.clearNewElements()
             this.questListUi.refresh()
         }
@@ -111,11 +111,11 @@ const $QuestListUi = {
             ui.addElements([
                 [uuid + '_' + sourceId + '_name', {
                     type: 'text', text: TranAPI.translate(mainJson.name),
-                    font: { color: $Color.BLACK, size: 40, align: 1 },
-                    x: 500, y: height + 20, z: 1
+                    font: { color: $Color.BLACK, size: 50, align: 1 },
+                    x: 500, y: height + 10, z: 1
                 }],
                 [uuid + '_' + sourceId + '_btn', {
-                    type: 'image', x: 10, y: height + 5, z: 2, bitmap: 'clear', width: 980, height: 70,
+                    type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 100,
                     clicker: {
                         onClick: Utils.debounce(this.updateQuestListUi.bind(this, sourceId), 500)
                     }
@@ -127,7 +127,7 @@ const $QuestListUi = {
                 x2: 990, y2: height,
                 width: 5, color: $Color.GRAY
             })
-            height += 80
+            height += 120
         }
         ui.content.drawing[1].height = Math.max(height + 10, 1000*($ScreenHeight - 60)/300)
         ui.ui.getLocation().scrollY = ui.content.drawing[1].height * (300/1000)
@@ -140,7 +140,7 @@ const $QuestListUi = {
         let mainJson = Store.localCache.resolvedJson[sourceId]
         ui.clearNewElements()
         if (!mainQuestListObject || !Utils.isObject(mainJson)) {
-            ui.content.elements['name'].text = ''
+            ui.content.elements['name'].text = TranAPI.translate('gui.questList.empty')
             ui.refresh()
             return
         }
@@ -168,7 +168,7 @@ const $QuestListUi = {
                     clicker: {
                         onClick: Utils.debounce(function () {
                             Utils.dialog({
-                                text: Utils.replace(TranAPI.translate('gui.questListUi.select'), [
+                                text: Utils.replace(TranAPI.translate('gui.questList.select'), [
                                     ['{name}', name]
                                 ])
                             }, function () {

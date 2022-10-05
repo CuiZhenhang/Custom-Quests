@@ -71,7 +71,7 @@ function registerTaskType (API) {
                     // determine the displayed item using [[source]]
                     source: {
                         // we can transfer the id using function [[Utils.transferIdFromJson]]
-                        id: API.Utils.transferIdFromJson(inputJson),
+                        id: API.Utils.transferIdFromJson(inputJson.id),
                         count: inputJson.count,
                         data: inputJson.data
                     }

@@ -13,5 +13,9 @@
             "id": "vitem:stick"
         },
         "quest": []
-    }]
+    }],
+    "config": {
+        "textMessage": true,
+        "guiMessage": true
+    }
 }

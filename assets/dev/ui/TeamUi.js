@@ -312,7 +312,7 @@ const $TeamUi = {
             else if (state === EnumObject.playerState.owner) stateKeyStr = 'gui.team.playerState.owner'
             ui.addElements([
                 [uuid + '_' + index + '_bg', {
-                    type: 'image', x: pos[0], y: pos[1], bitmap: 'clear', width: 1000, height: 100,
+                    type: 'image', x: pos[0], y: pos[1], bitmap: 'clear', width: 500, height: 100,
                     clicker: {
                         onClick: Utils.debounce(function () {
                             alert(obj.name)

@@ -52,8 +52,9 @@ gui.description.inputType=任务类型：{name}
 gui.description.outputType=奖励类型：{name}
 gui.selection.title=请选择：
 gui.questFinished=任务已完成！
-gui.sourceList=源列表
-gui.questListUi.select=确定要选择该任务：{name} ？
+gui.questList.sourceList=源列表
+gui.questList.select=确定要选择该任务：{name}
+gui.questList.empty=无任务
 gui.parentList.title=父任务列表
 gui.childList.title=子任务列表
 
