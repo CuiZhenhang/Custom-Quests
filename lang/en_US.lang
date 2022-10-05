@@ -52,8 +52,9 @@ gui.description.inputType=Task type: {name}
 gui.description.outputType=Reward type: {name}
 gui.selection.title=Please select:
 gui.questFinished=Quest finished!
-gui.sourceList=Source List
-gui.questListUi.select=Determine the selection of this task: {name} ?
+gui.questList.sourceList=Source List
+gui.questList.select=Determine the selection of this task: {name}
+gui.questList.empty=No quests
 gui.parentList.title=Parent Quest List
 gui.childList.title=Child Quest List
 

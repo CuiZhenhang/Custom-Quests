@@ -679,7 +679,8 @@ const ServerSystem = {
             }
         } else if (oldState === EnumObject.playerState.absent) {
             // join team
-            Store.saved.playerList[team.saveId].push(player)
+            let list = Store.saved.playerList[team.saveId]
+            if (list.indexOf(player) === -1) list.push(player)
             this.loadAllQuest(team.saveId)
         }
     },

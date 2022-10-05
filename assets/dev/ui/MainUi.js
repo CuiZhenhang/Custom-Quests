@@ -411,7 +411,14 @@ const $MainUi = {
                     })
                 },
                 openChildListUi: function () {
-                    QuestUi.openQuestListUi(TranAPI.translate('gui.childList.title'), questJson.child, function (path) {
+                    let questList = questJson.child.filter(function (pathArray) {
+                        let questJson = System.getQuestJson(Store.localCache.resolvedJson, pathArray[0], pathArray[1], pathArray[2])
+                        if (!questJson) return false
+                        if (!questJson.hidden) return true
+                        let inputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, pathArray[0], pathArray[1], pathArray[2])
+                        return inputState !== EnumObject.questInputState.locked
+                    })
+                    QuestUi.openQuestListUi(TranAPI.translate('gui.childList.title'), questList, function (path) {
                         that.open(path[0])
                         that.updateChapterUi(path[1])
                         that.openQuestUi(path[2])

@@ -40,8 +40,8 @@ const Utils = {
         return JSON.parse(JSON.stringify(obj))
     },
     debounce (func, delay, func2, ths) {
-        if(typeof func !== 'function') return func
-        if(typeof delay !== 'number' || isNaN(delay)) return func
+        if (typeof func !== 'function') return func
+        if (typeof delay !== 'number' || isNaN(delay)) return func
         let time = 0
         return function () {
             let now = Date.now()
