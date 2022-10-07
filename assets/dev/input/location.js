@@ -61,7 +61,7 @@ IOTypeTools.setInputType('location', TranAPI.getTranslation('inputType.location'
                 bitmap: (typeof inputJson.icon.bitmap === 'string') ? inputJson.icon.bitmap : 'clear',
                 source: Utils.transferItemFromJson(inputJson.icon),
                 clicker: {
-                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
+                    onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
                 }
             }]
         ]

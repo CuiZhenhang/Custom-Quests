@@ -1,0 +1,61 @@
+{
+    "type": "quest",
+    "id": "extra",
+    "pos": [350, 200],
+    "size": 100,
+    "icon": {
+        "id": "vitem:stone_hoe",
+        "extra": [
+            {
+                "type": "enchant",
+                "array": [
+                    { "type": 17, "level": 1 }
+                ]
+            }
+        ]
+    },
+    "inner": {
+        "input": [
+            {
+                "type": "item",
+                "id": "vitem:stone_hoe",
+                "extra": [
+                    {
+                        "type": "enchant",
+                        "array": [
+                            { "type": 17, "level": 1, "operator": ">=" }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "output": [
+            {
+                "type": "item",
+                "id": "vitem:stone_hoe",
+                "extra": [
+                    {
+                        "type": "name",
+                        "name": "The Best Stone Hoe"
+                    },
+                    {
+                        "type": "enchant",
+                        "array": [
+                            { "type": 17, "level": 3 }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "name": {
+            "en": "extra",
+            "ru": "extra",
+            "zh": "extra"
+        },
+        "text": {
+            "en": "",
+            "ru": "",
+            "zh": ""
+        }
+    }
+}

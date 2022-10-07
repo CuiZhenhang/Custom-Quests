@@ -82,9 +82,9 @@ IOTypeTools.setInputType('exp', TranAPI.getTranslation('inputType.exp'), {
                 clicker: {
                     onClick: (submit && !finished) ? Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.inputState.finished) return
-                        toolsCb.sendPacket({ type: 'submit' })
+                        if (typeof toolsCb.sendPacket === 'function') toolsCb.sendPacket({ type: 'submit' })
                     }, 500) : null,
-                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
+                    onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
                 }
             }],
             [extraInfo.prefix + 'text', submit ? {

@@ -332,27 +332,27 @@ declare namespace CQTypes {
      * Change the value of [[inputJson]] is not recommended except `resolveJson`
      */
     interface InputTypeCb<T = IOTypes.InputJson> {
-        resolveJson?: (inputJson: IOTypes.InputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
-        onLoad?: (inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object) => void
-        onUnload?: (inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object) => void
-        onCustomCall?: (inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: object) => unknown
-        onPacket?: (inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: {
+        resolveJson?: (this: null, inputJson: IOTypes.InputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
+        onLoad?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object) => void
+        onUnload?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object) => void
+        onCustomCall?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: object) => unknown
+        onPacket?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: {
             client: NetworkClient
             packetData: object
         }) => void
-        onTick?: (inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: {
+        onTick?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: {
             playerInventory: Array<{
                 player: number
                 sort: ReturnType<Utils['getSortInventory']>
                 extra: ReturnType<Utils['getExtraInventory']>
             }>
         }) => void
-        getIcon?: (inputJson: T, toolsCb: IOTypeToolsLocalCb<InputStateObject>, extraInfo: {
+        getIcon?: (this: null, inputJson: T, toolsCb: IOTypeToolsLocalCb<InputStateObject>, extraInfo: {
             pos: [x: number, y: number]
             size: number
             prefix: string
         }) => {[key: string]: UI.Elements} | Array<[string, UI.Elements]>
-        getDescription?: (inputJson: T, toolsCb: IOTypeToolsLocalCb<InputStateObject>, extraInfo: {
+        getDescription?: (this: null, inputJson: T, toolsCb: IOTypeToolsLocalCb<InputStateObject>, extraInfo: {
             posY: number
             prefix: string
         }) => {
@@ -371,28 +371,28 @@ declare namespace CQTypes {
      * Change the value of [[outputJson]] is not recommended except `resolveJson`
      */
     interface OutputTypeCb<T = IOTypes.OutputJson> {
-        resolveJson?: (outputJson: IOTypes.OutputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
-        onLoad?: (outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object) => void
-        onUnload?: (outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object) => void
-        onCustomCall?: (outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: object) => unknown
-        onPacket?: (outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
+        resolveJson?: (this: null, outputJson: IOTypes.OutputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
+        onLoad?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object) => void
+        onUnload?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object) => void
+        onCustomCall?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: object) => unknown
+        onPacket?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
             client: NetworkClient
             packetData: object
         }) => void
-        onFastReceive?: (outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
+        onFastReceive?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
             operator?: Operator
             [key: string]: unknown
         }) => void
-        onReceive?: (outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
+        onReceive?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
             operator?: Operator
             [key: string]: unknown
         }) => void
-        getIcon?: (outputJson: T, toolsCb: IOTypeToolsLocalCb<OutputStateObject>, extraInfo: {
+        getIcon?: (this: null, outputJson: T, toolsCb: IOTypeToolsLocalCb<OutputStateObject>, extraInfo: {
             pos: [x: number, y: number]
             size: number
             prefix: string
         }) => {[key: string]: UI.Elements} | Array<[string, UI.Elements]>
-        getDescription?: (outputJson: T, toolsCb: IOTypeToolsLocalCb<OutputStateObject>, extraInfo: {
+        getDescription?: (this: null, outputJson: T, toolsCb: IOTypeToolsLocalCb<OutputStateObject>, extraInfo: {
             posY: number
             prefix: string
         }) => {

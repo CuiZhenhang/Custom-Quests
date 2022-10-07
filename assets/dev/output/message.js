@@ -54,9 +54,9 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
                 clicker: {
                     onClick: (!received) ? Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.outputState.received) return
-                        toolsCb.sendPacket({ type: 'receive' })
+                        if (typeof toolsCb.sendPacket === 'function') toolsCb.sendPacket({ type: 'receive' })
                     }, 500) : null,
-                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
+                    onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
                 }
             }]
         ]

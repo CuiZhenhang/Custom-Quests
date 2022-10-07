@@ -127,7 +127,7 @@ const IOTypeTools = {
         if (!Array.isArray(this.typedInputList[type])) this.typedInputList[type] = []
         this.typedInputList[type].push(inputId)
         if (typeof inputType.cb.onLoad === 'function') {
-            inputType.cb.onLoad(inputObject.json, inputObject.toolsCb, inputObject.cache)
+            inputType.cb.onLoad.call(null, inputObject.json, inputObject.toolsCb, inputObject.cache)
         }
     },
     unloadInput (inputId) {
@@ -136,7 +136,7 @@ const IOTypeTools = {
         let type = inputObject.json.type
         let inputType = this.inputType[type]
         if (typeof inputType.cb.onUnload === 'function') {
-            inputType.cb.onUnload(inputObject.json, inputObject.toolsCb, inputObject.cache)
+            inputType.cb.onUnload.call(null, inputObject.json, inputObject.toolsCb, inputObject.cache)
         }
         if (typeof inputObject.onUnload === 'function') {
             inputObject.onUnload()
@@ -160,7 +160,7 @@ const IOTypeTools = {
         let type = inputObject.json.type
         let inputType = this.inputType[type]
         if (typeof inputType.cb[method] === 'function') {
-            return inputType.cb[method](inputObject.json, inputObject.toolsCb, inputObject.cache, extraInfo)
+            return inputType.cb[method].call(null, inputObject.json, inputObject.toolsCb, inputObject.cache, extraInfo)
         }
         return null
     },
@@ -303,7 +303,7 @@ const IOTypeTools = {
         if (!Array.isArray(this.typedOutputList[type])) this.typedOutputList[type] = []
         this.typedOutputList[type].push(outputId)
         if (typeof outputType.cb.onLoad === 'function') {
-            outputType.cb.onLoad(outputObject.json, outputObject.toolsCb, outputObject.cache)
+            outputType.cb.onLoad.call(null, outputObject.json, outputObject.toolsCb, outputObject.cache)
         }
     },
     unloadOutput (outputId) {
@@ -312,7 +312,7 @@ const IOTypeTools = {
         let type = outputObject.json.type
         let outputType = this.outputType[type]
         if (typeof outputType.cb.onUnload === 'function') {
-            outputType.cb.onUnload(outputObject.json, outputObject.toolsCb, outputObject.cache)
+            outputType.cb.onUnload.call(null, outputObject.json, outputObject.toolsCb, outputObject.cache)
         }
         if (typeof outputObject.onUnload === 'function') {
             outputObject.onUnload()
@@ -337,7 +337,7 @@ const IOTypeTools = {
         let type = outputObject.json.type
         let outputType = this.outputType[type]
         if (typeof outputType.cb[method] === 'function') {
-            return outputType.cb[method](outputObject.json, outputObject.toolsCb, outputObject.cache, extraInfo)
+            return outputType.cb[method].call(null, outputObject.json, outputObject.toolsCb, outputObject.cache, extraInfo)
         }
         return null
     },
@@ -357,8 +357,7 @@ const IOTypeTools = {
 }
 
 Callback.addCallback('ServerPlayerTick', function () {
-    /* 0.5s */
-    if (Math.random() * 10 < 1 && Math.random() * Network.getConnectedPlayers().length < 1) {
+    if (Math.random() * 10 < 1 && Math.random() * Network.getConnectedPlayers().length < 1 /* 0.5s */) {
         try {
             let playerList = Network.getConnectedPlayers()
             let playerInventory = {}

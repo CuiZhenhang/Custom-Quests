@@ -16,7 +16,7 @@ IOTypeTools.setOutputType('empty', TranAPI.getTranslation('outputType.empty'), {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
                 bitmap: 'reward_empty',
                 clicker: {
-                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
+                    onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
                 }
             }]
         ]

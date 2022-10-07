@@ -17,7 +17,7 @@ IOTypeTools.setInputType('check', TranAPI.getTranslation('inputType.check'), {
                 clicker: {
                     onClick: finished ? null : Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.inputState.finished) return
-                        toolsCb.sendPacket({ type: 'check' })
+                        if (typeof toolsCb.sendPacket === 'function') toolsCb.sendPacket({ type: 'check' })
                     }, 500)
                 }
             }]

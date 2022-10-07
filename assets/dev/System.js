@@ -11,7 +11,7 @@ const System = {
             inputJson.description = description
             return inputJson
         }
-        let resolvedJson = inputTypeCb.resolveJson(inputJson, refsArray, bitmapNameObject)
+        let resolvedJson = inputTypeCb.resolveJson.call(null, inputJson, refsArray, bitmapNameObject)
         if (!Utils.isObject(resolvedJson)) return null
         if (typeof resolvedJson.type !== 'string') return null
         resolvedJson.description = description
@@ -26,7 +26,7 @@ const System = {
             outputJson.description = description
             return outputJson
         }
-        let resolvedJson = outputTypeCb.resolveJson(outputJson, refsArray, bitmapNameObject)
+        let resolvedJson = outputTypeCb.resolveJson.call(null, outputJson, refsArray, bitmapNameObject)
         if (!Utils.isObject(resolvedJson)) return null
         if (typeof resolvedJson.type !== 'string') return null
         resolvedJson.description = description

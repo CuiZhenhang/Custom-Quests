@@ -10,7 +10,7 @@ const Utils = {
     },
     getUUID () {
         let uuid = String(java.util.UUID.randomUUID().toString()).split('-')
-        let time = (Date.now() % 65535).toString(16)
+        let time = (Date.now() & 0xffff).toString(16)
         while (time.length < 4) time = '0' + time
         return uuid[0] + uuid[1] + time
     },
@@ -45,11 +45,12 @@ const Utils = {
         let time = 0
         return function () {
             let now = Date.now()
-            let ret
-            if (now >= time) ret = func.apply(ths, arguments)
-            else if (typeof func2 === 'function') ret = func2.apply(ths, arguments)
-            time = now + delay
-            return ret
+            if (now >= time) {
+                time = now + delay
+                return func.apply(ths, arguments)
+            } else if (typeof func2 === 'function') {
+                return func2.apply(ths, arguments)
+            }
         }
     },
     operate (a, operator, b, defaultValue) {
@@ -353,18 +354,18 @@ const Utils = {
         }))
     },
     getInventory (player) {
-		let inventory = []
-		let actor = new PlayerActor(player)
-		for (let i = 0; i < 36; i++) {
-			inventory[i] = actor.getInventorySlot(i)
-		}
-		return inventory
+        let inventory = []
+        let actor = new PlayerActor(player)
+        for (let i = 0; i < 36; i++) {
+            inventory[i] = actor.getInventorySlot(i)
+        }
+        return inventory
     },
     getSortInventory (inventory) {
         /** @type { ReturnType<Utils['getSortInventory']> } */
-		let sortInventory = {}
-		inventory.forEach(function (item) {
-			if (item.id === 0) return
+        let sortInventory = {}
+        inventory.forEach(function (item) {
+            if (item.id === 0) return
             if (sortInventory[item.id + ':' + item.data]) {
                 sortInventory[item.id + ':' + item.data] += item.count
                 if(item.data !== -1) sortInventory[item.id + ':-1'] += item.count
@@ -372,8 +373,8 @@ const Utils = {
                 sortInventory[item.id + ':' + item.data] = item.count
                 sortInventory[item.id + ':-1'] = item.count
             }
-		})
-		return sortInventory
+        })
+        return sortInventory
     },
     getExtraInventory (inventory) {
         /** @type { ReturnType<Utils['getExtraInventory']> } */

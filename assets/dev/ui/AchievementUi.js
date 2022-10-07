@@ -33,7 +33,7 @@ const $AchievementUi = {
     popWaiting () {
         let now = Date.now()
         let ret = this.waiting.shift()
-        while (ret && ret.time < now - 30*1000 /* 30s */) ret = this.waiting.shift()
+        while (ret && ret.time < now - 20*1000 /* 20s */) ret = this.waiting.shift()
         if (!ret) return null
         return {
             icon: ret.icon,
@@ -61,7 +61,7 @@ const $AchievementUi = {
         display.slot.source = Utils.transferItemFromJson(obj.icon)
         display.name.text = obj.name
         let that = this
-        QuestUiTools.createAnimator(1000, function (animator) {
+        QuestUiTools.createAnimator(1000 /* 1s */, function (animator) {
             let posX = 1000 - animator.getAnimatedValue() * 1000
             let deltaX = posX - display.bg.x
             display.bg.x += deltaX
@@ -74,8 +74,8 @@ const $AchievementUi = {
                 let time = 0
                 Updatable.addLocalUpdatable({
                     update () {
-                        if (++time < 60) return
-                        QuestUiTools.createAnimator(1000, function (animator) {
+                        if (++time < 60 /* 3s */) return
+                        QuestUiTools.createAnimator(1000 /* 1s */, function (animator) {
                             let posX = animator.getAnimatedValue() * 1000
                             let deltaX = posX - display.bg.x
                             display.bg.x += deltaX

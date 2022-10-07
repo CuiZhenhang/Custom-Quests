@@ -64,7 +64,7 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
                 let items = obj.extra[cache.key]
                 if (!Array.isArray(items)) return false
                 let passedCount = 0
-                succ = items.some(function (item) {
+                return items.some(function (item) {
                     if (Utils.isItemExtraPassed(item, inputJson.extra)){
                         passedCount += item.count
                         if (passedCount >= inputJson.count) return true
@@ -98,9 +98,9 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
                 clicker: {
                     onClick: (submit && !finished) ? Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.inputState.finished) return
-                        toolsCb.sendPacket({ type: 'submit' })
+                        if (typeof toolsCb.sendPacket === 'function') toolsCb.sendPacket({ type: 'submit' })
                     }, 500) : null,
-                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
+                    onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
                 }
             }],
             [extraInfo.prefix + 'text', submit ? {

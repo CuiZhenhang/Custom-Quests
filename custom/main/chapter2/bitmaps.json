@@ -1,7 +1,7 @@
 {
     "type": "quest",
     "id": "bitmaps",
-    "pos": [260, 200],
+    "pos": [260, 210],
     "size": 80,
     "icon": [
         { "bitmap": "ach3_0", "id": "vitem:stick" },

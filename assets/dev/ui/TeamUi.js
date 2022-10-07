@@ -10,10 +10,10 @@ const $TeamUi = {
         location: { x: 0, y: 0, width: 1000, height: $ScreenHeight },
         drawing: [
             { type: 'background', color: $Color.TRANSPARENT },
-            { type: 'frame', x: 0, y: 0, width: 1000, height: $ScreenHeight, bitmap: 'classic_frame_bg_light', scale: 4 },
-            { type: 'frame', x: 0, y: 0, width: 1000, height: 60, bitmap: 'classic_frame_bg_light', scale: 4 },
+            { type: 'frame', x: 0, y: 0, width: 1000, height: $ScreenHeight, bitmap: 'classic_frame_bg_light', scale: 2 },
+            { type: 'frame', x: 0, y: 0, width: 1000, height: 60, bitmap: 'classic_frame_bg_light', scale: 2 },
             { type: 'text', text: TranAPI.translate('gui.team'), x: 500, y: 30, font: { color: $Color.BLACK, align: 1, size: 20 } },
-            { type: 'line', x1: 400, y1: 70, x2: 400, y2: $ScreenHeight - 20, width: 1, color: $Color.BLACK },
+            { type: 'line', x1: 390, y1: 70, x2: 390, y2: $ScreenHeight - 20, width: 1, color: $Color.BLACK },
             { type: 'frame', x: 50, y: 150, width: 300, height: $ScreenHeight - 40 - 150, bitmap: 'classic_frame_bg_light', scale: 1 },
             { type: 'frame', x: 430, y: 180, width: 520, height: $ScreenHeight - 40 - 180, bitmap: 'classic_frame_bg_light', scale: 1 }
         ],
