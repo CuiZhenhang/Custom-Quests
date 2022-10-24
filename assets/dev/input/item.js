@@ -109,7 +109,7 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
                 y: pos[1] + (40 / 80) * extraInfo.size,
                 z: 2,
                 text: Number(finished ? inputJson.count : (stateObj.count || 0)) + '/' + Number(inputJson.count),
-                font: { color: android.graphics.Color.WHITE, size: 20, align: 1 }
+                font: { color: android.graphics.Color.WHITE, size: (20 / 80) * extraInfo.size, align: 1 }
             } : null]
         ]
     },

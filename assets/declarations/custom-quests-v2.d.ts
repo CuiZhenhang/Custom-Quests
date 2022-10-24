@@ -31,6 +31,7 @@ declare namespace CQTypes {
             type: 'group'
             icon: Ref<IconJson>
             list: Array<Ref<InputJson>>
+            count?: number
         }
         interface InputJson_check extends InputJsonBase {
             type: 'check'
@@ -84,20 +85,15 @@ declare namespace CQTypes {
         }
 
         /** @todo */
-        interface OutputJson_random extends OutputJsonBase {
-            type: 'random'
+        interface OutputJson_group extends OutputJsonBase {
+            type: 'group'
             icon: Ref<IconJson>
             list: Array<{
                 output: Ref<OutputJson>
-                weigth: number
+                weigth?: number
             }>
-        }
-        /** @todo */
-        interface OutputJson_select extends OutputJsonBase {
-            type: 'select'
-            autoReceive?: false
-            icon: Ref<IconJson>
-            list: Array<Ref<OutputJson>>
+            count?: number
+            isSelect?: boolean
         }
         interface OutputJson_empty extends OutputJsonBase {
             type: 'empty'
@@ -122,8 +118,7 @@ declare namespace CQTypes {
         }
         type OutputJson = (
             OutputJsonBase
-            | OutputJson_random
-            | OutputJson_select
+            | OutputJson_group
             | OutputJson_item
             | OutputJson_exp
             | OutputJson_command
@@ -320,6 +315,8 @@ declare namespace CQTypes {
         setState: (extraInfo: object, stateObject: T) => void
         getPlayerList: (online?: boolean) => Array<number>
         getConnectedClientList: () => NetworkConnectedClientList
+        createChildInputId?: Nullable<(inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.InputStateObject>, onUnload?: () => void) => CQTypes.inputId>
+        createChildOutputId?: Nullable<(outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.OutputStateObject>, onUnload?: () => void) => CQTypes.outputId>
     }
 
     interface IOTypeToolsLocalCb <T = InputStateObject | OutputStateObject>{
@@ -343,6 +340,7 @@ declare namespace CQTypes {
         onTick?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: {
             playerInventory: Array<{
                 player: number
+                normal: ReturnType<Utils['getInventory']>
                 sort: ReturnType<Utils['getSortInventory']>
                 extra: ReturnType<Utils['getExtraInventory']>
             }>
@@ -409,33 +407,33 @@ declare namespace CQTypes {
 }
 
 interface EnumObject {
-    playerState: {
-        absent: CQTypes.PlayerState.absent
-        member: CQTypes.PlayerState.member
-        admin: CQTypes.PlayerState.admin
-        owner: CQTypes.PlayerState.owner
+    readonly playerState: {
+        readonly absent: CQTypes.PlayerState.absent
+        readonly member: CQTypes.PlayerState.member
+        readonly admin: CQTypes.PlayerState.admin
+        readonly owner: CQTypes.PlayerState.owner
     }
-    inputState: {
-        unfinished: CQTypes.InputState.unfinished
-        finished: CQTypes.InputState.finished
-        repeat_unfinished: CQTypes.InputState.repeat_unfinished
+    readonly inputState: {
+        readonly unfinished: CQTypes.InputState.unfinished
+        readonly finished: CQTypes.InputState.finished
+        readonly repeat_unfinished: CQTypes.InputState.repeat_unfinished
     }
-    outputState: {
-        unreceived: CQTypes.OutputState.unreceived
-        received: CQTypes.OutputState.received
-        repeat_unreceived: CQTypes.OutputState.repeat_unreceived
+    readonly outputState: {
+        readonly unreceived: CQTypes.OutputState.unreceived
+        readonly received: CQTypes.OutputState.received
+        readonly repeat_unreceived: CQTypes.OutputState.repeat_unreceived
     }
-    questInputState: {
-        locked: CQTypes.QuestInputState.locked
-        unfinished: CQTypes.QuestInputState.unfinished
-        finished: CQTypes.QuestInputState.finished
-        repeat_unfinished: CQTypes.QuestInputState.repeat_unfinished
+    readonly questInputState: {
+        readonly locked: CQTypes.QuestInputState.locked
+        readonly unfinished: CQTypes.QuestInputState.unfinished
+        readonly finished: CQTypes.QuestInputState.finished
+        readonly repeat_unfinished: CQTypes.QuestInputState.repeat_unfinished
     }
-    questOutputState: {
-        locked: CQTypes.QuestOutputState.locked
-        unreceived: CQTypes.QuestOutputState.unreceived
-        received: CQTypes.QuestOutputState.received
-        repeat_unreceived: CQTypes.QuestOutputState.repeat_unreceived
+    readonly questOutputState: {
+        readonly locked: CQTypes.QuestOutputState.locked
+        readonly unreceived: CQTypes.QuestOutputState.unreceived
+        readonly received: CQTypes.QuestOutputState.received
+        readonly repeat_unreceived: CQTypes.QuestOutputState.repeat_unreceived
     }
 }
 
@@ -555,6 +553,7 @@ interface IOTypeTools {
      */
     inputObject: {
         [inputId: CQTypes.inputId]: {
+            saveId: CQTypes.saveId
             loaded: boolean
             cache: object
             json: CQTypes.IOTypes.InputJson
@@ -565,10 +564,15 @@ interface IOTypeTools {
     /**
      * Directly access to this property is not recommended
      */
-    typedInputList: {[type: string]: Array<CQTypes.inputId>}
-    getAllInputIdByType (type: string | Array<string>): Array<CQTypes.inputId>
-    createInputId (inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.InputStateObject>, onUnload?: () => void): CQTypes.inputId
-    isInputIdLoaded (inputId: CQTypes.inputId | null): boolean
+    typedInputList: {
+        [saveId: CQTypes.saveId]: {
+            [type: string]: Array<CQTypes.inputId>
+        }
+    }
+    getAllInputIdByType (type: string | Array<string>, saveId?: CQTypes.saveId): Array<CQTypes.inputId>
+    createInputId (inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.InputStateObject>, onUnload?: () => void, saveId?: CQTypes.saveId): CQTypes.inputId
+    createChildInputId (inputId: CQTypes.inputId, inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.InputStateObject>, onUnload?: () => void): CQTypes.inputId
+    isInputIdLoaded (inputId: Nullable<CQTypes.inputId>): boolean
     loadInput (inputId: CQTypes.inputId): void
     unloadInput (inputId: CQTypes.inputId): void
     callInputTypeCb (inputId: CQTypes.inputId, method: string, extraInfo: object): unknown
@@ -597,6 +601,7 @@ interface IOTypeTools {
      */
     outputObject: {
         [outputId: CQTypes.outputId]: {
+            saveId: CQTypes.saveId
             loaded: boolean
             cache: object
             json: CQTypes.IOTypes.OutputJson
@@ -607,10 +612,15 @@ interface IOTypeTools {
     /**
      * Directly access to this property is not recommended
      */
-    typedOutputList: {[type: string]: Array<CQTypes.inputId>}
-    getAllOutputIdByType (type: string | Array<string>): Array<CQTypes.outputId>
-    createOutputId (outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.OutputStateObject>, onUnload?: () => void): CQTypes.outputId
-    isOutputIdLoaded (outputId: CQTypes.outputId | null): boolean
+    typedOutputList: {
+        [saveId: CQTypes.saveId]: {
+            [type: string]: Array<CQTypes.outputId>
+        }
+    }
+    getAllOutputIdByType (type: string | Array<string>, saveId?: CQTypes.saveId): Array<CQTypes.outputId>
+    createOutputId (outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.OutputStateObject>, onUnload?: () => void, saveId?: CQTypes.saveId): CQTypes.outputId
+    createChildOutputId (outputId: CQTypes.outputId, outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsCb<CQTypes.OutputStateObject>, onUnload?: () => void): CQTypes.outputId
+    isOutputIdLoaded (outputId: Nullable<CQTypes.outputId>): boolean
     loadOutput (outputId: CQTypes.outputId): void
     unloadOutput (outputId: CQTypes.outputId): void
     callOutputTypeCb (outputId: CQTypes.outputId, method: string, extraInfo: object): unknown
@@ -680,16 +690,10 @@ interface ServerSystem {
             }
         }
     }
-    typedLoadedQuest: {
-        input: {
-            [saveId: CQTypes.saveId]: {
-                [type: string]: Array<CQTypes.inputId>
-            }
-        }
-        output: {
-            [saveId: CQTypes.saveId]: {
-                [type: string]: Array<CQTypes.outputId>
-            }
+    loadedQuestIdArray: {
+        [saveId: CQTypes.saveId]: {
+            input: Array<CQTypes.inputId>
+            output: Array<CQTypes.outputId>
         }
     }
     addContents (sourceId: CQTypes.sourceId, contents: CQTypes.MainJson | {}): void
@@ -706,7 +710,13 @@ interface ServerSystem {
         input?: Array<Nullable<CQTypes.inputId>>
         output?: Array<Nullable<CQTypes.outputId>>
     }
+    /**
+     * @deprecated Use [[IOTypeTools.getAllInputIdByType]] instead
+     */
     getTypedInputId (saveId: CQTypes.saveId, type: string): Array<CQTypes.inputId>
+    /**
+     * @deprecated Use [[IOTypeTools.getAllOutIdByType]] instead
+     */
     getTypedOutputId (saveId: CQTypes.saveId, type: string): Array<CQTypes.outputId>
     unloadAllLoadedQuest (saveId: CQTypes.saveId): void
     loadInput (saveId: CQTypes.saveId, sourceId: CQTypes.sourceId, chapterId: CQTypes.chapterId, questId: CQTypes.questId, index: number): void
@@ -772,7 +782,7 @@ interface QuestUi {
     openTeamUi (): void
     openQuestListUi (title: string, questList: Array<CQTypes.PathArray>, onSelect: (path: CQTypes.PathArray) => void): void
     openItemChooseUi (title: string, isValid: (item: ItemInstance) => boolean, onSelect: (item: ItemInstance) => void): void
-    openSelectionUi (title: string | null, selection: Array<{ text: string, darken?: boolean, onSelect: () => boolean }>): void
+    openSelectionUi (title: Nullable<string>, selection: Array<{ text: string, darken?: boolean, onSelect: () => boolean }>): void
 }
 
 interface QuestUiTools {
@@ -812,19 +822,19 @@ interface Integration {
 }
 
 interface CustomQuestsAPI {
-    version: `${number}.${number}.${number}-${string}` | 'unknow'
-    invalidId: CQTypes.invalidId
-    EnumObject: EnumObject
-    Store: Store
-    TranAPI: TranAPI
-    Utils: Utils
-    IOTypeTools: IOTypeTools
-    System: System
-    ServerSystem: ServerSystem
-    ClientSystem: ClientSystem
-    QuestUi: QuestUi
-    QuestUiTools: QuestUiTools
-    requireGlobal (cmd: string): unknown
+    readonly version: `${number}.${number}.${number}-${string}` | 'unknow'
+    readonly invalidId: CQTypes.invalidId
+    readonly EnumObject: EnumObject
+    readonly Store: Store
+    readonly TranAPI: TranAPI
+    readonly Utils: Utils
+    readonly IOTypeTools: IOTypeTools
+    readonly System: System
+    readonly ServerSystem: ServerSystem
+    readonly ClientSystem: ClientSystem
+    readonly QuestUi: QuestUi
+    readonly QuestUiTools: QuestUiTools
+    requireGlobal (cmd: string): any
 }
 
 declare namespace ModAPI {

@@ -85,9 +85,7 @@ inputType.kill.text=击杀特定生物
 inputType.kill.entity=生物 id：{id}，数量：{count}
 inputType.kill.killed=已击杀 {count} 个
 
-outputType.random=随机奖励
-
-outputType.select=选择奖励
+outputType.group=奖励组
 
 outputType.empty=无奖励
 outputType.empty.text=无奖励

@@ -50,7 +50,7 @@ IOTypeTools.setInputType('kill', TranAPI.getTranslation('inputType.kill'), {
                 y: pos[1] + (40 / 80) * extraInfo.size,
                 z: 2,
                 text: Number(finished ? inputJson.count : (stateObj.count || 0)) + '/' + Number(inputJson.count),
-                font: { color: android.graphics.Color.WHITE, size: 20, align: 1 }
+                font: { color: android.graphics.Color.WHITE, size: (20 / 80) * extraInfo.size, align: 1 }
             }]
         ]
     },
@@ -105,7 +105,7 @@ Callback.addCallback('EntityDeath', function (entity, attacker) {
     if (Entity.getType(attacker) !== EEntityType.PLAYER) return
     let type = Entity.getType(entity)
     let saveId = ServerSystem.getSaveId(attacker)
-    let inputIdArray = ServerSystem.getTypedInputId(saveId, 'kill')
+    let inputIdArray = IOTypeTools.getAllInputIdByType('kill', saveId)
     inputIdArray.forEach(function (inputId) {
         IOTypeTools.callInputTypeCb(inputId, 'onCustomCall', {
             type: type

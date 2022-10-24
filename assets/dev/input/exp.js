@@ -93,7 +93,7 @@ IOTypeTools.setInputType('exp', TranAPI.getTranslation('inputType.exp'), {
                 y: pos[1] + (40 / 80) * extraInfo.size,
                 z: 2,
                 text: Number(finished ? inputJson.value : (stateObj.value || 0)) + '/' + Number(inputJson.value),
-                font: { color: android.graphics.Color.WHITE, size: 20, align: 1 }
+                font: { color: android.graphics.Color.WHITE, size: (20 / 80) * extraInfo.size, align: 1 }
             } : null]
         ]
     },

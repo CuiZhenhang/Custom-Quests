@@ -1,6 +1,6 @@
 /// <reference path='../IOTypeTools.js'/>
-
-IOTypeTools.setOutputType('select', TranAPI.getTranslation('outputType.select'), {
+/*
+IOTypeTools.setOutputType('group', TranAPI.getTranslation('outputType.group'), {
     resolveJson (outputJson, refsArray, bitmapNameObject) {
         return outputJson
     },
@@ -28,3 +28,4 @@ IOTypeTools.setOutputType('select', TranAPI.getTranslation('outputType.select'),
     allowRepeat: true,
     allowGroup: false
 })
+*/

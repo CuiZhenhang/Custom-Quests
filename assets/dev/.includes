@@ -10,6 +10,7 @@ input/exp.js
 input/visit_dimension.js
 input/location.js
 input/kill.js
+output/group.js
 output/empty.js
 output/item.js
 output/exp.js

@@ -79,18 +79,32 @@ const IOTypeTools = {
     },
     inputObject: {},
     typedInputList: {},
-    getAllInputIdByType (type) {
-        let that = this
+    getAllInputIdByType (type, saveId) {
         if (typeof type === 'string') type = [type]
         let ret = []
-        type.forEach(function (type) {
-            if (Array.isArray(that.typedInputList[type])) {
-                ret = ret.concat(that.typedInputList[type])
+        if (saveId) {
+            if (saveId === InvalidId) return ret
+            let typedInputList = this.typedInputList[saveId]
+            if (!Utils.isObject(typedInputList)) return ret
+            type.forEach(function (type) {
+                if (Array.isArray(typedInputList[type])) {
+                    ret = ret.concat(typedInputList[type])
+                }
+            })
+        } else {
+            for (let saveId in this.typedInputList) {
+                let typedInputList = this.typedInputList[saveId]
+                if (!Utils.isObject(typedInputList)) continue
+                type.forEach(function (type) {
+                    if (Array.isArray(typedInputList[type])) {
+                        ret = ret.concat(typedInputList[type])
+                    }
+                })
             }
-        })
+        }
         return ret
     },
-    createInputId (inputJson, toolsCb, onUnload) {
+    createInputId (inputJson, toolsCb, onUnload, saveId) {
         if (!Utils.isObject(inputJson)) return InvalidId
         if (!Utils.isObject(toolsCb)) return InvalidId
         if (typeof toolsCb.getState !== 'function') return InvalidId
@@ -101,7 +115,11 @@ const IOTypeTools = {
         if (!Utils.isObject(inputType)) return InvalidId
         let inputId = Utils.getUUID()
         while (this.isInputIdLoaded(inputId)) inputId = Utils.getUUID()
+        if (toolsCb.createChildInputId === undefined) {
+            toolsCb.createChildInputId = this.createChildInputId.bind(this, inputId)
+        }
         this.inputObject[inputId] = {
+            saveId: saveId || InvalidId,
             loaded: false,
             cache: {},
             json: inputJson,
@@ -109,6 +127,11 @@ const IOTypeTools = {
             onUnload: onUnload
         }
         return inputId
+    },
+    createChildInputId (inputId, inputJson, toolsCb, onUnload) {
+        if (!this.isInputIdLoaded(inputId)) return InvalidId
+        let inputObject = this.inputObject[inputId]
+        return this.createInputId(inputJson, toolsCb, onUnload, inputObject.saveId)
     },
     isInputIdLoaded (inputId) {
         if (typeof inputId !== 'string') return false
@@ -124,8 +147,10 @@ const IOTypeTools = {
         let type = inputObject.json.type
         let inputType = this.inputType[type]
         inputObject.loaded = true
-        if (!Array.isArray(this.typedInputList[type])) this.typedInputList[type] = []
-        this.typedInputList[type].push(inputId)
+        if (!Utils.isObject(this.typedInputList[inputObject.saveId])) this.typedInputList[inputObject.saveId] = {}
+        let typedInputList = this.typedInputList[inputObject.saveId]
+        if (!Array.isArray(typedInputList[type])) typedInputList[type] = []
+        typedInputList[type].push(inputId)
         if (typeof inputType.cb.onLoad === 'function') {
             inputType.cb.onLoad.call(null, inputObject.json, inputObject.toolsCb, inputObject.cache)
         }
@@ -142,7 +167,7 @@ const IOTypeTools = {
             inputObject.onUnload()
         }
         delete this.inputObject[inputId]
-        let list = this.typedInputList[type]
+        let list = this.typedInputList[inputObject.saveId][type]
         let index = list.indexOf(inputId)
         if (index >= 0) list.splice(index, 1)
     },
@@ -255,18 +280,32 @@ const IOTypeTools = {
     },
     outputObject: {},
     typedOutputList: {},
-    getAllOutputIdByType (type) {
-        let that = this
+    getAllOutputIdByType (type, saveId) {
         if (typeof type === 'string') type = [type]
         let ret = []
-        type.forEach(function (type) {
-            if (Array.isArray(that.typedOutputList[type])) {
-                ret = ret.concat(that.typedOutputList[type])
+        if (saveId) {
+            if (saveId === InvalidId) return ret
+            let typedOutputList = this.typedOutputList[saveId]
+            if (!Utils.isObject(typedOutputList)) return ret
+            type.forEach(function (type) {
+                if (Array.isArray(typedOutputList[type])) {
+                    ret = ret.concat(typedOutputList[type])
+                }
+            })
+        } else {
+            for (let saveId in this.typedOutputList) {
+                let typedOutputList = this.typedOutputList[saveId]
+                if (!Utils.isObject(typedOutputList)) continue
+                type.forEach(function (type) {
+                    if (Array.isArray(typedOutputList[type])) {
+                        ret = ret.concat(typedOutputList[type])
+                    }
+                })
             }
-        })
+        }
         return ret
     },
-    createOutputId (outputJson, toolsCb, onUnload) {
+    createOutputId (outputJson, toolsCb, onUnload, saveId) {
         if (!Utils.isObject(outputJson)) return InvalidId
         if (!Utils.isObject(toolsCb)) return InvalidId
         if (typeof toolsCb.getState !== 'function') return InvalidId
@@ -277,7 +316,11 @@ const IOTypeTools = {
         if (!Utils.isObject(outputType)) return InvalidId
         let outputId = Utils.getUUID()
         while (this.isOutputIdLoaded(outputId)) outputId = Utils.getUUID()
+        if (toolsCb.createChildOutputId === undefined) {
+            toolsCb.createChildOutputId = this.createChildOutputId.bind(this, outputId)
+        }
         this.outputObject[outputId] = {
+            saveId: saveId || InvalidId,
             loaded: false,
             cache: {},
             json: outputJson,
@@ -285,6 +328,11 @@ const IOTypeTools = {
             onUnload: onUnload
         }
         return outputId
+    },
+    createChildOutputId (outputId, outputJson, toolsCb, onUnload) {
+        if (!this.isOutputIdLoaded(outputId)) return InvalidId
+        let outputObject = this.outputObject[outputId]
+        return this.createOutputId(outputJson, toolsCb, onUnload, outputObject.saveId)
     },
     isOutputIdLoaded (outputId) {
         if (typeof outputId !== 'string') return false
@@ -300,8 +348,10 @@ const IOTypeTools = {
         let type = outputObject.json.type
         let outputType = this.outputType[type]
         outputObject.loaded = true
-        if (!Array.isArray(this.typedOutputList[type])) this.typedOutputList[type] = []
-        this.typedOutputList[type].push(outputId)
+        if (!Utils.isObject(this.typedOutputList[outputObject.saveId])) this.typedOutputList[outputObject.saveId] = {}
+        let typedOutputList = this.typedOutputList[outputObject.saveId]
+        if (!Array.isArray(typedOutputList[type])) typedOutputList[type] = []
+        typedOutputList[type].push(outputId)
         if (typeof outputType.cb.onLoad === 'function') {
             outputType.cb.onLoad.call(null, outputObject.json, outputObject.toolsCb, outputObject.cache)
         }
@@ -318,7 +368,7 @@ const IOTypeTools = {
             outputObject.onUnload()
         }
         delete this.outputObject[outputId]
-        let list = this.typedOutputList[type]
+        let list = this.typedOutputList[outputObject.saveId][type]
         let index = list.indexOf(outputId)
         if (index >= 0) list.splice(index, 1)
     },
@@ -368,6 +418,7 @@ Callback.addCallback('ServerPlayerTick', function () {
                 let extraInventory = Utils.getExtraInventory(inventory)
                 playerInventory[player] = {
                     player: player,
+                    normal: inventory,
                     sort: sortInventory,
                     extra: extraInventory
                 }

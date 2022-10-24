@@ -4,6 +4,7 @@ const $input_group_Tools = {
     /**
      * @param { CQTypes.IOTypeToolsCb<CQTypes.InputStateObject> | CQTypes.IOTypeToolsLocalCb<CQTypes.InputStateObject> } toolsCb 
      * @param { number } index 
+     * @returns { CQTypes.InputStateObject } 
      */
     getState (toolsCb, index) {
         let DEFAULT = { state: EnumObject.inputState.unfinished }

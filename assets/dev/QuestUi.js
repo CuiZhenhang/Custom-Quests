@@ -49,26 +49,20 @@ const QuestUiTools = {
             clearNewElements (newElements) {
                 if (!Utils.isObject(ret.content.elements)) return
                 let elements = ret.content.elements
+                let elementMap = ret.ui.getElements()
+                let provider = ret.ui.getElementProvider()
                 if (!Array.isArray(newElements)) {
                     ret.newElements.forEach(function (key) {
-                        if (Utils.isObject(elements[key])) {
-                            for (let ekey in elements[key]) {
-                                elements[key][ekey] = null
-                            }
-                        }
-                        elements[key] = null
+                        delete elements[key]
+                        provider.removeElement(elementMap.get(key))
                     })
                     ret.newElements.length = 0
                 } else {
                     newElements.forEach(function (key) {
                         let index = ret.newElements.indexOf(key)
                         if (index < 0) return
-                        if (Utils.isObject(elements[key])) {
-                            for (let ekey in elements[key]) {
-                                elements[key][ekey] = null
-                            }
-                        }
-                        elements[key] = null
+                        delete elements[key]
+                        provider.removeElement(elementMap.get(key))
                         ret.newElements.splice(index, 1)
                     })
                 }
