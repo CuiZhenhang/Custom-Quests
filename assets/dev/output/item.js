@@ -35,20 +35,22 @@ IOTypeTools.setOutputType('item', TranAPI.getTranslation('outputType.item'), {
         })
     },
     onReceive (outputJson, toolsCb, cache, extraInfo) {
-        let player
-        if (Utils.isObject(extraInfo.operator)) {
-            if (extraInfo.operator.type === 'tileEntity') {
-                /** @todo */
-                return
+        /** @type { Array<number> } */
+        let playerList = []
+        if (outputJson.mutiReward) playerList = toolsCb.getPlayerList(true)
+        else {
+            if (Utils.isObject(extraInfo.operator) && extraInfo.operator.type === 'player') {
+                playerList.push(extraInfo.operator.player)
+            } else {
+                let tPlayerList = toolsCb.getPlayerList(true)
+                playerList.push(tPlayerList[Math.floor(Math.random() * tPlayerList.length)])
             }
-            player = extraInfo.operator.player
-        } else {
-            let playerList = toolsCb.getPlayerList(true)
-            player = playerList[Math.floor(Math.random() * playerList.length)]
         }
         let item = Utils.transferItemFromJson(outputJson)
-        let actor = new PlayerActor(player)
-        actor.addItemToInventory(item.id, item.count, item.data, item.extra, true)
+        playerList.forEach(function (player) {
+            let actor = new PlayerActor(player)
+            actor.addItemToInventory(item.id, item.count, item.data, item.extra, true)
+        })
     },
     getIcon (outputJson, toolsCb, extraInfo) {
         let received = toolsCb.getState().state === EnumObject.outputState.received
@@ -56,7 +58,7 @@ IOTypeTools.setOutputType('item', TranAPI.getTranslation('outputType.item'), {
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: (typeof outputJson.bitmap === 'string') ? outputJson.bitmap : 'clear',
+                bitmap: (typeof outputJson.bitmap === 'string') ? outputJson.bitmap : 'cq_clear',
                 source: Utils.transferItemFromJson(outputJson),
                 clicker: {
                     onClick: (!received) ? Utils.debounce(function () {
@@ -75,7 +77,7 @@ IOTypeTools.setOutputType('item', TranAPI.getTranslation('outputType.item'), {
         let elements = [
             [prefix + 'slot', {
                 type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
-                bitmap: (typeof outputJson.bitmap === 'string') ? outputJson.bitmap : 'clear',
+                bitmap: (typeof outputJson.bitmap === 'string') ? outputJson.bitmap : 'cq_clear',
                 source: source,
                 clicker: {
                     onClick: Utils.debounce(function () { Integration.openRecipeUI(source, false) }, 500),

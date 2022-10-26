@@ -3,7 +3,7 @@
     "id": "end",
     "pos": [280, 350],
     "size": 100,
-    "icon": { "bitmap": "task_check" },
+    "icon": { "bitmap": "cq_task_check" },
     "parent": [
         "type_check",
         "type_item",

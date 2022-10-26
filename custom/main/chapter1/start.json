@@ -3,7 +3,7 @@
     "id": "start",
     "pos": [280, 50],
     "size": 100,
-    "icon": { "bitmap": "task_check" },
+    "icon": { "bitmap": "cq_task_check" },
     "inner": {
         "input": [
             {

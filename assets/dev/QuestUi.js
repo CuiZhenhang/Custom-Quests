@@ -112,23 +112,23 @@ const QuestUiTools = {
         let icon = questJson.icon[0]
         if (saveData.inputState > EnumObject.questInputState.locked) icon = questJson.icon[1]
         if (saveData.inputState == EnumObject.questInputState.finished) icon = questJson.icon[2]
-        let overBitmap = 'clear'
+        let overBitmap = 'cq_clear'
         switch (saveData.inputState) {
             case EnumObject.questInputState.unfinished:
             case EnumObject.questInputState.repeat_unfinished: {
-                overBitmap = 'dot_blue'
+                overBitmap = 'cq_dot_blue'
                 break
             }
             case EnumObject.questInputState.finished: {
                 if (saveData.outputState !== EnumObject.questOutputState.received) {
-                    overBitmap = 'remind'
+                    overBitmap = 'cq_remind'
                 }
                 break
             }
         }
         return [
             [option.prefix + 'main', {
-                type: 'slot', visual: true, bitmap: icon.bitmap || 'clear',
+                type: 'slot', visual: true, bitmap: icon.bitmap || 'cq_clear',
                 source: Utils.transferItemFromJson(icon), darken: Boolean(icon.darken),
                 x: option.pos[0], y: option.pos[1], z: 1, size: option.size,
                 clicker: option.clicker
@@ -149,50 +149,65 @@ const QuestUiTools = {
         let RectF = android.graphics.RectF
         let Paint = android.graphics.Paint
         let nullPaint = new Paint()
-        let lineBitmap = android.graphics.Bitmap.createBitmap(20 * 64, 64, android.graphics.Bitmap.Config.ARGB_8888)
-        let lineSrc = new Rect(0, 0, 20 * 64, 64)
+        let lineBitmap = android.graphics.Bitmap.createBitmap(100 * 64, 64, android.graphics.Bitmap.Config.ARGB_8888)
+        let lineSrc = new Rect(0, 0, 100 * 64, 64)
         Callback.addCallback('PostLoaded', function () {
-            let bitmap = UI.TextureSource.getNullable('dependency')
+            let bitmap = UI.TextureSource.getNullable('cq_dependency')
             if (bitmap === null) return
             let canvas = new android.graphics.Canvas(lineBitmap)
-            for (let x = 0; x < 20; x++) {
+            for (let x = 0; x < 100; x++) {
                 canvas.drawBitmap(bitmap, x * 64, 0, nullPaint)
             }
         })
         return function (posParent, posChild, width, color) {
             if (typeof width !== 'number' || width <= 0) width = 10
-            let argb = [(color >>> 24) & 0xff, (color >>> 16) & 0xff, (color >>> 8) & 0xff, (color >>> 0) & 0xff]
-            if (argb[0] > 0xcc) argb[0] = 0xcc
             let deltaPos = [posChild[0] - posParent[0], posChild[1] - posParent[1]]
             let dis = Math.sqrt(deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1])
             if (dis <= width) return []
-            let angle = Math.acos(Math.max(Math.min(deltaPos[0]/dis, 1), -1)) * (180 / Math.PI)
+            let angle = Math.acos(Math.max(Math.min(deltaPos[0] / dis, 1), -1)) * (180 / Math.PI)
             if (deltaPos[1] < 0) angle = -angle
+            let argb = [(color >>> 24) & 0xff, (color >>> 16) & 0xff, (color >>> 8) & 0xff, (color >>> 0) & 0xff]
+            if (argb[0] > 0xcc) argb[0] = 0xcc
+            let paint = new Paint()
+            paint.setStyle(Paint.Style.FILL)
+            paint.setAntiAlias(true)
+            paint.setARGB(argb[0], argb[1], argb[2], argb[3])
             return [{
                 type: 'custom',
                 onDraw: function (canvas, scale) {
-                    let paint = new Paint()
-                    paint.setStyle(Paint.Style.FILL)
-                    paint.setAntiAlias(true)
-                    paint.setARGB(argb[0], argb[1], argb[2], argb[3])
+                    let realWidth = width * scale
                     canvas.save()
                     canvas.translate(posParent[0] * scale, posParent[1] * scale)
                     canvas.rotate(angle)
-                    canvas.translate(0, -width * scale / 2)
-                    canvas.drawRect(new RectF(0, 0, dis * scale, width * scale), paint)
-                    let left = 0
-                    for (let w = dis / width; w > 0; w -= 20) {
-                        if (w <= 20) {
-                            canvas.drawBitmap(lineBitmap,
-                                new Rect(0, 0, Math.floor(w * 64), 64),
-                                new RectF(left * scale, 0, (left + w * width) * scale, width * scale),
-                                nullPaint)
-                            break
-                        } else {
-                            canvas.drawBitmap(lineBitmap, lineSrc,
-                                new RectF(left * scale, 0, (left + 20 * width) * scale, width * scale),
-                                nullPaint)
-                            left += 20 * width
+                    canvas.translate(0, -realWidth / 2)
+                    canvas.drawRect(new RectF(0, 0, dis * scale, realWidth), paint)
+                    if (dis <= 100 * width) {
+                        canvas.drawBitmap(
+                            lineBitmap,
+                            new Rect(0, 0, Math.floor(dis / width * 64), 64),
+                            new RectF(0, 0, dis * scale, realWidth),
+                            nullPaint
+                        )
+                    } else {
+                        let left = 0
+                        for (let w = dis / width; w > 0; w -= 100) {
+                            if (w <= 100) {
+                                canvas.drawBitmap(
+                                    lineBitmap,
+                                    new Rect(0, 0, Math.floor(w * 64), 64),
+                                    new RectF(left * scale, 0, (left + w * width) * scale, realWidth),
+                                    nullPaint
+                                )
+                                break
+                            } else {
+                                canvas.drawBitmap(
+                                    lineBitmap,
+                                    lineSrc,
+                                    new RectF(left * scale, 0, (left + 100 * width) * scale, realWidth),
+                                    nullPaint
+                                )
+                                left += 100 * width
+                            }
                         }
                     }
                     canvas.restore()

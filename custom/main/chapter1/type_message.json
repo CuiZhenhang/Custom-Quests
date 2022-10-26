@@ -19,6 +19,7 @@
         "output": [
             {
                 "type": "message",
+                "mutiReward": true,
                 "message": {
                     "en": "This is the information displayed by the 'message' reward type.",
                     "ru": "This is the information displayed by the 'message' reward type.",

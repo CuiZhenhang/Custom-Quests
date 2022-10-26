@@ -81,6 +81,7 @@ declare namespace CQTypes {
             type: string
             description?: TextJson
             autoReceive?: boolean
+            mutiReward?: boolean
             [key: string]: unknown
         }
 

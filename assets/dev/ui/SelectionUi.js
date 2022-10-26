@@ -34,7 +34,7 @@ QuestUi.openSelectionUi = function (title, selection) {
     selection.forEach(function (obj, index) {
         if (!Utils.isObject(obj)) return
         content.elements[index + '_btn'] = {
-            type: 'image', x: 0, y: height, z: 1, bitmap: 'clear', width: 1000, height: 120,
+            type: 'image', x: 0, y: height, z: 1, bitmap: 'cq_clear', width: 1000, height: 120,
             clicker: {
                 onClick () {
                     if (Date.now() <= time + 500) return

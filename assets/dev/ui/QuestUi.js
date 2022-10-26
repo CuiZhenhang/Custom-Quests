@@ -24,11 +24,11 @@ const $QuestUi = {
             {type: 'line', x1: 0, y1: 250, x2: 1000, y2: 250, width: 5, color: $Color.BLACK},
             {type: 'line', x1: 500, y1: 100, x2: 500, y2: 250, width: 5, color: $Color.BLACK},
             {type: 'text', text: TranAPI.translate('gui.task'), x: 250, y: 125, font: {color: $Color.parseColor('#5555FF'), size: 30, align: 1}},
-            {type: 'text', text: TranAPI.translate('gui.reward'), x: 750, y: 125, font: {color: $Color.parseColor('#dd8800'), size: 30, align: 1}},
+            {type: 'text', text: TranAPI.translate('gui.reward'), x: 750, y: 125, font: {color: $Color.parseColor('#dd8800'), size: 30, align: 1}}
         ],
         elements: {
             close: {type: 'closeButton', x: 920, y: 20, bitmap: 'X', bitmap2: 'XPress', scale: 60/19},
-            show_parent: {type: 'button', x: 20, y: 110, bitmap: 'parent', scale: 40/48,
+            show_parent: {type: 'button', x: 20, y: 110, bitmap: 'cq_parent', scale: 40/48,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         if (typeof $QuestUi.openParentListUi === 'function') {
@@ -40,7 +40,7 @@ const $QuestUi = {
                     }, 500)
                 }
             },
-            show_child: {type: 'button', x: 940, y: 110, bitmap: 'child', scale: 40/48,
+            show_child: {type: 'button', x: 940, y: 110, bitmap: 'cq_child', scale: 40/48,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         if (typeof $QuestUi.openChildListUi === 'function') {
@@ -123,7 +123,7 @@ const $QuestUi = {
             that.questUi.addElements(elements)
             if (Utils.isObject(saveData.input[index]) && saveData.input[index].state === EnumObject.inputState.finished) {
                 that.questUi.addElements([[uuid + '_input_bingo_' + index, {
-                    type: 'image', z: 10, width: 30, height: 30 * 16 / 22, bitmap: 'bingo',
+                    type: 'image', z: 10, width: 30, height: 30 * 16 / 22, bitmap: 'cq_bingo',
                     x: 96*(index % 5) + 20 + 45,
                     y: 100*Math.floor(index/5) + 160 + 5
                 }]])
@@ -147,14 +147,14 @@ const $QuestUi = {
             that.questUi.addElements(elements)
             if (saveData.inputState < EnumObject.questInputState.finished) {
                 that.questUi.addElements([[uuid + '_output_dot_' + index, {
-                    type: 'image', z: 10, width: 20, height: 20, bitmap: 'dot_grey',
+                    type: 'image', z: 10, width: 20, height: 20, bitmap: 'cq_dot_grey',
                     x: 96*(index % 5) + 520 + 55,
                     y: 100*Math.floor(index/5) + 160 + 5
                 }]])
             } else {
                 if (!Utils.isObject(saveData.output[index]) || saveData.output[index].state !== EnumObject.outputState.received) {
                     that.questUi.addElements([[uuid + '_output_dot_' + index, {
-                        type: 'image', z: 10, width: 20, height: 20, bitmap: 'dot_green',
+                        type: 'image', z: 10, width: 20, height: 20, bitmap: 'cq_dot_green',
                         x: 96*(index % 5) + 520 + 55,
                         y: 100*Math.floor(index/5) + 160 + 5
                     }]])

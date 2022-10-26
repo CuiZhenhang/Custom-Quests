@@ -19,7 +19,7 @@ const $TeamUi = {
         ],
         elements: {
             close: { type: 'closeButton', x: 947, y: 12, bitmap: 'X', bitmap2: 'XPress', scale: 36 / 19 },
-            info: { type: 'button', x: 22, y: 12, bitmap: 'info', scale: 36 / 16,
+            info: { type: 'button', x: 22, y: 12, bitmap: 'cq_info', scale: 36 / 16,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         Utils.dialog({
@@ -28,7 +28,7 @@ const $TeamUi = {
                     }, 500)
                 }
             },
-            search_bg: { type: 'image', x: 50, y: 100, z: 1, bitmap: 'search_bg', width: 300, height: 40,
+            search_bg: { type: 'image', x: 50, y: 100, z: 1, bitmap: 'cq_search_bg', width: 300, height: 40,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         let teamList = Store.localCache.teamList
@@ -50,12 +50,12 @@ const $TeamUi = {
                     }, 500)
                 }
             },
-            search_img: { type: 'image', x: 65, y: 110, z: 2, bitmap: 'search', width: 20, height: 20 },
+            search_img: { type: 'image', x: 65, y: 110, z: 2, bitmap: 'cq_search', width: 20, height: 20 },
             search_text: { type: 'text', x: 100, y: 110, z: 2, text: TranAPI.translate('gui.team.search'), font: { color: $Color.GRAY, size: 20 } },
-            icon: { type: 'slot', visual: true, x: 430, y: 90, size: 80, bitmap: 'clear', source: {}, darken: false },
+            icon: { type: 'slot', visual: true, x: 430, y: 90, size: 80, bitmap: 'cq_clear', source: {}, darken: false },
             name: { type: 'text', x: 530, y: 90, text: '', font: { color: $Color.BLACK, size: 30 } },
             subname: { type: 'text', x: 530, y: 130, text: '', font: { color: $Color.GRAY, size: 20 } },
-            operate: { type: 'button', x: 850, y: 110, z: 1, bitmap: 'button_long_up', bitmap2: 'button_long_down', scale: 100 / 50,
+            operate: { type: 'button', x: 850, y: 110, z: 1, bitmap: 'cq_button_long_up', bitmap2: 'cq_button_long_down', scale: 100 / 50,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         if (!Utils.isObject(Store.localCache.team)) return
@@ -124,7 +124,7 @@ const $TeamUi = {
             operate_text: { type: 'text', x: 900, y: 115, z: 2, text: TranAPI.translate('gui.team.operate'), font: { color: $Color.BLACK, size: 15, align: 1 } },
             noteam_text: { type: 'text', x: 700, y: 135, text: TranAPI.translate('gui.team.noTeam'), font: { color: $Color.BLACK, size: 30, align: 1 } },
             noteam_subtext: { type: 'text', x: 700, y: 190, text: TranAPI.translate('gui.team.joinOrCreate'), font: { color: $Color.GRAY, size: 20, align: 1 } },
-            noteam_create: { type: 'button', x: 600, y: 270, z: 1, bitmap: 'button_long_up', bitmap2: 'button_long_down', scale: 200 / 50,
+            noteam_create: { type: 'button', x: 600, y: 270, z: 1, bitmap: 'cq_button_long_up', bitmap2: 'cq_button_long_down', scale: 200 / 50,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         if (Utils.isObject(Store.localCache.team)) return
@@ -195,7 +195,7 @@ const $TeamUi = {
         if (Utils.isObject(team)) {
             let name = team.name.split('\n')
             elements['search_text'].text = TranAPI.translate('gui.team.search')
-            elements['icon'].bitmap = team.bitmap.bitmap || 'clear'
+            elements['icon'].bitmap = team.bitmap.bitmap || 'cq_clear'
             elements['icon'].source = Utils.transferItemFromJson(team.bitmap)
             elements['icon'].darken = Boolean(team.bitmap.darken)
             elements['name'].text = name[0]
@@ -254,7 +254,7 @@ const $TeamUi = {
             })
             ui.addElements([
                 [uuid + '_' + index + '_bg', {
-                    type: 'image', x: 0, y: 160*index, bitmap: 'clear', width: 1000, height: 160,
+                    type: 'image', x: 0, y: 160*index, bitmap: 'cq_clear', width: 1000, height: 160,
                     clicker: {
                         onClick: Utils.debounce(function () {
                             Utils.getInput({
@@ -269,7 +269,7 @@ const $TeamUi = {
                 }],
                 [uuid + '_' + index + '_icon', {
                     type: 'slot', visual: true, x: 20, y: 10 + 160*index, size: 140,
-                    bitmap: team.bitmap.bitmap || 'clear',
+                    bitmap: team.bitmap.bitmap || 'cq_clear',
                     source: Utils.transferItemFromJson(team.bitmap),
                     darken: Boolean(team.bitmap.darken)
                 }],
@@ -312,7 +312,7 @@ const $TeamUi = {
             else if (state === EnumObject.playerState.owner) stateKeyStr = 'gui.team.playerState.owner'
             ui.addElements([
                 [uuid + '_' + index + '_bg', {
-                    type: 'image', x: pos[0], y: pos[1], bitmap: 'clear', width: 500, height: 100,
+                    type: 'image', x: pos[0], y: pos[1], bitmap: 'cq_clear', width: 500, height: 100,
                     clicker: {
                         onClick: Utils.debounce(function () {
                             alert(obj.name)
@@ -329,7 +329,7 @@ const $TeamUi = {
                 }],
                 [uuid + '_' + index + '_online', {
                     type: 'image', x: 15 + pos[0], y: 25 + pos[1],
-                    width: 20, height: 20, bitmap: obj.online ? 'dot_green' : 'dot_grey'
+                    width: 20, height: 20, bitmap: obj.online ? 'cq_dot_green' : 'cq_dot_grey'
                 }]
             ])
         })

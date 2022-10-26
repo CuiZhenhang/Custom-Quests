@@ -26,7 +26,7 @@ const $QuestListUi = {
         ],
         elements: {
             close: { type: 'closeButton', x: 947, y: 12, bitmap: 'X', bitmap2: 'XPress', scale: 36 / 19 },
-            info: { type: 'button', x: 22, y: 12, bitmap: 'info', scale: 36 / 16,
+            info: { type: 'button', x: 22, y: 12, bitmap: 'cq_info', scale: 36 / 16,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         Utils.dialog({
@@ -35,14 +35,14 @@ const $QuestListUi = {
                     }, 500)
                 }
             },
-            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'clear', width: 32, height: ($ScreenHeight - 60) / 2,
+            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'cq_clear', width: 32, height: ($ScreenHeight - 60) / 2,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         $QuestListUi.sourceListUi.open()
                     }, 500)
                 }
             },
-            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'arrow_right', scale: 32 / 64 }
+            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'cq_arrow_right', scale: 32 / 64 }
         }
     }, {
         onOpen (ui) {
@@ -115,7 +115,7 @@ const $QuestListUi = {
                     x: 500, y: height + 10, z: 1
                 }],
                 [uuid + '_' + sourceId + '_btn', {
-                    type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 100,
+                    type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'cq_clear', width: 980, height: 100,
                     clicker: {
                         onClick: Utils.debounce(this.updateQuestListUi.bind(this, sourceId), 500)
                     }

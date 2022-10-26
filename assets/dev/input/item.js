@@ -93,7 +93,7 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'clear',
+                bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'cq_clear',
                 source: source,
                 clicker: {
                     onClick: (submit && !finished) ? Utils.debounce(function () {
@@ -120,7 +120,7 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
         let elements = [
             [prefix + 'slot', {
                 type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
-                bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'clear',
+                bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'cq_clear',
                 source: source,
                 clicker: {
                     onClick: Utils.debounce(function () { Integration.openRecipeUI(source, false) }, 500),

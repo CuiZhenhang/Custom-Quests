@@ -111,7 +111,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
             new NetworkConnectedClientList()
                 .setupAllPlayersPolicy()
                 .send('CustomQuests.Client.setLocalCache', {
-                    teamList: ServerSystem.getTeamList(),
+                    teamList: ServerSystem.getTeamList()
                 })
             break
         }
@@ -124,7 +124,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
             new NetworkConnectedClientList()
                 .setupAllPlayersPolicy()
                 .send('CustomQuests.Client.setLocalCache', {
-                    teamList: ServerSystem.getTeamList(),
+                    teamList: ServerSystem.getTeamList()
                 })
             break
         }

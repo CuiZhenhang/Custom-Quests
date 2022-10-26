@@ -4,7 +4,7 @@
     "pos": [410, 60],
     "size": 80,
     "icon": {
-        "bitmap": "reward_command"
+        "bitmap": "cq_reward_command"
     },
     "parent": [
         "start"

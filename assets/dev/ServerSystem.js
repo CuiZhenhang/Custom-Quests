@@ -614,7 +614,7 @@ const ServerSystem = {
         new NetworkConnectedClientList()
             .setupAllPlayersPolicy()
             .send('CustomQuests.Client.setLocalCache', {
-                teamList: that.getTeamList(),
+                teamList: that.getTeamList()
             })
     },
     setTeam (player, teamId) {

@@ -75,7 +75,7 @@ IOTypeTools.setInputType('exp', TranAPI.getTranslation('inputType.exp'), {
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: 'clear', source: {
+                bitmap: 'cq_clear', source: {
                     id: VanillaItemID.experience_bottle,
                     count: submit ? 1 : inputJson.value
                 },
@@ -103,7 +103,7 @@ IOTypeTools.setInputType('exp', TranAPI.getTranslation('inputType.exp'), {
         let elements = [
             [prefix + 'slot', {
                 type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
-                bitmap: 'clear', source: {
+                bitmap: 'cq_clear', source: {
                     id: VanillaItemID.experience_bottle,
                     count: inputJson.value
                 }

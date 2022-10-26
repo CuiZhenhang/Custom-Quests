@@ -38,7 +38,7 @@ IOTypeTools.setInputType('kill', TranAPI.getTranslation('inputType.kill'), {
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: (typeof inputJson.icon.bitmap === 'string') ? inputJson.icon.bitmap : 'clear',
+                bitmap: (typeof inputJson.icon.bitmap === 'string') ? inputJson.icon.bitmap : 'cq_clear',
                 source: source,
                 clicker: {
                     onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
@@ -68,7 +68,7 @@ IOTypeTools.setInputType('kill', TranAPI.getTranslation('inputType.kill'), {
                 type: 'text', x: 500, y: extraInfo.posY + 30,
                 text: Utils.replace(TranAPI.translate('inputType.kill.entity'), [
                     ['{id}', inputJson.entityId],
-                    ['{count}', inputJson.count],
+                    ['{count}', inputJson.count]
                 ]),
                 font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }],

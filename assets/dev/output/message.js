@@ -21,7 +21,12 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
     },
     onPacket (outputJson, toolsCb, cache, extraInfo) {
         if (extraInfo.packetData.type !== 'receive') return
-        toolsCb.setState({}, {
+        toolsCb.setState({
+            operator: {
+                type: 'player',
+                player: extraInfo.client.getPlayerUid()
+            }
+        }, {
             state: EnumObject.outputState.received
         })
     },
@@ -31,13 +36,16 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
         })
     },
     onReceive (outputJson, toolsCb, cache, extraInfo) {
-        /** @type { NetworkConnectedClientList } */
-        let client
-        if (outputJson.toAll) {
-            client = new NetworkConnectedClientList()
-            client.setupAllPlayersPolicy()
-        } else {
-            client = toolsCb.getConnectedClientList()
+        let client = new NetworkConnectedClientList()
+        if (outputJson.toAll) client.setupAllPlayersPolicy()
+        else if (outputJson.mutiReward) client = toolsCb.getConnectedClientList()
+        else {
+            if (Utils.isObject(extraInfo.operator) && extraInfo.operator.type === 'player') {
+                client.add(Network.getClientForPlayer(extraInfo.operator.player))
+            } else {
+                let tPlayerList = toolsCb.getPlayerList(true)
+                client.add(Network.getClientForPlayer(tPlayerList[Math.floor(Math.random() * tPlayerList.length)]))
+            }
         }
         client.send('CustomQuests.output.message', {
             message: outputJson.message,
@@ -50,7 +58,7 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: 'reward_message',
+                bitmap: 'cq_reward_message',
                 clicker: {
                     onClick: (!received) ? Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.outputState.received) return

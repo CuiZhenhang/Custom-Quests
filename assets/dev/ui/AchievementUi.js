@@ -57,7 +57,7 @@ const $AchievementUi = {
         let ui = this.achievementUi
         let display = this.display[index]
         display.exist = true
-        display.slot.bitmap = obj.icon.bitmap || 'clear'
+        display.slot.bitmap = obj.icon.bitmap || 'cq_clear'
         display.slot.source = Utils.transferItemFromJson(obj.icon)
         display.name.text = obj.name
         let that = this
@@ -118,11 +118,11 @@ for (let index = 0; index < displayLength; index++) {
         exist: false,
         bg: {
             type: 'image', x: 0 + 2000, y: index * 200, z: 1,
-            bitmap: 'achievement_bg', width: 1000, height: 64 * bit
+            bitmap: 'cq_achievement_bg', width: 1000, height: 64 * bit
         },
         slot: {
             type: 'slot', x: 8 * bit + 2000, y: index * 200 + 8 * bit, z: 2,
-            size: 48 * bit, visual: true, bitmap: 'clear', source: {}
+            size: 48 * bit, visual: true, bitmap: 'cq_clear', source: {}
         },
         title: {
             type: 'text', x: 59 * bit + 2000, y: index * 200 + 12 * bit, z: 2,
@@ -138,7 +138,7 @@ for (let index = 0; index < displayLength; index++) {
         [index + '_bg', $AchievementUi.display[index].bg],
         [index + '_slot', $AchievementUi.display[index].slot],
         [index + '_title', $AchievementUi.display[index].title],
-        [index + '_name', $AchievementUi.display[index].name],
+        [index + '_name', $AchievementUi.display[index].name]
     ])
 }
 

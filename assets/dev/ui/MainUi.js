@@ -50,7 +50,7 @@ const $MainUi = {
         ],
         elements: {
             close: { type: 'closeButton', x: 947, y: 12, bitmap: 'X', bitmap2: 'XPress', scale: 36 / 19 },
-            info: { type: 'button', x: 22, y: 12, bitmap: 'info', scale: 36 / 16,
+            info: { type: 'button', x: 22, y: 12, bitmap: 'cq_info', scale: 36 / 16,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         Utils.dialog({
@@ -59,7 +59,7 @@ const $MainUi = {
                     }, 500)
                 }
             },
-            team: { type: 'button', x: 72, y: 12, z: 1, bitmap: 'team', scale: 36 / 32,
+            team: { type: 'button', x: 72, y: 12, z: 1, bitmap: 'cq_team', scale: 36 / 32,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         QuestUi.openTeamUi()
@@ -73,9 +73,9 @@ const $MainUi = {
                 z: 2,
                 width: 36 * (20 / 80),
                 height: 36 * (20 / 80),
-                bitmap: 'remind'
+                bitmap: 'cq_remind'
             },
-            fast_receive: { type: 'button', x: 122, y: 12, bitmap: 'fast_receive', scale: 36 / 16,
+            fast_receive: { type: 'button', x: 122, y: 12, bitmap: 'cq_fast_receive', scale: 36 / 16,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         if (typeof $MainUi.sourceId === 'string' && Utils.isObject($MainUi.mainJson)) {
@@ -87,14 +87,14 @@ const $MainUi = {
                     }, 500)
                 }
             },
-            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'clear', width: 32, height: ($ScreenHeight - 60) / 2,
+            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'cq_clear', width: 32, height: ($ScreenHeight - 60) / 2,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         $MainUi.openChapterListUi()
                     }, 500)
                 }
             },
-            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'arrow_right', scale: 32 / 64 }
+            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'cq_arrow_right', scale: 32 / 64 }
         }
     }, {
         onOpen (ui) {
@@ -127,7 +127,7 @@ const $MainUi = {
         drawing: [
             { type: 'background', color: $Color.TRANSPARENT },
             { type: 'frame', x: 0, y: 0, width: 1000, height: 1000 * (1/2), bitmap: 'classic_frame_bg_light', scale: 2 },
-            { type: 'bitmap', x: 0 + 2000, y: 0, width: 1000, height: 1000 * (1/2), bitmap: 'clear' }
+            { type: 'bitmap', x: 0 + 2000, y: 0, width: 1000, height: 1000 * (1/2), bitmap: 'cq_clear' }
         ],
         elements: {}
     }, {
@@ -199,7 +199,7 @@ const $MainUi = {
                 let groupJson = groupObj[chapterId]
                 ui.addElements([
                     [uuid + '_' + chapterId + '_icon', {
-                        type: 'slot', visual: true, bitmap: groupJson.icon.bitmap || 'clear',
+                        type: 'slot', visual: true, bitmap: groupJson.icon.bitmap || 'cq_clear',
                         source: Utils.transferItemFromJson(groupJson.icon),
                         darken: Boolean(groupJson.icon.darken),
                         x: 10, y: height + 10, z: 1, size: 120
@@ -210,7 +210,7 @@ const $MainUi = {
                         x: 140, y: height + 50, z: 1
                     }],
                     [uuid + '_' + chapterId + '_btn', {
-                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 120,
+                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'cq_clear', width: 980, height: 120,
                         clicker: {
                             onClick: Utils.debounce(this.toggleChapterGroup.bind(this, groupJson, height), 500)
                         }
@@ -223,7 +223,7 @@ const $MainUi = {
                 let chapterJson = this.mainJson.chapter[chapterId]
                 ui.addElements([
                     [uuid + '_' + chapterId + '_icon', {
-                        type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'clear',
+                        type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'cq_clear',
                         source: Utils.transferItemFromJson(chapterJson.icon),
                         darken: Boolean(chapterJson.icon.darken),
                         x: 10, y: height + 10, z: 1, size: 120
@@ -234,7 +234,7 @@ const $MainUi = {
                         x: 140, y: height + 50, z: 1
                     }],
                     [uuid + '_' + chapterId + '_btn', {
-                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 120,
+                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'cq_clear', width: 980, height: 120,
                         clicker: {
                             onClick: Utils.debounce(this.updateChapterUi.bind(this, chapterId), 500)
                         }
@@ -285,7 +285,7 @@ const $MainUi = {
             )
             ui.addElements([
                 [uuid + '_group_' + chapterId + '_icon', {
-                    type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'clear',
+                    type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'cq_clear',
                     source: Utils.transferItemFromJson(chapterJson.icon),
                     darken: Boolean(chapterJson.icon.darken),
                     x: 150, y: height + 140 + listHeight + 10, z: 11, size: 120
@@ -296,7 +296,7 @@ const $MainUi = {
                     x: 280, y: height + 140 + listHeight + 50, z: 11
                 }],
                 [uuid + '_group_' + chapterId + '_btn', {
-                    type: 'image', x: 150, y: height + 140 + listHeight + 10, z: 12, bitmap: 'clear', width: 840, height: 120,
+                    type: 'image', x: 150, y: height + 140 + listHeight + 10, z: 12, bitmap: 'cq_clear', width: 840, height: 120,
                     clicker: {
                         onClick: Utils.debounce(that.updateChapterUi.bind(that, chapterId), 500)
                     }
@@ -333,7 +333,7 @@ const $MainUi = {
             } else {
                 ui.content.drawing[1].x = 0
                 ui.content.drawing[2].x = 0 + 2000
-                ui.content.drawing[2].bitmap = 'clear'
+                ui.content.drawing[2].bitmap = 'cq_clear'
             }
             if (typeof this.chapterJson.background[1] === 'number') {
                 ui.ui.getLocation().scrollY = 960 * this.chapterJson.background[1]
@@ -347,7 +347,7 @@ const $MainUi = {
             ui.content.drawing[2].height = ui.content.drawing[1].height = 1000 * (1/2)
             ui.content.drawing[1].x = 0
             ui.content.drawing[2].x = 0 + 2000
-            ui.content.drawing[2].bitmap = 'clear'
+            ui.content.drawing[2].bitmap = 'cq_clear'
         }
         let uuid = Utils.getUUID()
         let that = this

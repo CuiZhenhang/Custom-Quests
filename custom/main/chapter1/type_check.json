@@ -3,7 +3,7 @@
     "id": "type_check",
     "pos": [160, 110],
     "size": 80,
-    "icon": { "bitmap": "task_check" },
+    "icon": { "bitmap": "cq_task_check" },
     "parent": [
         "start"
     ],
