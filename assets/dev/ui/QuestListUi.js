@@ -102,7 +102,7 @@ const $QuestListUi = {
     updateSourceListUi () {
         let ui = this.sourceListUi
         ui.content.drawing.splice(2)
-        ui.clearNewElements()
+        ui.clearNewElements(null, true)
         let height = 100
         let uuid = Utils.getUUID()
         for (let sourceId in this.questListObject) {
@@ -138,7 +138,7 @@ const $QuestListUi = {
         let ui = this.questListUi
         let mainQuestListObject = this.questListObject[sourceId]
         let mainJson = Store.localCache.resolvedJson[sourceId]
-        ui.clearNewElements()
+        ui.clearNewElements(null, true)
         if (!mainQuestListObject || !Utils.isObject(mainJson)) {
             ui.content.elements['name'].text = TranAPI.translate('gui.questList.empty')
             ui.refresh()

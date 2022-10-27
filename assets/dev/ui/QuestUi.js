@@ -84,7 +84,7 @@ const $QuestUi = {
         let name = TranAPI.translate(questJson.inner.name)
         let text = QuestUiTools.resolveText(TranAPI.translate(questJson.inner.text), this.getWidthRatio)
         let numIO = Math.max(questJson.inner.input.length, questJson.inner.output.length, 1)
-        this.questUi.clearNewElements()
+        this.questUi.clearNewElements(null, true)
         let location = this.questUi.ui.getLocation()
         let content = this.questUi.content
         location.scrollY = (280 + Math.floor(numIO/5 - 0.1)*100 + 40*text.length) * (600/1000)
@@ -181,7 +181,7 @@ const $QuestUi = {
         let obj = getDescription(ioJson, toolsCb, { posY: 100, prefix: uuid + '_' })
         if (!Utils.isObject(obj)) return
         let ui = this.descriptionUi
-        ui.clearNewElements()
+        ui.clearNewElements(null, true)
         let location = ui.ui.getLocation()
         location.scrollY = Math.max(obj.maxY * (500/1000), $ScreenHeight * 0.6)
         location.height = Math.min(location.scrollY, $ScreenHeight)

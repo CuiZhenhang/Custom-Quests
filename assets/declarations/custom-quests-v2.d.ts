@@ -152,8 +152,9 @@ declare namespace CQTypes {
             output: Array<Ref<IOTypes.OutputJson>>
             name: TextJson
             text: TextJson
+            /** @todo */
             repeat?: boolean
-            repeat_time?: number
+            repeatTime?: number
         }
         ref?: {[refId: refId]: unknown}
     }
@@ -799,8 +800,9 @@ interface QuestUiTools {
         content: UI.Window['content']
         ui: UI.Window
         newElements: Array<string>
+        binElements: Array<string>
         addElements (elementsObj: {[key: string]: UI.Elements} | Array<[string, UI.Elements]>): void
-        clearNewElements (newElements?: Array<string>): void
+        clearNewElements (newElements?: Nullable<Array<string>>, lazy?: boolean): void
         refresh (): void
         open (refresh?: boolean): void
         close (): void
@@ -812,7 +814,7 @@ interface QuestUiTools {
         size?: number
         clicker?: UI.Elements['clicker']
     }): Array<[string, UI.Elements]>
-    getDependencyLine (posParent: [x: number, y: number], posChild: [x: number, y: number], width: number, color: number): Array<UI.DrawingElements>
+    getDependencyLine (posParent: [x: number, y: number], posChild: [x: number, y: number], width: number, color: number): Array<UI.DrawingElements & UI.Elements>
     getTextWidth (text: string, size: number): number
     resolveText (text: string, getWidthRatio: (str: string) => number): Array<string>
     createAnimator (duration: number, cb: (animator: android.animation.ValueAnimator) => void): android.animation.ValueAnimator

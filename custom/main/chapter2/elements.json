@@ -1,0 +1,27 @@
+{
+    "type": "custom",
+    "id": "elements",
+    "elem": [
+        {
+            "type": "text",
+            "x": 760,
+            "y": 50,
+            "z": 1,
+            "text": "this is text",
+            "font": {
+                "color": -16777012,
+                "size": 30,
+                "align": 1
+            }
+        },
+        {
+            "type": "image",
+            "x": 600,
+            "y": 100,
+            "z": 1,
+            "width": 320,
+            "height": 180,
+            "bitmap": "cq_menu"
+        }
+    ]
+}

@@ -171,7 +171,19 @@ const System = {
                         if (typeof questJson.id !== 'string') return
                         if (questJson.type === 'custom') {
                             if (!Utils.isObject(questJson.elem)) return
-                            resolvedChapterJson.quest[questJson.id] = Utils.deepCopy(questJson)
+                            let resolvedQuestJson = Utils.deepCopy(questJson)
+                            resolvedChapterJson.quest[questJson.id] = resolvedQuestJson
+                            if (!Array.isArray(resolvedQuestJson.elem)) resolvedQuestJson.elem = [resolvedQuestJson.elem]
+                            resolvedQuestJson.elem.forEach(function (elements) {
+                                if (elements.type === 'image') {
+                                    if (typeof elements.bitmap === 'string') {
+                                        elements.bitmap = Utils.resolveBitmap(elements.bitmap, bitmapNameObject)
+                                    }
+                                    if (typeof elements.overlay === 'string') {
+                                        elements.overlay = Utils.resolveBitmap(elements.overlay, bitmapNameObject)
+                                    }
+                                }
+                            })
                             return
                         }
                         if (questJson.type === 'quest') {

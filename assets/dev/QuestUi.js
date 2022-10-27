@@ -32,6 +32,7 @@ const QuestUiTools = {
             content: content,
             ui: new UI.Window(content),
             newElements: [],
+            binElements: [],
             addElements (elementsObj) {
                 if (!Utils.isObject(ret.content.elements) || !Utils.isObject(elementsObj)) return
                 if (Array.isArray(elementsObj)) {
@@ -46,36 +47,73 @@ const QuestUiTools = {
                     }
                 }
             },
-            clearNewElements (newElements) {
+            clearNewElements (newElements, lazy) {
                 if (!Utils.isObject(ret.content.elements)) return
-                let elements = ret.content.elements
-                let elementMap = ret.ui.getElements()
-                let provider = ret.ui.getElementProvider()
-                if (!Array.isArray(newElements)) {
-                    ret.newElements.forEach(function (key) {
-                        delete elements[key]
-                        provider.removeElement(elementMap.get(key))
-                    })
-                    ret.newElements.length = 0
-                } else {
-                    newElements.forEach(function (key) {
-                        let index = ret.newElements.indexOf(key)
-                        if (index < 0) return
-                        delete elements[key]
-                        provider.removeElement(elementMap.get(key))
-                        ret.newElements.splice(index, 1)
-                    })
+                try {
+                    if (lazy) {
+                        if (!Array.isArray(newElements)) {
+                            ret.binElements = ret.binElements.concat(ret.newElements)
+                            ret.newElements.length = 0
+                        } else {
+                            newElements.forEach(function (key) {
+                                let index = ret.newElements.indexOf(key)
+                                if (index < 0) return
+                                ret.binElements.push(key)
+                                ret.newElements.splice(index, 1)
+                            })
+                        }
+                    } else {
+                        let elements = ret.content.elements
+                        let elementMap = ret.ui.getElements()
+                        let provider = ret.ui.getElementProvider()
+                        if (!Array.isArray(newElements)) {
+                            ret.newElements.forEach(function (key) {
+                                delete elements[key]
+                                provider.removeElement(elementMap.get(key))
+                            })
+                            ret.newElements.length = 0
+                        } else {
+                            newElements.forEach(function (key) {
+                                let index = ret.newElements.indexOf(key)
+                                if (index < 0) return
+                                delete elements[key]
+                                provider.removeElement(elementMap.get(key))
+                                ret.newElements.splice(index, 1)
+                            })
+                        }
+                    }
+                } catch (err) {
+                    Utils.log('Error in clearNewElements (QuestUi.js):\n' + err, 'ERROR', false)
                 }
             },
             refresh () {
-                if (ret.ui.isOpened()) {
-                    ret.ui.updateWindowLocation()
-                    if (typeof ret.ui.updateScrollDimensions === 'function') {
-                        ret.ui.updateScrollDimensions()
-                    }
+                try {
+                    let elements = ret.content.elements
+                    let elementMap = ret.ui.getElements()
+                    let provider = ret.ui.getElementProvider()
+                    ret.binElements.forEach(function (key) {
+                        if (ret.newElements.indexOf(key) >= 0) return
+                        if (typeof elements[key] === 'undefined') return
+                        delete elements[key]
+                        provider.removeElement(elementMap.get(key))
+                    })
+                    ret.binElements.length = 0
+                } catch (err) {
+                    Utils.log('Error in refresh (QuestUi.js):\n' + err, 'ERROR', false)
                 }
-                ret.ui.invalidateAllContent()
-                ret.ui.forceRefresh()
+                try {
+                    if (ret.ui.isOpened()) {
+                        ret.ui.updateWindowLocation()
+                        if (typeof ret.ui.updateScrollDimensions === 'function') {
+                            ret.ui.updateScrollDimensions()
+                        }
+                    }
+                    ret.ui.getContentProvider().refreshDrawing()
+                    ret.ui.getContentProvider().refreshElements()
+                    ret.ui.forceRefresh()
+                } catch (err) {
+                    Utils.log('Error in refresh (QuestUi.js):\n' + err, 'ERROR', false)
+                }
             },
             open (refresh) {
                 if (refresh) ret.refresh()
@@ -172,45 +210,52 @@ const QuestUiTools = {
             paint.setStyle(Paint.Style.FILL)
             paint.setAntiAlias(true)
             paint.setARGB(argb[0], argb[1], argb[2], argb[3])
-            return [{
-                type: 'custom',
-                onDraw: function (canvas, scale) {
-                    let realWidth = width * scale
-                    canvas.save()
-                    canvas.translate(posParent[0] * scale, posParent[1] * scale)
-                    canvas.rotate(angle)
-                    canvas.translate(0, -realWidth / 2)
-                    canvas.drawRect(new RectF(0, 0, dis * scale, realWidth), paint)
-                    if (dis <= 100 * width) {
-                        canvas.drawBitmap(
-                            lineBitmap,
-                            new Rect(0, 0, Math.floor(dis / width * 64), 64),
-                            new RectF(0, 0, dis * scale, realWidth),
-                            nullPaint
-                        )
-                    } else {
-                        let left = 0
-                        for (let w = dis / width; w > 0; w -= 100) {
-                            if (w <= 100) {
-                                canvas.drawBitmap(
-                                    lineBitmap,
-                                    new Rect(0, 0, Math.floor(w * 64), 64),
-                                    new RectF(left * scale, 0, (left + w * width) * scale, realWidth),
-                                    nullPaint
-                                )
-                                break
-                            } else {
-                                canvas.drawBitmap(
-                                    lineBitmap,
-                                    lineSrc,
-                                    new RectF(left * scale, 0, (left + 100 * width) * scale, realWidth),
-                                    nullPaint
-                                )
-                                left += 100 * width
-                            }
+            /** @type { (canvas: android.graphics.Canvas, scale: number) => void } */
+            let draw = function (canvas, scale) {
+                let realWidth = width * scale
+                canvas.save()
+                canvas.translate(posParent[0] * scale, posParent[1] * scale)
+                canvas.rotate(angle)
+                canvas.translate(0, -realWidth / 2)
+                canvas.drawRect(new RectF(0, 0, dis * scale, realWidth), paint)
+                if (dis <= 100 * width) {
+                    canvas.drawBitmap(
+                        lineBitmap,
+                        new Rect(0, 0, Math.floor(dis / width * 64), 64),
+                        new RectF(0, 0, dis * scale, realWidth),
+                        nullPaint
+                    )
+                } else {
+                    let left = 0
+                    for (let w = dis / width; w > 0; w -= 100) {
+                        if (w <= 100) {
+                            canvas.drawBitmap(
+                                lineBitmap,
+                                new Rect(0, 0, Math.floor(w * 64), 64),
+                                new RectF(left * scale, 0, (left + w * width) * scale, realWidth),
+                                nullPaint
+                            )
+                            break
+                        } else {
+                            canvas.drawBitmap(
+                                lineBitmap,
+                                lineSrc,
+                                new RectF(left * scale, 0, (left + 100 * width) * scale, realWidth),
+                                nullPaint
+                            )
+                            left += 100 * width
                         }
                     }
-                    canvas.restore()
+                }
+                canvas.restore()
+            }
+            return [{
+                type: 'custom',
+                onDraw: draw,
+                custom: {
+                    onDraw: function (element, canvas, scale) {
+                        draw(canvas, scale)
+                    }
                 }
             }]
         }

@@ -406,40 +406,38 @@ const IOTypeTools = {
     }
 }
 
-Callback.addCallback('ServerPlayerTick', function () {
-    if (Math.random() * 10 < 1 && Math.random() * Network.getConnectedPlayers().length < 1 /* 0.5s */) {
-        try {
-            let playerList = Network.getConnectedPlayers()
-            let playerInventory = {}
-            for (let i = 0; i < playerList.length; i++) {
-                let player = playerList[i]
-                let inventory = Utils.getInventory(player)
-                let sortInventory = Utils.getSortInventory(inventory)
-                let extraInventory = Utils.getExtraInventory(inventory)
-                playerInventory[player] = {
-                    player: player,
-                    normal: inventory,
-                    sort: sortInventory,
-                    extra: extraInventory
-                }
+Callback.addCallback('ServerPlayerTick', Utils.debounce(function () {
+    try {
+        let playerList = Network.getConnectedPlayers()
+        let playerInventory = {}
+        for (let i = 0; i < playerList.length; i++) {
+            let player = playerList[i]
+            let inventory = Utils.getInventory(player)
+            let sortInventory = Utils.getSortInventory(inventory)
+            let extraInventory = Utils.getExtraInventory(inventory)
+            playerInventory[player] = {
+                player: player,
+                normal: inventory,
+                sort: sortInventory,
+                extra: extraInventory
             }
-            let typeArray = IOTypeTools.getAllInputType().filter(function (type) {
-                return typeof IOTypeTools.getInputTypeCb(type).onTick === 'function'
-            })
-            IOTypeTools.getAllInputIdByType(typeArray).forEach(function (inputId) {
-                let playerInventoryArray = []
-                IOTypeTools.getPlayerListByInputId(inputId, true).forEach(function (player) {
-                    playerInventoryArray.push(playerInventory[player])
-                })
-                IOTypeTools.callInputTypeCb(inputId, 'onTick', {
-                    playerInventory: playerInventoryArray
-                })
-            })
-        } catch (err) {
-            Utils.log('Error in Callback \'ServerPlayerTick\' (IOTypeTools.js):\n' + err, 'ERROR', true)
         }
+        let typeArray = IOTypeTools.getAllInputType().filter(function (type) {
+            return typeof IOTypeTools.getInputTypeCb(type).onTick === 'function'
+        })
+        IOTypeTools.getAllInputIdByType(typeArray).forEach(function (inputId) {
+            let playerInventoryArray = []
+            IOTypeTools.getPlayerListByInputId(inputId, true).forEach(function (player) {
+                playerInventoryArray.push(playerInventory[player])
+            })
+            IOTypeTools.callInputTypeCb(inputId, 'onTick', {
+                playerInventory: playerInventoryArray
+            })
+        })
+    } catch (err) {
+        Utils.log('Error in Callback \'ServerPlayerTick\' (IOTypeTools.js):\n' + err, 'ERROR', true)
     }
-})
+}, 500 /* 0.5s */))
 
 Callback.addCallback('LevelLeft', function () {
     if (Network.inRemoteWorld()) return

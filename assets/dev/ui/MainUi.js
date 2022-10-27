@@ -172,7 +172,7 @@ const $MainUi = {
             $MainUi.chapterGroup.newElements.length = 0
         }
         ui.content.drawing.splice(2)
-        ui.clearNewElements()
+        ui.clearNewElements(null, true)
         if (!Utils.isObject(this.mainJson)) {
             ui.open(true)
             return
@@ -259,7 +259,7 @@ const $MainUi = {
         let ui = this.chapterListUi
         if (this.chapterGroup.exist) {
             ui.content.elements['group_frame'].x = 140 + 2000
-            ui.clearNewElements(this.chapterGroup.newElements)
+            ui.clearNewElements(this.chapterGroup.newElements, true)
             this.chapterGroup.exist = false
             this.chapterGroup.newElements.length = 0
             if (this.chapterGroup.chapterId === groupJson.list[0]) {
@@ -317,8 +317,7 @@ const $MainUi = {
         this.chapterJson = this.mainJson.chapter[chapterId]
         this.chapterUiUpdateRequest.exist = false
         let ui = this.chapterUi
-        ui.content.drawing.splice(3)
-        ui.clearNewElements()
+        ui.clearNewElements(null, true)
         if (!Utils.isObject(this.chapterJson)) {
             ui.refresh()
             return
@@ -361,7 +360,7 @@ const $MainUi = {
             } else if (questJson.type === 'quest') {
                 let posChild = [questJson.pos[0] + questJson.size/2, questJson.pos[1] + questJson.size/2]
                 let saveData = System.getQuestSaveData(Store.localCache.resolvedJson, Store.localCache.saveData, this.sourceId, chapterId, questId)
-                if (saveData.inputState === EnumObject.questInputState.locked && questJson.hidden) return
+                if (saveData.inputState === EnumObject.questInputState.locked && questJson.hidden) continue
                 questJson.parent.forEach(function (path) {
                     if (path[0] !== that.sourceId || path[1] !== that.chapterId) return
                     let tQuestJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
@@ -375,9 +374,10 @@ const $MainUi = {
                         else if (saveData.inputState === EnumObject.questInputState.unfinished) color = $Color.rgb(0, 200, 200)
                         else color = $Color.rgb(200, 200, 0)
                     }
-                    QuestUiTools.getDependencyLine(posParent, posChild, path[3], color).forEach(function (drawing) {
-                        ui.content.drawing.push(drawing)
-                    })
+                    let elements = QuestUiTools.getDependencyLine(posParent, posChild, path[3], color)
+                    ui.addElements(elements.map(function (elem, index) {
+                        return [uuid + '_' + questId + '_from_' + path[2] + '_' + index, elem]
+                    }))
                 })
                 ui.addElements(QuestUiTools.getQuestIcon(questJson, saveData, {
                     prefix: uuid + '_' + questId + '_',

@@ -43,7 +43,7 @@ IOTypeTools.setOutputType('exp', TranAPI.getTranslation('outputType.exp'), {
         }
         playerList.forEach(function (player) {
             let actor = new PlayerActor(player)
-            if (outputJson.isLevel) actor.setLevel(actor.getLevel() + outputJson.value);
+            if (outputJson.isLevel) actor.setLevel(actor.getLevel() + outputJson.value)
             else actor.addExperience(outputJson.value)
         })
     },

@@ -1,7 +1,7 @@
 {
     "type": "quest",
     "id": "extra",
-    "pos": [350, 200],
+    "pos": [300, 100],
     "size": 100,
     "icon": {
         "id": "vitem:stone_hoe",
@@ -26,7 +26,12 @@
                             { "type": 17, "level": 1, "operator": ">=" }
                         ]
                     }
-                ]
+                ],
+                "description": {
+                    "en": "For this task, the player needs to get a stone hoe with a unbreaking enchantment level of not less than level 1.",
+                    "ru": "For this task, the player needs to get a stone hoe with a unbreaking enchantment level of not less than level 1.",
+                    "zh": "对于该任务，需要玩家获得一把耐久附魔等级不小于1级的石锄。"
+                }
             }
         ],
         "output": [
@@ -44,7 +49,12 @@
                             { "type": 17, "level": 3 }
                         ]
                     }
-                ]
+                ],
+                "description": {
+                    "en": "For this reward, the player will be given 1 stone hoe with unbreaking 3 and named \"The Best Stone Hoe\" when receiving it.",
+                    "ru": "For this reward, the player will be given 1 stone hoe with unbreaking 3 and named \"The Best Stone Hoe\" when receiving it.",
+                    "zh": "对于该奖励，在领取时会给玩家1把耐久3，名为“The Best Stone Hoe”的石锄。"
+                }
             }
         ],
         "name": {
@@ -53,9 +63,9 @@
             "zh": "extra"
         },
         "text": {
-            "en": "",
-            "ru": "",
-            "zh": ""
+            "en": "Items and icons can have extra attributes added to them.",
+            "ru": "Items and icons can have extra attributes added to them.",
+            "zh": "物品和图标可以添加extra属性。"
         }
     }
 }

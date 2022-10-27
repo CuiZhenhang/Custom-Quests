@@ -18,6 +18,7 @@
         "output": [
             {
                 "type": "command",
+                "mutiReward": true,
                 "commands": [
                     "effect @p speed 60 1 true",
                     "effect @p haste 30 0 true"

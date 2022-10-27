@@ -109,7 +109,7 @@ const ServerSystem = {
             let obj = Store.cache.playerList[saveId]
             if (loaded) {
                 Store.cache.playerLoaded[player] = true
-                if (obj.player.indexOf(player) <= -1) obj.player.push(player)
+                if (obj.player.indexOf(player) < 0) obj.player.push(player)
                 obj.client && obj.client.add(Network.getClientForPlayer(player))
                 this.loadAllQuest(saveId)
             } else {
@@ -325,7 +325,7 @@ const ServerSystem = {
                     if (!Utils.isObject(tQuestJson) || tQuestJson.type !== 'quest') return
                     if (typeof numberIn[child[0]][child[1]][child[2]] !== 'number') numberIn[child[0]][child[1]][child[2]] = 0
                     if (++numberIn[child[0]][child[1]][child[2]] >= tQuestJson.parent.length) {
-                        numberIn[child[0]][child[1]][child[2]] = -1;
+                        numberIn[child[0]][child[1]][child[2]] = -1
                         stack.push([child[0], child[1], child[2]])
                         that.loadQuest(saveId, child[0], child[1], child[2])
                     }
@@ -662,7 +662,7 @@ const ServerSystem = {
         } else if (oldState === EnumObject.playerState.absent) {
             // join team
             let list = Store.saved.playerList[team.saveId]
-            if (list.indexOf(player) === -1) list.push(player)
+            if (list.indexOf(player) < 0) list.push(player)
             this.loadAllQuest(team.saveId)
         }
     },
@@ -735,8 +735,14 @@ Callback.addCallback('ServerPlayerLoaded', function (player) {
     })
 })
 
-Callback.addCallback('ServerPlayerTick', function (player) {
-    if (Math.random() * 600 < 1 /* 30s */) {
+; (function () {
+    /** @type { {[player: number]: number} } */
+    let latest = {}
+
+    Callback.addCallback('ServerPlayerTick', function (player) {
+        let now = Date.now()
+        if (now < latest[player]) return
+        latest[player] = now + 30000 /* 30s */
         try {
             let saveId = ServerSystem.getSaveId(player)
             if (!ServerSystem.isSaveIdValid(saveId)) return
@@ -747,8 +753,12 @@ Callback.addCallback('ServerPlayerTick', function (player) {
         } catch (err) {
             Utils.log('Error in Callback \'ServerPlayerTick\' (ServerSystem.js):\n' + err, 'ERROR', false)
         }
-    }
-})
+    })
+
+    Callback.addCallback('ServerPlayerLeft', function (player) {
+        delete latest[player]
+    })
+})()
 
 Callback.addCallback('ServerPlayerLeft', function (player) {
     ServerSystem.setPlayerLoaded(player, false)

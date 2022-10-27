@@ -1,0 +1,29 @@
+{
+    "type": "quest",
+    "id": "hidden",
+    "pos": [150, 400],
+    "size": 100,
+    "icon": { "bitmap": "cq_task_check" },
+    "parent": [
+        "dependence"
+    ],
+    "hidden": true,
+    "inner": {
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "Hidden",
+            "ru": "Hidden",
+            "zh": "隐藏"
+        },
+        "text": {
+            "en": "Quest can be hidden while unlocked.",
+            "ru": "Quest can be hidden while unlocked.",
+            "zh": "任务可以在未解锁时隐藏。"
+        }
+    }
+}

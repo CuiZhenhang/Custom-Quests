@@ -233,7 +233,7 @@ const $TeamUi = {
         let uuid = Utils.getUUID()
         let ui = this.teamListUi
         ui.content.drawing.splice(1)
-        ui.clearNewElements()
+        ui.clearNewElements(null, true)
         if (!Array.isArray(teamList)) teamList = []
         ui.ui.getLocation().scrollY = (160*Math.min(teamList.length, 15 + 1) + 5) * (292/1000)
         teamList.some(function (team, index) {
@@ -291,7 +291,7 @@ const $TeamUi = {
         let uuid = Utils.getUUID()
         let ui = this.teamPlayerListUi
         ui.content.drawing.splice(2)
-        ui.clearNewElements()
+        ui.clearNewElements(null, true)
         if (!Array.isArray(teamPlayerList) || !Utils.isObject(team)) teamPlayerList = []
         teamPlayerList.sort(function (a, b) { return Number(b.online) - Number(a.online) })
         ui.content.drawing[1].y2 = 100*Math.ceil(teamPlayerList.length / 2)

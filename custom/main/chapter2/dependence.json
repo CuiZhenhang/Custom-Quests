@@ -1,0 +1,29 @@
+{
+    "type": "quest",
+    "id": "dependence",
+    "pos": [150, 250],
+    "size": 100,
+    "icon": { "bitmap": "cq_task_check" },
+    "parent": [
+        [null, null, "ref", 20],
+        [null, "chapter1", "start"]
+    ],
+    "inner": {
+        "input": [
+            {
+                "type": "check"
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "Dependence",
+            "ru": "Dependence",
+            "zh": "依赖"
+        },
+        "text": {
+            "en": "A quest can depend on multiple quests at the same time and can depend on quests from other chapters.\nAlso the width of the dependency line can be customized.",
+            "ru": "A quest can depend on multiple quests at the same time and can depend on quests from other chapters.\nAlso the width of the dependency line can be customized.",
+            "zh": "一个任务可以同时依赖多个任务，可以依赖其它章节的任务。\n另外依赖线的宽度可以自定义。"
+        }
+    }
+}
