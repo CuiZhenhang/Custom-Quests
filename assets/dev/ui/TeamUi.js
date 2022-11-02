@@ -58,8 +58,9 @@ const $TeamUi = {
             operate: { type: 'button', x: 850, y: 110, z: 1, bitmap: 'cq_button_long_up', bitmap2: 'cq_button_long_down', scale: 100 / 50,
                 clicker: {
                     onClick: Utils.debounce(function () {
-                        if (!Utils.isObject(Store.localCache.team)) return
-                        let admin = Store.localCache.team.players[Player.get()] >= EnumObject.playerState.admin
+                        let team = ClientSystem.getTeam()
+                        if (!team) return
+                        let admin = team.players[Player.get()] >= EnumObject.playerState.admin
                         QuestUi.openSelectionUi(null, [
                             {
                                 text: TranAPI.translate('gui.team.operate.exit'),
@@ -99,7 +100,7 @@ const $TeamUi = {
                                         title: TranAPI.translate('gui.team.operate.changePassword'),
                                         hint: TranAPI.translate('gui.team.enterPassword')
                                     }, function (password) {
-                                        if (Utils.md5(password) !== Store.localCache.team.password) {
+                                        if (Utils.md5(password) !== team.password) {
                                             alert(TranAPI.translate('alert.fail.passwordWrong'))
                                             return
                                         }
@@ -127,7 +128,7 @@ const $TeamUi = {
             noteam_create: { type: 'button', x: 600, y: 270, z: 1, bitmap: 'cq_button_long_up', bitmap2: 'cq_button_long_down', scale: 200 / 50,
                 clicker: {
                     onClick: Utils.debounce(function () {
-                        if (Utils.isObject(Store.localCache.team)) return
+                        if (ClientSystem.getTeam()) return
                         Utils.getInput({
                             title: TranAPI.translate('gui.team.create'),
                             hint: TranAPI.translate('gui.team.enterName'),
@@ -163,7 +164,7 @@ const $TeamUi = {
     }, {
         onOpen (ui) {
             $TeamUi.teamListUi.open()
-            if (Utils.isObject(Store.localCache.team)) $TeamUi.teamPlayerListUi.open()
+            if (ClientSystem.getTeam()) $TeamUi.teamPlayerListUi.open()
         },
         onClose (ui) {
             $TeamUi.teamListUi.close()
@@ -188,11 +189,11 @@ const $TeamUi = {
     }),
     /** @type { QuestUi['openTeamUi'] } */
     open () {
-        let team = Store.localCache.team
+        let team = ClientSystem.getTeam()
         let ui = this.mainUi
         let drawing = ui.content.drawing
         let elements = ui.content.elements
-        if (Utils.isObject(team)) {
+        if (team) {
             let name = team.name.split('\n')
             elements['search_text'].text = TranAPI.translate('gui.team.search')
             elements['icon'].bitmap = team.bitmap.bitmap || 'cq_clear'
@@ -287,12 +288,12 @@ const $TeamUi = {
     },
     updateTeamPlayerListUi () {
         let teamPlayerList = Utils.deepCopy(Store.localCache.teamPlayerList)
-        let team = Store.localCache.team
+        let team = ClientSystem.getTeam()
         let uuid = Utils.getUUID()
         let ui = this.teamPlayerListUi
         ui.content.drawing.splice(2)
         ui.clearNewElements(null, true)
-        if (!Array.isArray(teamPlayerList) || !Utils.isObject(team)) teamPlayerList = []
+        if (!Array.isArray(teamPlayerList) || !team) teamPlayerList = []
         teamPlayerList.sort(function (a, b) { return Number(b.online) - Number(a.online) })
         ui.content.drawing[1].y2 = 100*Math.ceil(teamPlayerList.length / 2)
         ui.ui.getLocation().scrollY = (ui.content.drawing[1].y2 + 5) * (512/1000)

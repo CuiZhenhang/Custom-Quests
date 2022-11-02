@@ -43,7 +43,7 @@ const Utils = {
         if (typeof func !== 'function') return func
         if (typeof delay !== 'number' || isNaN(delay)) return func
         let time = 0
-        return function () {
+        return function (args) {
             let now = Date.now()
             if (now >= time) {
                 time = now + delay
@@ -51,6 +51,12 @@ const Utils = {
             } else if (typeof func2 === 'function') {
                 return func2.apply(ths, arguments)
             }
+        }
+    },
+    safeResult (func, ths) {
+        let that = this
+        return function (args) {
+            return that.deepCopy(func.apply(ths, arguments))
         }
     },
     operate (a, operator, b, defaultValue) {
@@ -257,7 +263,7 @@ const Utils = {
             }
             return false
         })
-        return ret
+        return this.deepCopy(ret)
     },
     resolveBitmap (bitmap, bitmapNameObject) {
         if (typeof bitmap !== 'string') return null
@@ -279,7 +285,7 @@ const Utils = {
         return ''
     },
     resolveIconJson (iconJson, refsArray, bitmapNameObject) {
-        let ret = this.deepCopy(this.resolveRefs(iconJson, refsArray))
+        let ret = this.resolveRefs(iconJson, refsArray)
         if (!this.isObject(ret)) return {}
         if (typeof ret.bitmap === 'string') {
             ret.bitmap = this.resolveBitmap(ret.bitmap, bitmapNameObject)

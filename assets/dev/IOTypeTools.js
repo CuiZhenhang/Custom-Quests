@@ -4,7 +4,7 @@
 const IOTypeTools = {
     inputType: {},
     setInputType (type, name, inputTypeCb, config) {
-        if (!Utils.isObject(this.inputType[type])) {
+        if (!this.inputType[type]) {
             this.inputType[type] = {
                 name: '',
                 cb: {},
@@ -52,7 +52,7 @@ const IOTypeTools = {
     getAllInputType () {
         let ret = []
         for (let type in this.inputType) {
-            if (Utils.isObject(this.inputType[type])) {
+            if (this.inputType[type]) {
                 ret.push(type)
             }
         }
@@ -60,12 +60,12 @@ const IOTypeTools = {
     },
     getInputTypeName (type) {
         let inputType = this.inputType[type]
-        if (!Utils.isObject(inputType)) return ''
+        if (!inputType) return ''
         return TranAPI.translate(inputType.name)
     },
     getInputTypeCb (type) {
         let inputType = this.inputType[type]
-        if (!Utils.isObject(inputType)) return {}
+        if (!inputType) return {}
         let cb = {}
         for (let method in inputType.cb) {
             cb[method] = inputType.cb[method]
@@ -74,8 +74,8 @@ const IOTypeTools = {
     },
     getInputTypeConfig (type) {
         let inputType = this.inputType[type]
-        if (!Utils.isObject(inputType)) return null
-        return Utils.deepCopy(inputType.config)
+        if (!inputType) return null
+        return inputType.config
     },
     inputObject: {},
     typedInputList: {},
@@ -85,7 +85,7 @@ const IOTypeTools = {
         if (saveId) {
             if (saveId === InvalidId) return ret
             let typedInputList = this.typedInputList[saveId]
-            if (!Utils.isObject(typedInputList)) return ret
+            if (!typedInputList) return ret
             type.forEach(function (type) {
                 if (Array.isArray(typedInputList[type])) {
                     ret = ret.concat(typedInputList[type])
@@ -94,7 +94,7 @@ const IOTypeTools = {
         } else {
             for (let saveId in this.typedInputList) {
                 let typedInputList = this.typedInputList[saveId]
-                if (!Utils.isObject(typedInputList)) continue
+                if (!typedInputList) continue
                 type.forEach(function (type) {
                     if (Array.isArray(typedInputList[type])) {
                         ret = ret.concat(typedInputList[type])
@@ -109,10 +109,9 @@ const IOTypeTools = {
         if (!Utils.isObject(toolsCb)) return InvalidId
         if (typeof toolsCb.getState !== 'function') return InvalidId
         if (toolsCb.getState().state === EnumObject.inputState.finished) return InvalidId
-        inputJson = Utils.deepCopy(inputJson)
         let type = inputJson.type
         let inputType = this.inputType[type]
-        if (!Utils.isObject(inputType)) return InvalidId
+        if (!inputType) return InvalidId
         let inputId = Utils.getUUID()
         while (this.isInputIdLoaded(inputId)) inputId = Utils.getUUID()
         if (toolsCb.createChildInputId === undefined) {
@@ -137,7 +136,7 @@ const IOTypeTools = {
         if (typeof inputId !== 'string') return false
         if (inputId === InvalidId) return false
         let inputObject = this.inputObject[inputId]
-        if (!Utils.isObject(inputObject)) return false
+        if (!inputObject) return false
         return inputObject.loaded
     },
     loadInput (inputId) {
@@ -147,7 +146,7 @@ const IOTypeTools = {
         let type = inputObject.json.type
         let inputType = this.inputType[type]
         inputObject.loaded = true
-        if (!Utils.isObject(this.typedInputList[inputObject.saveId])) this.typedInputList[inputObject.saveId] = {}
+        if (!this.typedInputList[inputObject.saveId]) this.typedInputList[inputObject.saveId] = {}
         let typedInputList = this.typedInputList[inputObject.saveId]
         if (!Array.isArray(typedInputList[type])) typedInputList[type] = []
         typedInputList[type].push(inputId)
@@ -200,11 +199,11 @@ const IOTypeTools = {
     getInputJsonByInputId (inputId) {
         if (!this.isInputIdLoaded(inputId)) return null
         let inputObject = this.inputObject[inputId]
-        return Utils.deepCopy(inputObject.json)
+        return inputObject.json
     },
     outputType: {},
     setOutputType (type, name, outputTypeCb, config) {
-        if (!Utils.isObject(this.outputType[type])) {
+        if (!this.outputType[type]) {
             this.outputType[type] = {
                 name: '',
                 cb: {},
@@ -253,7 +252,7 @@ const IOTypeTools = {
     getAllOutputType () {
         let ret = []
         for (let type in this.outputType) {
-            if (Utils.isObject(this.outputType[type])) {
+            if (this.outputType[type]) {
                 ret.push(type)
             }
         }
@@ -261,12 +260,12 @@ const IOTypeTools = {
     },
     getOutputTypeName (type) {
         let outputType = this.outputType[type]
-        if (!Utils.isObject(outputType)) return ''
+        if (!outputType) return ''
         return TranAPI.translate(outputType.name)
     },
     getOutputTypeCb (type) {
         let outputType = this.outputType[type]
-        if (!Utils.isObject(outputType)) return {}
+        if (!outputType) return {}
         let cb = {}
         for (let method in outputType.cb) {
             cb[method] = outputType.cb[method]
@@ -275,8 +274,8 @@ const IOTypeTools = {
     },
     getOutputTypeConfig (type) {
         let outputType = this.outputType[type]
-        if (!Utils.isObject(outputType)) return null
-        return Utils.deepCopy(outputType.config)
+        if (!outputType) return null
+        return outputType.config
     },
     outputObject: {},
     typedOutputList: {},
@@ -286,7 +285,7 @@ const IOTypeTools = {
         if (saveId) {
             if (saveId === InvalidId) return ret
             let typedOutputList = this.typedOutputList[saveId]
-            if (!Utils.isObject(typedOutputList)) return ret
+            if (!typedOutputList) return ret
             type.forEach(function (type) {
                 if (Array.isArray(typedOutputList[type])) {
                     ret = ret.concat(typedOutputList[type])
@@ -295,7 +294,7 @@ const IOTypeTools = {
         } else {
             for (let saveId in this.typedOutputList) {
                 let typedOutputList = this.typedOutputList[saveId]
-                if (!Utils.isObject(typedOutputList)) continue
+                if (!typedOutputList) continue
                 type.forEach(function (type) {
                     if (Array.isArray(typedOutputList[type])) {
                         ret = ret.concat(typedOutputList[type])
@@ -310,10 +309,9 @@ const IOTypeTools = {
         if (!Utils.isObject(toolsCb)) return InvalidId
         if (typeof toolsCb.getState !== 'function') return InvalidId
         if (toolsCb.getState().state === EnumObject.outputState.received) return InvalidId
-        outputJson = Utils.deepCopy(outputJson)
         let type = outputJson.type
         let outputType = this.outputType[type]
-        if (!Utils.isObject(outputType)) return InvalidId
+        if (!outputType) return InvalidId
         let outputId = Utils.getUUID()
         while (this.isOutputIdLoaded(outputId)) outputId = Utils.getUUID()
         if (toolsCb.createChildOutputId === undefined) {
@@ -338,7 +336,7 @@ const IOTypeTools = {
         if (typeof outputId !== 'string') return false
         if (outputId === InvalidId) return false
         let outputObject = this.outputObject[outputId]
-        if (!Utils.isObject(outputObject)) return false
+        if (!outputObject) return false
         return outputObject.loaded
     },
     loadOutput (outputId) {
@@ -348,7 +346,7 @@ const IOTypeTools = {
         let type = outputObject.json.type
         let outputType = this.outputType[type]
         outputObject.loaded = true
-        if (!Utils.isObject(this.typedOutputList[outputObject.saveId])) this.typedOutputList[outputObject.saveId] = {}
+        if (!this.typedOutputList[outputObject.saveId]) this.typedOutputList[outputObject.saveId] = {}
         let typedOutputList = this.typedOutputList[outputObject.saveId]
         if (!Array.isArray(typedOutputList[type])) typedOutputList[type] = []
         typedOutputList[type].push(outputId)
@@ -402,7 +400,7 @@ const IOTypeTools = {
     getOutputJsonByOutputId (outputId) {
         if (!this.isOutputIdLoaded(outputId)) return null
         let outputObject = this.outputObject[outputId]
-        return Utils.deepCopy(outputObject.json)
+        return outputObject.json
     }
 }
 

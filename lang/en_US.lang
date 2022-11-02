@@ -19,6 +19,7 @@ alert.no_team=You hava no team. \nPlease join or create a team.
 alert.fail.nameLength=Failed: Name length is illegal
 alert.fail.passwordLength=Failed: Password length is illegal
 alert.fail.passwordWrong=Failed: Password is wrong
+alert.fail.questHidden=Failed: This quest is not visible
 alert.fast_receive.description=Recivie rewards quickly
 alert.description.show_parent=View quests that this quest depends
 alert.description.show_child=View quests that depend this quest

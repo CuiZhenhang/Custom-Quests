@@ -105,7 +105,7 @@ const $AchievementUi = {
             let index = this.getEmptyDisplayIndex()
             if (index < 0) return
             let obj = this.popWaiting()
-            if (!Utils.isObject(obj)) return
+            if (!obj) return
             this.addDisplay(index, obj)
         }
     }
@@ -157,9 +157,9 @@ Callback.addCallback('CustomQuests.onLocalQuestInputStateChanged', function (pat
     if (newState === oldState) return
     if (newState === EnumObject.questInputState.finished) {
         let config = Store.localCache.jsonConfig[path[0]]
-        if (!Utils.isObject(config) || !config.guiMessage) return
+        if (!config || !config.guiMessage) return
         let questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
-        if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
+        if (!questJson || questJson.type !== 'quest') return
         $AchievementUi.addWaiting({
             icon: questJson.icon[2],
             name: TranAPI.translate(questJson.inner.name)

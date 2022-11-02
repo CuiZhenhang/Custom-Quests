@@ -34,7 +34,7 @@ const QuestUiTools = {
             newElements: [],
             binElements: [],
             addElements (elementsObj) {
-                if (!Utils.isObject(ret.content.elements) || !Utils.isObject(elementsObj)) return
+                if (!ret.content.elements || !Utils.isObject(elementsObj)) return
                 if (Array.isArray(elementsObj)) {
                     elementsObj.forEach(function (elements) {
                         ret.newElements.push(elements[0])
@@ -48,7 +48,7 @@ const QuestUiTools = {
                 }
             },
             clearNewElements (newElements, lazy) {
-                if (!Utils.isObject(ret.content.elements)) return
+                if (!ret.content.elements) return
                 try {
                     if (lazy) {
                         if (!Array.isArray(newElements)) {

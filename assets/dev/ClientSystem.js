@@ -4,8 +4,7 @@
 const ClientSystem = {
     sendInputPacket (sourceId, chapterId, questId, index, packetData) {
         let questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
-        if (!Utils.isObject(questJson)) return
-        if (questJson.type !== 'quest') return
+        if (!questJson || questJson.type !== 'quest') return
         if (index >= questJson.inner.input.length) return
         runOnClientThread(function () {
             Network.sendToServer('CustomQuests.Server.sendIOPacket', {
@@ -17,8 +16,7 @@ const ClientSystem = {
     },
     sendOutputPacket (sourceId, chapterId, questId, index, packetData) {
         let questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
-        if (!Utils.isObject(questJson)) return
-        if (questJson.type !== 'quest') return
+        if (!questJson || questJson.type !== 'quest') return
         if (index >= questJson.inner.output.length) return
         runOnClientThread(function () {
             Network.sendToServer('CustomQuests.Server.sendIOPacket', {
@@ -44,7 +42,7 @@ const ClientSystem = {
         })
     },
     createTeam (team) {
-        if (Utils.isObject(Store.localCache.team)) return
+        if (this.getTeam()) return
         runOnClientThread(function () {
             Network.sendToServer('CustomQuests.Server.TeamTools', {
                 method: 'create',
@@ -67,7 +65,7 @@ const ClientSystem = {
         })
     },
     getTeam () {
-        return Utils.deepCopy(Store.localCache.team)
+        return Store.localCache.team || null
     },
     exitTeam () {
         runOnClientThread(function () {
@@ -122,9 +120,9 @@ Callback.addCallback('CustomQuests.onLocalQuestInputStateChanged', function (pat
     if (newState === oldState) return
     if (newState === EnumObject.questInputState.finished) {
         let config = Store.localCache.jsonConfig[path[0]]
-        if (!Utils.isObject(config) || !config.textMessage) return
+        if (!config || !config.textMessage) return
         let questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
-        if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
+        if (!questJson || questJson.type !== 'quest') return
         Game.message('§e<CustomQuests>§r ' + Utils.replace(TranAPI.translate('message.questFinished'), [
             ['{questName}', TranAPI.translate(questJson.inner.name)]
         ]))

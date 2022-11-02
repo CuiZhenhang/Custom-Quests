@@ -13,7 +13,7 @@ const $QuestListUi = {
     questList: [],
     /** @type { QuestListObject } */
     questListObject: {},
-    /** @type { Nullable<(path: CQTypes.PathArray) => void> } */
+    /** @type { Nullable<(path: CQTypes.PathArray) => boolean> } */
     onSelect: null,
     mainUi: QuestUiTools.createUi({
         location: { x: 0, y: 0, width: 1000, height: $ScreenHeight },
@@ -107,7 +107,7 @@ const $QuestListUi = {
         let uuid = Utils.getUUID()
         for (let sourceId in this.questListObject) {
             let mainJson = Store.localCache.resolvedJson[sourceId]
-            if (!Utils.isObject(mainJson)) continue
+            if (!mainJson) continue
             ui.addElements([
                 [uuid + '_' + sourceId + '_name', {
                     type: 'text', text: TranAPI.translate(mainJson.name),
@@ -139,7 +139,7 @@ const $QuestListUi = {
         let mainQuestListObject = this.questListObject[sourceId]
         let mainJson = Store.localCache.resolvedJson[sourceId]
         ui.clearNewElements(null, true)
-        if (!mainQuestListObject || !Utils.isObject(mainJson)) {
+        if (!mainQuestListObject || !mainJson) {
             ui.content.elements['name'].text = TranAPI.translate('gui.questList.empty')
             ui.refresh()
             return
@@ -172,7 +172,9 @@ const $QuestListUi = {
                                     ['{name}', name]
                                 ])
                             }, function () {
-                                if (typeof that.onSelect === 'function') that.onSelect(pathArray)
+                                if (typeof that.onSelect === 'function') {
+                                    if (that.onSelect(pathArray)) return
+                                }
                                 that.mainUi.close()
                             })
                         }, 500),
@@ -200,7 +202,7 @@ const $QuestListUi = {
         })
         for (let sourceId in obj) {
             let mainJson = Store.localCache.resolvedJson[sourceId]
-            if (!Utils.isObject(mainJson)) {
+            if (!mainJson) {
                 delete obj[sourceId]
                 continue
             }
@@ -211,7 +213,7 @@ const $QuestListUi = {
             if (Array.isArray(mainJson.group)) {
                 mainJson.group.forEach(function (groupJson) {
                     if (groupJson.list.length === 0) return
-                    if (Utils.isObject(groupObj[groupJson.list[0]])) return
+                    if (groupObj[groupJson.list[0]]) return
                     groupObj[groupJson.list[0]] = groupJson.list
                     groupJson.list.forEach(function (chapterId) {
                         visInGroup[chapterId] = true

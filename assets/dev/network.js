@@ -10,7 +10,7 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
     if (!Utils.isObject(packetData.data)) return
     let saveId = ServerSystem.getSaveId(client.getPlayerUid())
     if (!ServerSystem.isSaveIdValid(saveId)) {
-        if (Setting.saveForTeam && !Utils.isObject(ServerSystem.getTeam(client.getPlayerUid()))) {
+        if (Setting.saveForTeam && !ServerSystem.getTeam(client.getPlayerUid())) {
             client.send('CustomQuests.Client.alert', {
                 text: ['$alert.no_team']
             })
@@ -43,7 +43,7 @@ Network.addServerPacket('CustomQuests.Server.receiveAllQuest', function (client,
     let player = client.getPlayerUid()
     let saveId = ServerSystem.getSaveId(player)
     if (!ServerSystem.isSaveIdValid(saveId)) {
-        if (Setting.saveForTeam && !Utils.isObject(ServerSystem.getTeam(client.getPlayerUid()))) {
+        if (Setting.saveForTeam && !ServerSystem.getTeam(client.getPlayerUid())) {
             client.send('CustomQuests.Client.alert', {
                 text: ['$alert.no_team']
             })
@@ -70,7 +70,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
         case 'join': {
             if (typeof packetData.teamId !== 'string') return
             let team = ServerSystem.getTeam(packetData.teamId)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             if (packetData.password !== team.password) {
                 client.send('CustomQuests.Client.alert', {
                     text: ['$alert.fail.passwordWrong']
@@ -87,7 +87,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
         case 'setState': {
             if (typeof packetData.state !== 'number') return
             let team = ServerSystem.getTeam(player)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             ServerSystem.setPlayerStateForTeam(team.id, player, packetData.state)
             ServerSystem.updateTeam(team.id)
             break
@@ -96,7 +96,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
             let teamId = packetData.teamId
             if (typeof teamId !== 'string') {
                 let team = ServerSystem.getTeam(player)
-                if (!Utils.isObject(team)) return
+                if (!team) return
                 teamId = team.id
             }
             ServerSystem.deleteTeam(teamId)
@@ -105,7 +105,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
         case 'changeBitmap': {
             if (!Utils.isObject(packetData.bitmap)) return
             let team = packetData.teamId ? ServerSystem.getTeam(packetData.teamId) : ServerSystem.getTeam(player)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             Store.saved.team[team.id].bitmap = packetData.bitmap
             ServerSystem.updateTeam(team.id)
             new NetworkConnectedClientList()
@@ -118,7 +118,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
         case 'rename': {
             if (typeof packetData.name !== 'string') return
             let team = packetData.teamId ? ServerSystem.getTeam(packetData.teamId) : ServerSystem.getTeam(player)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             Store.saved.team[team.id].name = packetData.name
             ServerSystem.updateTeam(team.id)
             new NetworkConnectedClientList()
@@ -131,7 +131,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
         case 'changePassword': {
             if (typeof packetData.password !== 'string') return
             let team = packetData.teamId ? ServerSystem.getTeam(packetData.teamId) : ServerSystem.getTeam(player)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             Store.saved.team[team.id].password = packetData.password
             ServerSystem.updateTeam(team.id)
             break

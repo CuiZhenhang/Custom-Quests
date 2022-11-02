@@ -274,7 +274,6 @@ declare namespace CQTypes {
         input: Array<Nullable<InputStateObject>>
         outputState: QuestOutputState
         output: Array<Nullable<OutputStateObject>>
-        time?: number
     }
     interface SaveData {
         [sourceId: sourceId]: {
@@ -501,6 +500,7 @@ interface Utils {
     isObject (obj: any): obj is object
     deepCopy <T = object>(obj: T): T
     debounce <T extends any[], RT = any, TT = any>(func: (this: TT, ...args: T) => RT, wait: number, func2?: Nullable<(this: TT, ...args: T) => RT>, ths?: TT): (...args: T) => RT
+    safeResult <T extends Function>(func: T, ths?: any): T
     operate (a: number, operator: string, b: number, defaultValue?: boolean): boolean
     replace (str: string, replaceArray: Array<[key: string, str: string]>): string
     transferIdFromJson (id: CQTypes.ItemJson['id']): number
@@ -703,6 +703,7 @@ interface ServerSystem {
     getSaveId (target: number | CQTypes.teamId): CQTypes.saveId
     deleteSaveId (saveId: CQTypes.saveId): void
     isSaveIdValid (saveId: CQTypes.saveId): boolean
+    isTeamSaveId (saveId: CQTypes.saveId): boolean
     setPlayerLoaded (player: number, loaded?: boolean): void
     isPlayerLoaded (player: number): boolean
     getPlayerList (saveId: CQTypes.saveId, online?: boolean): Array<number>
@@ -782,7 +783,7 @@ interface QuestUi {
         close: () => void
     }
     openTeamUi (): void
-    openQuestListUi (title: string, questList: Array<CQTypes.PathArray>, onSelect: (path: CQTypes.PathArray) => void): void
+    openQuestListUi (title: string, questList: Array<CQTypes.PathArray>, onSelect: (path: CQTypes.PathArray) => boolean): void
     openItemChooseUi (title: string, isValid: (item: ItemInstance) => boolean, onSelect: (item: ItemInstance) => void): void
     openSelectionUi (title: Nullable<string>, selection: Array<{ text: string, darken?: boolean, onSelect: () => boolean }>): void
 }
@@ -825,7 +826,7 @@ interface Integration {
 }
 
 interface CustomQuestsAPI {
-    readonly version: `${number}.${number}.${number}-${string}` | 'unknow'
+    readonly version: `${number}.${number}.${number}-${string}`
     readonly invalidId: CQTypes.invalidId
     readonly EnumObject: EnumObject
     readonly Store: Store

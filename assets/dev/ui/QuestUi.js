@@ -109,7 +109,7 @@ const $QuestUi = {
         questJson.inner.input.forEach(function (inputJson, index) {
             let getIcon = IOTypeTools.getInputTypeCb(inputJson.type).getIcon
             if (typeof getIcon !== 'function') return
-            let getState = $SimpleFunc.bind(null, saveData.input[index] || { state: EnumObject.inputState.unfinished })
+            let getState = $SimpleFunc.bind(null, Utils.deepCopy(saveData.input[index]) || { state: EnumObject.inputState.unfinished })
             let elements = getIcon(inputJson, {
                 getState: getState,
                 sendPacket: sendInputPacket ? sendInputPacket.bind(null, index) : null,
@@ -121,7 +121,7 @@ const $QuestUi = {
             })
             if (!Utils.isObject(elements)) return
             that.questUi.addElements(elements)
-            if (Utils.isObject(saveData.input[index]) && saveData.input[index].state === EnumObject.inputState.finished) {
+            if (saveData.input[index] && saveData.input[index].state === EnumObject.inputState.finished) {
                 that.questUi.addElements([[uuid + '_input_bingo_' + index, {
                     type: 'image', z: 10, width: 30, height: 30 * 16 / 22, bitmap: 'cq_bingo',
                     x: 96*(index % 5) + 20 + 45,
@@ -133,7 +133,7 @@ const $QuestUi = {
         questJson.inner.output.forEach(function (outputJson, index) {
             let getIcon = IOTypeTools.getOutputTypeCb(outputJson.type).getIcon
             if (typeof getIcon !== 'function') return
-            let getState = $SimpleFunc.bind(null, saveData.output[index] || { state: EnumObject.outputState.unreceived })
+            let getState = $SimpleFunc.bind(null, Utils.deepCopy(saveData.output[index]) || { state: EnumObject.outputState.unreceived })
             let elements = getIcon(outputJson, {
                 getState: getState,
                 sendPacket: sendOutputPacket ? sendOutputPacket.bind(null, index) : null,
@@ -152,7 +152,7 @@ const $QuestUi = {
                     y: 100*Math.floor(index/5) + 160 + 5
                 }]])
             } else {
-                if (!Utils.isObject(saveData.output[index]) || saveData.output[index].state !== EnumObject.outputState.received) {
+                if (!saveData.output[index] || saveData.output[index].state !== EnumObject.outputState.received) {
                     that.questUi.addElements([[uuid + '_output_dot_' + index, {
                         type: 'image', z: 10, width: 20, height: 20, bitmap: 'cq_dot_green',
                         x: 96*(index % 5) + 520 + 55,

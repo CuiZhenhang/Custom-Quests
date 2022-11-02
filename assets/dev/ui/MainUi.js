@@ -78,7 +78,7 @@ const $MainUi = {
             fast_receive: { type: 'button', x: 122, y: 12, bitmap: 'cq_fast_receive', scale: 36 / 16,
                 clicker: {
                     onClick: Utils.debounce(function () {
-                        if (typeof $MainUi.sourceId === 'string' && Utils.isObject($MainUi.mainJson)) {
+                        if (typeof $MainUi.sourceId === 'string' && $MainUi.mainJson) {
                             ClientSystem.receiveAllQuest($MainUi.sourceId, {})
                         }
                     }, 1000),
@@ -144,7 +144,7 @@ const $MainUi = {
             this.chapterId = null
             this.chapterJson = null
             if (this.chapterListUi.isOpened()) this.chapterListUi.close()
-            if (!Utils.isObject(this.mainJson)) return
+            if (!this.mainJson) return
             this.mainUi.content.drawing[3].text = TranAPI.translate(this.mainJson.name)
             let empty = true
             for (let chapterId in this.mainJson.chapter) {
@@ -269,7 +269,7 @@ const $MainUi = {
             }
             this.chapterGroup.chapterId = null
         }
-        if (!Utils.isObject(this.mainJson)) return
+        if (!this.mainJson) return
         this.chapterGroup.exist = true
         this.chapterGroup.chapterId = groupJson.list[0]
         let listHeight = 0
@@ -277,7 +277,7 @@ const $MainUi = {
         let that = this
         groupJson.list.forEach(function (chapterId) {
             let chapterJson = that.mainJson.chapter[chapterId]
-            if (!Utils.isObject(chapterJson)) return
+            if (!chapterJson) return
             that.chapterGroup.newElements.push(
                 uuid + '_group_' + chapterId + '_icon',
                 uuid + '_group_' + chapterId + '_name',
@@ -311,14 +311,14 @@ const $MainUi = {
     },
     /** @type { (chapterId: Nullable<CQTypes.chapterId>) => void } */
     updateChapterUi (chapterId) {
-        if (!Utils.isObject(this.mainJson)) return
+        if (!this.mainJson) return
         if (typeof chapterId !== 'string') return
         this.chapterId = chapterId
         this.chapterJson = this.mainJson.chapter[chapterId]
         this.chapterUiUpdateRequest.exist = false
         let ui = this.chapterUi
         ui.clearNewElements(null, true)
-        if (!Utils.isObject(this.chapterJson)) {
+        if (!this.chapterJson) {
             ui.refresh()
             return
         }
@@ -351,7 +351,7 @@ const $MainUi = {
         let uuid = Utils.getUUID()
         let that = this
         for (let questId in this.chapterJson.quest) {
-            let questJson = Utils.deepCopy(this.chapterJson.quest[questId])
+            let questJson = this.chapterJson.quest[questId]
             if (questJson.type === 'custom') {
                 let elements = Array.isArray(questJson.elem) ? questJson.elem : [questJson.elem]
                 ui.addElements(elements.map(function (elem, index) {
@@ -364,7 +364,7 @@ const $MainUi = {
                 questJson.parent.forEach(function (path) {
                     if (path[0] !== that.sourceId || path[1] !== that.chapterId) return
                     let tQuestJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
-                    if (!Utils.isObject(tQuestJson) || tQuestJson.type !== 'quest') return
+                    if (!tQuestJson || tQuestJson.type !== 'quest') return
                     let posParent = [tQuestJson.pos[0] + tQuestJson.size/2, tQuestJson.pos[1] + tQuestJson.size/2]
                     let tInputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, path[0], path[1], path[2])
                     if (tInputState === EnumObject.questInputState.locked && tQuestJson.hidden) return
@@ -397,7 +397,7 @@ const $MainUi = {
         if (typeof sourceId !== 'string' || typeof chapterId !== 'string') return
         try {
             let questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
-            if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
+            if (!questJson || questJson.type !== 'quest') return
             let saveData = System.getQuestSaveData(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId)
             let that = this
             let obj = QuestUi.openQuestUi(questJson, saveData, {
@@ -405,17 +405,26 @@ const $MainUi = {
                 sendOutputPacket: ClientSystem.sendOutputPacket.bind(ClientSystem, sourceId, chapterId, questId),
                 openParentListUi: function () {
                     QuestUi.openQuestListUi(TranAPI.translate('gui.parentList.title'), questJson.parent, function (path) {
+                        let questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
+                        if (!questJson || questJson.type !== 'quest') return true
+                        if (questJson.hidden) {
+                            let inputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, path[0], path[1], path[2])
+                            if (inputState === EnumObject.questInputState.locked) {
+                                alert(TranAPI.translate('alert.fail.questHidden'))
+                                return true
+                            }
+                        }
                         that.open(path[0])
                         that.updateChapterUi(path[1])
                         that.openQuestUi(path[2])
                     })
                 },
                 openChildListUi: function () {
-                    let questList = questJson.child.filter(function (pathArray) {
-                        let questJson = System.getQuestJson(Store.localCache.resolvedJson, pathArray[0], pathArray[1], pathArray[2])
-                        if (!questJson) return false
+                    let questList = questJson.child.filter(function (path) {
+                        let questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
+                        if (!questJson || questJson.type !== 'quest') return false
                         if (!questJson.hidden) return true
-                        let inputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, pathArray[0], pathArray[1], pathArray[2])
+                        let inputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, path[0], path[1], path[2])
                         return inputState !== EnumObject.questInputState.locked
                     })
                     QuestUi.openQuestListUi(TranAPI.translate('gui.childList.title'), questList, function (path) {
@@ -464,11 +473,11 @@ Callback.addCallback('LocalTick', function () {
         return
     }
     let time = Date.now()
-    if (time - $MainUi.chapterUiUpdateRequest.timeFirst >= 1000 /* 1s */) {
+    if (time - $MainUi.chapterUiUpdateRequest.timeFirst >= 500 /* 0.5s */) {
         $MainUi.updateChapterUi($MainUi.chapterId)
         return
     }
-    if (time - $MainUi.chapterUiUpdateRequest.timeLast >= 200 /* 0.2s */) {
+    if (time - $MainUi.chapterUiUpdateRequest.timeLast >= 100 /* 0.1s */) {
         $MainUi.updateChapterUi($MainUi.chapterId)
         return
     }
@@ -482,11 +491,11 @@ Callback.addCallback('LocalTick', function () {
         return
     }
     let time = Date.now()
-    if (time - $MainUi.questUi.updateRequest.timeFirst >= 1000 /* 1s */) {
+    if (time - $MainUi.questUi.updateRequest.timeFirst >= 500 /* 0.5s */) {
         $MainUi.openQuestUi($MainUi.questUi.questId)
         return
     }
-    if (time - $MainUi.questUi.updateRequest.timeLast >= 200 /* 0.2s */) {
+    if (time - $MainUi.questUi.updateRequest.timeLast >= 100 /* 0.1s */) {
         $MainUi.openQuestUi($MainUi.questUi.questId)
         return
     }
@@ -529,7 +538,7 @@ Callback.addCallback('CustomQuests.onLocalCacheChanged', function (packetData, o
         $MainUi.addQuestUiUpdateRequest($MainUi.questUi.questId)
     }
     if (Utils.isObject(packetData.team) || packetData.team === null) {
-        let hasTeam = Utils.isObject(packetData.team)
+        let hasTeam = packetData.team !== null
         $MainUi.mainUi.content.elements['team_remind'].x = 72 + 36 * (55 / 80) + (hasTeam ? 2000 : 0)
         $MainUi.mainUi.refresh()
     }
