@@ -172,7 +172,8 @@ const $TeamUi = {
         }
     }, {
         closeOnBackPressed: true,
-        blockingBackground: true
+        blockingBackground: true,
+        hideNavigation: true
     }),
     teamListUi: QuestUiTools.createUi({
         location: { x: 54, y: 154, width: 292, height: $ScreenHeight - 198, scrollY: 0 },

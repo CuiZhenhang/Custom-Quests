@@ -14,7 +14,8 @@
         "main/chapter2/extra.json",
         "main/chapter2/dependence.json",
         "main/chapter2/bitmaps.json",
-        "main/chapter2/hidden.json"
+        "main/chapter2/hidden.json",
+        "main/chapter2/group.json"
     ],
     "background": [null, 1],
     "ref": {

@@ -1,0 +1,53 @@
+{
+    "type": "quest",
+    "id": "group",
+    "pos": [300, 400],
+    "size": 100,
+    "icon": {
+        "id": "vitem:iron_pickaxe"
+    },
+    "inner": {
+        "input": [
+            {
+                "type": "group",
+                "icon": {
+                    "id": "vblock:coal_ore"
+                },
+                "count": 2,
+                "list": [
+                    {
+                        "type": "exp",
+                        "value": 3,
+                        "isLevel": true
+                    },
+                    "ref:submit_stone",
+                    "ref:have_coal"
+                ]
+            }
+        ],
+        "output": [],
+        "name": {
+            "en": "Task group & Reward group",
+            "ru": "Task group & Reward group",
+            "zh": "任务组 & 奖励组"
+        },
+        "text": {
+            "en": "",
+            "ru": "",
+            "zh": ""
+        }
+    },
+    "ref": {
+        "submit_stone": {
+            "type": "item",
+            "id": "vblock:cobblestone",
+            "count": 100,
+            "submit": true
+        },
+        "have_coal": {
+            "type": "item",
+            "id": "vitem:coal",
+            "count": 16
+        }
+    }
+}

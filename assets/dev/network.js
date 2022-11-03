@@ -202,7 +202,7 @@ Network.addClientPacket('CustomQuests.Client.setLocalCache', function (packetDat
             oldLocalCache
         )
     } catch (err) {
-        Utils.log('Error in Callback \'CustomQuests.onLocalCacheChanged\' (network.js):\n' + err, 'ERROR', true)
+        Utils.error('Error in Callback \'CustomQuests.onLocalCacheChanged\' (network.js):\n', err)
     }
 })
 
@@ -229,7 +229,7 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                         Utils.deepCopy(extraInfo)
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalInputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalInputStateChanged\' (network.js):\n', err)
                 }
             },
             onQuestInputStateChanged (newQuestInputState, oldQuestInputState) {
@@ -240,7 +240,7 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                         oldQuestInputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n', err)
                 }
             },
             onQuestOutputStateChanged (newQuestOutputState, oldQuestOutputState) {
@@ -251,7 +251,7 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                         oldQuestOutputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n', err)
                 }
             },
             onChildQuestInputStateChanged (pathArray, newQuestInputState, oldQuestInputState) {
@@ -262,7 +262,7 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                         oldQuestInputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n', err)
                 }
             }
         }
@@ -292,7 +292,7 @@ Network.addClientPacket('CustomQuests.Client.setOutputState', function (packetDa
                         Utils.deepCopy(extraInfo)
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalOutputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalOutputStateChanged\' (network.js):\n', err)
                 }
             },
             onQuestOutputStateChanged (newQuestOutputState, oldQuestOutputState) {
@@ -303,7 +303,7 @@ Network.addClientPacket('CustomQuests.Client.setOutputState', function (packetDa
                         oldQuestOutputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n', err)
                 }
             }
         }

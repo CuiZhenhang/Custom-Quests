@@ -61,6 +61,8 @@ gui.childList.title=Child Quest List
 
 
 inputType.group=task group
+inputType.group.text=Only part of the task needs to be finished
+inputType.group.finished=Finished {count}/{require} tasks
 
 inputType.check=check
 
@@ -80,6 +82,7 @@ inputType.location=location
 inputType.location.text=Reach the position
 inputType.location.dimensionId=Dimension id: {id}
 inputType.location.ignoreDimension=any dimension
+inputType.location.ignore=any
 
 inputType.kill=kill entity
 inputType.kill.text=Kill the entity

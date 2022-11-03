@@ -18,7 +18,7 @@
                 },
                 "dimension": 2,
                 "pos": [0, 0, 0],
-                "radius": [10, 1000, 10],
+                "radius": [10, -1, 10],
                 "description": {
                     "en": "This task type requires the player to reach a specified location.\nFor this task, the player is required to reach the specified range of the end.",
                     "ru": "This task type requires the player to reach a specified location.\nFor this task, the player is required to reach the specified range of the end.",

@@ -18,6 +18,14 @@ const QuestUi = {
             close: function () {}
         }
     },
+    openDescriptionUi (isInput, ioJson, toolsCb) {
+        return {
+            isClosed: function () {
+                return true
+            },
+            close: function () {}
+        }
+    },
     openTeamUi () {},
     openQuestListUi (title, questList, onSelect) {},
     openItemChooseUi (title, isValid, onSelect) {},
@@ -27,6 +35,7 @@ const QuestUi = {
 /** @type { QuestUiTools } */
 const QuestUiTools = {
     createUi (content, eventListener, option) {
+        if (!Utils.isObject(option)) option = {}
         /** @type { ReturnType<QuestUiTools['createUi']> } */
         let ret = {
             content: content,
@@ -83,7 +92,7 @@ const QuestUiTools = {
                         }
                     }
                 } catch (err) {
-                    Utils.log('Error in clearNewElements (QuestUi.js):\n' + err, 'ERROR', false)
+                    Utils.error('Error in clearNewElements (QuestUi.js):\n', err)
                 }
             },
             refresh () {
@@ -99,7 +108,7 @@ const QuestUiTools = {
                     })
                     ret.binElements.length = 0
                 } catch (err) {
-                    Utils.log('Error in refresh (QuestUi.js):\n' + err, 'ERROR', false)
+                    Utils.error('Error in refresh (QuestUi.js):\n', err)
                 }
                 try {
                     if (ret.ui.isOpened()) {
@@ -110,9 +119,10 @@ const QuestUiTools = {
                     }
                     ret.ui.getContentProvider().refreshDrawing()
                     ret.ui.getContentProvider().refreshElements()
+                    ret.ui.getElementProvider().invalidateAll()
                     ret.ui.forceRefresh()
                 } catch (err) {
-                    Utils.log('Error in refresh (QuestUi.js):\n' + err, 'ERROR', false)
+                    Utils.error('Error in refresh (QuestUi.js):\n', err)
                 }
             },
             open (refresh) {
@@ -123,8 +133,33 @@ const QuestUiTools = {
             isOpened () { return ret.ui.isOpened() }
         }
         let listener = Utils.isObject(eventListener) ? eventListener : {}
+        let needListen = Boolean(option.hideNavigation)
         ret.ui.setEventListener({
             onOpen () {
+                if (needListen) {
+                    needListen = false
+                    UI.getContext().runOnUiThread(new java.lang.Runnable({
+                        run () {
+                            // https://developer.android.google.cn/training/system-ui/status?hl=zh-cn
+                            /** @type { (visibility: number) => void } */
+                            let updateVisibility = function (visibility) {
+                                if (!(visibility & android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)) {
+                                    ret.ui.layout.setVisibility(
+                                        android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                        | android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                        | android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                        | android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                    )
+                                }
+                            }
+                            ret.ui.layout.setOnSystemUiVisibilityChangeListener({
+                                onSystemUiVisibilityChange (visibility) {
+                                    updateVisibility(visibility)
+                                }
+                            })
+                        }
+                    }))
+                }
                 if (typeof listener.onOpen === 'function') {
                     listener.onOpen(ret)
                 }
@@ -135,7 +170,6 @@ const QuestUiTools = {
                 }
             }
         })
-        if (!Utils.isObject(option)) option = {}
         if (option.closeOnBackPressed) ret.ui.setCloseOnBackPressed(true)
         if (option.blockingBackground) ret.ui.setBlockingBackground(true)
         if (option.asGameOverlay) ret.ui.setAsGameOverlay(true)
@@ -144,12 +178,10 @@ const QuestUiTools = {
     },
     getQuestIcon (questJson, saveData, option) {
         if (!Array.isArray(option.pos)) option.pos = questJson.pos
-        if (typeof option.pos[0] !== 'number') option.pos[0] = questJson.pos[0]
-        if (typeof option.pos[1] !== 'number') option.pos[1] = questJson.pos[1]
         if (typeof option.size !== 'number') option.size = questJson.size
         let icon = questJson.icon[0]
-        if (saveData.inputState > EnumObject.questInputState.locked) icon = questJson.icon[1]
-        if (saveData.inputState == EnumObject.questInputState.finished) icon = questJson.icon[2]
+        if (saveData.inputState !== EnumObject.questInputState.locked) icon = questJson.icon[1]
+        if (saveData.inputState === EnumObject.questInputState.finished) icon = questJson.icon[2]
         let overBitmap = 'cq_clear'
         switch (saveData.inputState) {
             case EnumObject.questInputState.unfinished:
@@ -377,14 +409,46 @@ const QuestUiTools = {
             return ret
         }
     })(),
-    createAnimator (duration, cb) {
+    resolveTextJsonToElements (textJson, params) {
+        if (typeof textJson !== 'string' && !Utils.isObject(textJson)) {
+            return {
+                maxY: params.pos[1],
+                elements: []
+            }
+        }
+        let size = params.font.size || 20
+        let that = this
+        let text = TranAPI.translate(textJson)
+        let maxY = params.pos[1]
+        /** @type { Array<[string, UI.Elements]> } */
+        let elements = []
+        this.resolveText(text, function (str) {
+            if (typeof str !== 'string') return 1
+            return that.getTextWidth(str, size) / params.maxWidth
+        }).forEach(function (str, index) {
+            elements.push([params.prefix + 'text_' + index, {
+                type: 'text',
+                x: params.pos[0],
+                y: maxY,
+                z: params.pos[2],
+                text: str,
+                font: params.font
+            }])
+            maxY += size + params.rowSpace
+        })
+        return {
+            maxY: maxY,
+            elements: elements
+        }
+    },
+    createAnimator (duration, update) {
         if (typeof duration !== 'number' || duration < 0) return
-        if (typeof cb !== 'function') return
+        if (typeof update !== 'function') return
         let animator = android.animation.ValueAnimator.ofFloat([0, 1])
         animator.setDuration(duration)
         animator.addUpdateListener({
             onAnimationUpdate (animator) {
-                cb(animator)
+                update(animator)
             }
         })
         UI.getContext().runOnUiThread(new java.lang.Runnable({

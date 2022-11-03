@@ -8,6 +8,14 @@ const Utils = {
         if (hasAlert) alert(msg)
         Logger.Log(msg, type)
     },
+    error (message, err) {
+        this.log(message + err, 'ERROR', false)
+        if (err instanceof java.lang.Throwable) {
+            Logger.LogError(err)
+        } else if (this.isObject(err) && err.stack) {
+            Logger.Log(err.stack, 'ERROR')
+        }
+    },
     getUUID () {
         let uuid = String(java.util.UUID.randomUUID().toString()).split('-')
         let time = (Date.now() & 0xffff).toString(16)
@@ -22,7 +30,7 @@ const Utils = {
             let ret = new java.math.BigInteger(1, secretBytes).toString(16)
             return String(ret)
         } catch (err) {
-            this.log('Error in md5 (Utils.js):\n' + err, 'ERROR', false)
+            this.error('Error in md5 (Utils.js):\n', err)
             return 'error-md5'
         }
     },
@@ -218,7 +226,7 @@ const Utils = {
                             try {
                                 mainJson.main[indexChapter] = FileTools.ReadJSON(path + pathChapter) || {}
                             } catch (err) {
-                                that.log('Error in readContents:\n' + err, 'ERROR')
+                                that.error('Error in readContents: (Utils.js)\n', err)
                                 mainJson.main[indexChapter] = {}
                             }
                         }
@@ -229,7 +237,7 @@ const Utils = {
                                     try {
                                         chapterJson.quest[indexQuest] = FileTools.ReadJSON(path + pathQuest) || {}
                                     } catch (err) {
-                                        that.log('Error in readContents:\n' + err, 'ERROR')
+                                        that.error('Error in readContents: (Utils.js)\n', err)
                                         chapterJson.quest[indexQuest] = {}
                                     }
                                 }
@@ -245,7 +253,7 @@ const Utils = {
                 that.log('Failed to read contents:\nThere is no files: ' + path, 'WARN', true)
             }
         } catch (err) {
-            that.log('Error in readContents:\n' + err, 'ERROR', true)
+            that.error('Error in readContents: (Utils.js)\n', err)
         }
         return {}
     },
@@ -300,7 +308,7 @@ const Utils = {
             let bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
             UI.TextureSource.put(name, bitmap)
         } catch (err) {
-            this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
+            this.error('Error in putTextureSourceFromBase64 (Utils.js)\n', err)
         }
     },
     getInput ({text, hint, title, button, mutiLine}, cb){

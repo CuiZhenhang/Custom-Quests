@@ -61,6 +61,8 @@ gui.childList.title=子任务列表
 
 
 inputType.group=任务组
+inputType.group.text=只需要完成一部分任务
+inputType.group.finished=已完成 {count}/{require} 个任务
 
 inputType.check=勾选
 
@@ -80,6 +82,7 @@ inputType.location=到达位置
 inputType.location.text=到达特定位置
 inputType.location.dimensionId=维度 id：{id}
 inputType.location.ignoreDimension=任意维度
+inputType.location.ignore=任意
 
 inputType.kill=击杀生物
 inputType.kill.text=击杀特定生物

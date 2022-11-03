@@ -14,6 +14,10 @@ const $QuestUi = {
     openParentListUi: null,
     /** @type { Nullable<() => void> } */
     openChildListUi: null,
+    /** @type { Nullable<ReturnType<QuestUi['openDescriptionUi']>> } */
+    descriptionUi: null,
+    /** @type { Array<() => void> } */
+    closeListener: [],
     questUi: QuestUiTools.createUi({
         location: {x: 200, y: ($ScreenHeight - 400) / 2, width: 600, height: 400, scrollY: 400},
         drawing: [
@@ -55,31 +59,21 @@ const $QuestUi = {
         }
     }, {
         onClose (ui) {
-            $QuestUi.descriptionUi.close()
+            if ($QuestUi.descriptionUi && !$QuestUi.descriptionUi.isClosed()) {
+                $QuestUi.descriptionUi.close()
+            }
+            $QuestUi.callCloseListener()
         }
     }, {
         closeOnBackPressed: true,
-        blockingBackground: true
-    }),
-    descriptionUi: QuestUiTools.createUi({
-        location: {x: 250, y: ($ScreenHeight - 400) / 2, width: 500, height: 400, scrollY: 400},
-        drawing: [
-            {type: 'background', color: $Color.TRANSPARENT},
-            {type: 'frame', x: 0, y: 0, width: 1000, height: 1000*400/500, bitmap: 'classic_frame_bg_light', scale: 4},
-            {type: 'text', text: '', x: 30, y: 70, font: {color: $Color.BLACK, size: 40}},
-            {type: 'line', x1: 20, y1: 100, x2: 980, y2: 100, width: 2, color: $Color.GRAY}
-        ],
-        elements: {
-            close: {type: 'closeButton', x: 920, y: 20, bitmap: 'X', bitmap2: 'XPress', scale: 60/19}
-        }
-    }, null, {
-        closeOnBackPressed: true,
-        blockingBackground: true
+        blockingBackground: true,
+        hideNavigation: true
     }),
     /** @type { QuestUi['openQuestUi'] } */
     open (questJson, saveData, params) {
-        this.openParentListUi = params.openParentListUi
-        this.openChildListUi = params.openChildListUi
+        this.openParentListUi = params.openParentListUi || null
+        this.openChildListUi = params.openChildListUi || null
+        this.callCloseListener()
         let uuid = Utils.getUUID()
         let name = TranAPI.translate(questJson.inner.name)
         let text = QuestUiTools.resolveText(TranAPI.translate(questJson.inner.text), this.getWidthRatio)
@@ -113,11 +107,12 @@ const $QuestUi = {
             let elements = getIcon(inputJson, {
                 getState: getState,
                 sendPacket: sendInputPacket ? sendInputPacket.bind(null, index) : null,
-                openDescription: that.openDescriptionUi.bind(that, true, inputJson, { getState: getState })
+                openDescription: QuestUi.openDescriptionUi.bind(QuestUi, true, inputJson, { getState: getState })
             }, {
                 pos: [96*(index % 5) + 20, 100*Math.floor(index/5) + 160],
                 size: 80,
-                prefix: uuid + '_input_' + index + '_'
+                prefix: uuid + '_input_' + index + '_',
+                setCloseListener: that.setCloseListener.bind(that)
             })
             if (!Utils.isObject(elements)) return
             that.questUi.addElements(elements)
@@ -137,11 +132,12 @@ const $QuestUi = {
             let elements = getIcon(outputJson, {
                 getState: getState,
                 sendPacket: sendOutputPacket ? sendOutputPacket.bind(null, index) : null,
-                openDescription: that.openDescriptionUi.bind(that, false, outputJson, { getState: getState })
+                openDescription: QuestUi.openDescriptionUi.bind(QuestUi, false, outputJson, { getState: getState })
             }, {
                 pos: [96*(index % 5) + 520, 100*Math.floor(index/5) + 160],
                 size: 80,
-                prefix: uuid + '_output_' + index + '_'
+                prefix: uuid + '_output_' + index + '_',
+                setCloseListener: that.setCloseListener.bind(that)
             })
             if (!Utils.isObject(elements)) return
             that.questUi.addElements(elements)
@@ -168,29 +164,6 @@ const $QuestUi = {
             close: this.close.bind(this, uuid)
         }
     },
-    /** @type { (isInput: boolean, ioJson: CQTypes.IOTypes.InputJson|CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsLocalCb) } */
-    openDescriptionUi (isInput, ioJson, toolsCb) {
-        let uuid = Utils.getUUID()
-        let type = ioJson.type
-        let name = isInput ? IOTypeTools.getInputTypeName(type) : IOTypeTools.getOutputTypeName(type)
-        let title = Utils.replace(TranAPI.translate(isInput ? 'gui.description.inputType' : 'gui.description.outputType'), [
-            ['{name}', name]
-        ])
-        let getDescription = isInput ? IOTypeTools.getInputTypeCb(type).getDescription : IOTypeTools.getOutputTypeCb(type).getDescription
-        if (typeof getDescription !== 'function') return
-        let obj = getDescription(ioJson, toolsCb, { posY: 100, prefix: uuid + '_' })
-        if (!Utils.isObject(obj)) return
-        let ui = this.descriptionUi
-        ui.clearNewElements(null, true)
-        let location = ui.ui.getLocation()
-        location.scrollY = Math.max(obj.maxY * (500/1000), $ScreenHeight * 0.6)
-        location.height = Math.min(location.scrollY, $ScreenHeight)
-        location.y = ($ScreenHeight - location.height)/2
-        ui.content.drawing[1].height = location.scrollY * (1000/500)
-        ui.content.drawing[2].text = title
-        ui.addElements(obj.elements)
-        ui.open(true)
-    },
     /** @type { (str: string) => number } */
     getWidthRatio (str) {
         if (typeof str !== 'string') return 1
@@ -205,6 +178,21 @@ const $QuestUi = {
     close (uuid) {
         if (uuid !== this.uuid) return
         this.questUi.close()
+    },
+    /** @type { (listener: () => void) => void } */
+    setCloseListener (listener) {
+        if (typeof listener !== 'function') return
+        this.closeListener.push(listener)
+    },
+    callCloseListener () {
+        this.closeListener.forEach(function (listener) {
+            try {
+                listener()
+            } catch (err) {
+                Utils.log('Error in callCloseListener (QuestUi.js):\n' + err, 'ERROR', false)
+            }
+        })
+        this.closeListener.length = 0
     }
 }
 

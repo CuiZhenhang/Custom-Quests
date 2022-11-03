@@ -40,7 +40,7 @@ const TranAPI = {
     }
 }
 
-; (function intTranslation () {
+; (function () {
     let QB = {
         book: {},
         admin: {},

@@ -106,7 +106,8 @@ const $MainUi = {
         }
     }, {
         closeOnBackPressed: true,
-        blockingBackground: true
+        blockingBackground: true,
+        hideNavigation: true
     }),
     chapterListUi: QuestUiTools.createUi({
         location: { x: 0, y: 60, width: 300, height: $ScreenHeight - 60, scrollY: 100 * (300/1000) },
@@ -120,7 +121,8 @@ const $MainUi = {
             group_frame: { type: 'frame', x: 140 + 2000, y: 0, z: 10, width: 860, height: 140, bitmap: 'classic_frame_bg_light', scale: 2 }
         }
     }, null, {
-        closeOnBackPressed: true
+        closeOnBackPressed: true,
+        hideNavigation: true
     }),
     chapterUi: QuestUiTools.createUi({
         location: { x: 40, y: 60, width: 960 , height: $ScreenHeight - 60, scrollY: 960 * (1/2) },
@@ -466,6 +468,8 @@ const $MainUi = {
     }
 }
 
+QuestUi.open = $MainUi.open.bind($MainUi)
+
 Callback.addCallback('LocalTick', function () {
     if (!$MainUi.chapterUiUpdateRequest.exist) return
     if (!$MainUi.chapterUi.isOpened()) {
@@ -543,6 +547,5 @@ Callback.addCallback('CustomQuests.onLocalCacheChanged', function (packetData, o
         $MainUi.mainUi.refresh()
     }
 })
-QuestUi.open = $MainUi.open.bind($MainUi)
 
 })()

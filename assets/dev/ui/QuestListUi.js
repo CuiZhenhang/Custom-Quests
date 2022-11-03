@@ -54,7 +54,8 @@ const $QuestListUi = {
         }
     }, {
         closeOnBackPressed: true,
-        blockingBackground: true
+        blockingBackground: true,
+        hideNavigation: true
     }),
     sourceListUi: QuestUiTools.createUi({
         location: { x: 0, y: 60, width: 300, height: $ScreenHeight - 60, scrollY: 100 * (300/1000) },
@@ -67,7 +68,8 @@ const $QuestListUi = {
             title: { type: 'text', x: 60, y: 30, text: TranAPI.translate('gui.questList.sourceList'), font: { color: $Color.BLACK, size: 40 } }
         }
     }, null, {
-        closeOnBackPressed: true
+        closeOnBackPressed: true,
+        hideNavigation: true
     }),
     questListUi: QuestUiTools.createUi({
         location: { x: 40, y: 60, width: 960 , height: $ScreenHeight - 60, scrollY: $ScreenHeight - 60 },
@@ -263,6 +265,7 @@ const $QuestListUi = {
         return questListObject
     }
 }
+
 QuestUi.openQuestListUi = $QuestListUi.open.bind($QuestListUi)
 
 })()

@@ -194,7 +194,7 @@ const ServerSystem = {
         if (index >= questJson.inner.input.length) return
         if (!questJson.inner.input[index]) return
         let saveData = this.getSaveData(saveId)
-        if (System.getQuestInputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questInputState.locked) return
+        if (System.getQuestInputState(this.resolvedJson, saveData, sourceId, chapterId, questId) === EnumObject.questInputState.locked) return
         if (System.getInputState(saveData, sourceId, chapterId, questId, index).state === EnumObject.inputState.finished) return
         let questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
         if (!Array.isArray(questLoadedQuest.input)) questLoadedQuest.input = []
@@ -223,7 +223,7 @@ const ServerSystem = {
         if (index >= questJson.inner.output.length) return
         if (!questJson.inner.output[index]) return
         let saveData = this.getSaveData(saveId)
-        if (System.getQuestOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questOutputState.locked) return
+        if (System.getQuestOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId) === EnumObject.questOutputState.locked) return
         if (System.getOutputState(saveData, sourceId, chapterId, questId, index).state === EnumObject.outputState.received) return
         let questLoadedQuest = this.getLoadedQuest(saveId, sourceId, chapterId, questId)
         if (!Array.isArray(questLoadedQuest.output)) questLoadedQuest.output = []
@@ -250,7 +250,7 @@ const ServerSystem = {
         let questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!questJson || questJson.type !== 'quest') return
         let saveData = this.getSaveData(saveId)
-        if (System.getQuestInputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questInputState.locked) return
+        if (System.getQuestInputState(this.resolvedJson, saveData, sourceId, chapterId, questId) === EnumObject.questInputState.locked) return
         let that = this
         let getPlayerList = Utils.safeResult(this.getPlayerList.bind(this, saveId))
         let getConnectedClientList = this.getConnectedClientList.bind(this, saveId)
@@ -277,7 +277,7 @@ const ServerSystem = {
             loadedQuestIdArray.input.push(questLoadedQuest.input[index])
             IOTypeTools.loadInput(questLoadedQuest.input[index])
         })
-        if (System.getQuestOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questOutputState.locked) return
+        if (System.getQuestOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId) === EnumObject.questOutputState.locked) return
         if (!Array.isArray(questLoadedQuest.output)) questLoadedQuest.output = []
         let outputBak = []
         questJson.inner.output.forEach(function (outputJson, index) {
@@ -319,7 +319,7 @@ const ServerSystem = {
         let path = null
         while (path = stack.pop()) {
             let inputState = System.getQuestInputState(json, data, path[0], path[1], path[2])
-            if (inputState >= EnumObject.questInputState.finished) {
+            if (inputState === EnumObject.questInputState.finished || inputState === EnumObject.questInputState.repeat_unfinished) {
                 System.getChild(json, path[0], path[1], path[2]).forEach(function (child) {
                     let sourceId = child[0], chapterId = child[1], questId = child[2]
                     if (!numberIn[sourceId]) numberIn[sourceId] = {}
@@ -340,10 +340,11 @@ const ServerSystem = {
     setInputState (saveId, sourceId, chapterId, questId, index, extraInfo, inputStateObject) {
         if (!this.isSaveIdValid(saveId)) return
         if (!Utils.isObject(extraInfo)) extraInfo = {}
+        if (!Utils.isObject(inputStateObject)) return
         let questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!questJson || questJson.type !== 'quest') return
         let saveData = this.getSaveData(saveId)
-        if (System.getQuestInputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questOutputState.locked) return
+        if (System.getQuestInputState(this.resolvedJson, saveData, sourceId, chapterId, questId) === EnumObject.questOutputState.locked) return
         let client = this.getConnectedClientList(saveId)
         if (client !== null) {
             runOnMainThread(function () {
@@ -372,7 +373,7 @@ const ServerSystem = {
                                     Utils.deepCopy(extraInfo)
                                 )
                             } catch (err) {
-                                Utils.log('Error in Callback \'CustomQuests.onInputStateChanged\' (ServerSystem.js):\n' + err, 'ERROR', true)
+                                Utils.error('Error in Callback \'CustomQuests.onInputStateChanged\' (ServerSystem.js):\n', err)
                             }
                             IOTypeTools.unloadInput(input[index])
                         }
@@ -392,7 +393,7 @@ const ServerSystem = {
                             Utils.deepCopy(extraInfo)
                         )
                     } catch (err) {
-                        Utils.log('Error in Callback \'CustomQuests.onInputStateChanged\' (ServerSystem.js):\n' + err, 'ERROR', true)
+                        Utils.error('Error in Callback \'CustomQuests.onInputStateChanged\' (ServerSystem.js):\n', err)
                     }
                 }
             },
@@ -404,7 +405,7 @@ const ServerSystem = {
                         oldQuestInputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onQuestInputStateChanged\' (ServerSystem.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onQuestInputStateChanged\' (ServerSystem.js):\n', err)
                 }
             },
             onQuestOutputStateChanged (newQuestOutputState, oldQuestOutputState) {
@@ -416,7 +417,7 @@ const ServerSystem = {
                         oldQuestOutputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onQuestOutputStateChanged\' (ServerSystem.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onQuestOutputStateChanged\' (ServerSystem.js):\n', err)
                 }
             },
             onChildQuestInputStateChanged (pathArray, newQuestInputState, oldQuestInputState) {
@@ -428,7 +429,7 @@ const ServerSystem = {
                         oldQuestInputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onQuestInputStateChanged\' (ServerSystem.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onQuestInputStateChanged\' (ServerSystem.js):\n', err)
                 }
             }
         })
@@ -436,10 +437,11 @@ const ServerSystem = {
     setOutputState (saveId, sourceId, chapterId, questId, index, extraInfo, outputStateObject) {
         if (!this.isSaveIdValid(saveId)) return
         if (!Utils.isObject(extraInfo)) extraInfo = {}
+        if (!Utils.isObject(outputStateObject)) return
         let questJson = System.getQuestJson(this.resolvedJson, sourceId, chapterId, questId)
         if (!questJson || questJson.type !== 'quest') return
         let saveData = this.getSaveData(saveId)
-        if (System.getQuestOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId) <= EnumObject.questOutputState.locked) return
+        if (System.getQuestOutputState(this.resolvedJson, saveData, sourceId, chapterId, questId) === EnumObject.questOutputState.locked) return
         let client = this.getConnectedClientList(saveId)
         if (client !== null) {
             runOnMainThread(function () {
@@ -469,7 +471,7 @@ const ServerSystem = {
                                     Utils.deepCopy(extraInfo)
                                 )
                             } catch (err) {
-                                Utils.log('Error in Callback \'CustomQuests.onOutputStateChanged\' (ServerSystem.js):\n' + err, 'ERROR', true)
+                                Utils.error('Error in Callback \'CustomQuests.onOutputStateChanged\' (ServerSystem.js):\n', err)
                             }
                             IOTypeTools.unloadOutput(output[index])
                         }
@@ -489,7 +491,7 @@ const ServerSystem = {
                             Utils.deepCopy(extraInfo)
                         )
                     } catch (err) {
-                        Utils.log('Error in Callback \'CustomQuests.onOutputStateChanged\' (ServerSystem.js):\n' + err, 'ERROR', true)
+                        Utils.error('Error in Callback \'CustomQuests.onOutputStateChanged\' (ServerSystem.js):\n', err)
                     }
                 }
             },
@@ -501,7 +503,7 @@ const ServerSystem = {
                         oldQuestOutputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onQuestOutputStateChanged\' (ServerSystem.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onQuestOutputStateChanged\' (ServerSystem.js):\n', err)
                 }
             }
         })
@@ -534,7 +536,7 @@ const ServerSystem = {
         let playerList = []
         let client = new NetworkConnectedClientList()
         for (let iPlayer in players) {
-            if (players[iPlayer] <= EnumObject.playerState.absent) continue
+            if (players[iPlayer] === EnumObject.playerState.absent) continue
             let player = Number(iPlayer)
             if (!this.isPlayerLoaded(player)) continue
             playerList.push(player)
@@ -753,7 +755,7 @@ Callback.addCallback('ServerPlayerLoaded', function (player) {
                 saveData: ServerSystem.getSaveData(saveId)
             })
         } catch (err) {
-            Utils.log('Error in Callback \'ServerPlayerTick\' (ServerSystem.js):\n' + err, 'ERROR', false)
+            Utils.error('Error in Callback \'ServerPlayerTick\' (ServerSystem.js):\n', err)
         }
     })
 

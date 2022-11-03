@@ -23,7 +23,7 @@ declare namespace CQTypes {
         interface InputJsonBase {
             type: string
             description?: TextJson
-            [key: string]: unknown
+            [key: string]: any
         }
 
         /** @todo */
@@ -82,7 +82,7 @@ declare namespace CQTypes {
             description?: TextJson
             autoReceive?: boolean
             mutiReward?: boolean
-            [key: string]: unknown
+            [key: string]: any
         }
 
         /** @todo */
@@ -263,11 +263,11 @@ declare namespace CQTypes {
     }
     interface InputStateObject {
         state: InputState
-        [key: string]: unknown
+        [key: string]: any
     }
     interface OutputStateObject {
         state: OutputState
-        [key: string]: unknown
+        [key: string]: any
     }
     interface QuestSaveData {
         inputState: QuestInputState
@@ -330,15 +330,15 @@ declare namespace CQTypes {
      * Change the value of [[inputJson]] is not recommended except `resolveJson`
      */
     interface InputTypeCb<T = IOTypes.InputJson> {
-        resolveJson?: (this: null, inputJson: IOTypes.InputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
-        onLoad?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object) => void
-        onUnload?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object) => void
-        onCustomCall?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: object) => unknown
-        onPacket?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: {
+        resolveJson?: (this: void, inputJson: IOTypes.InputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
+        onLoad?: (this: void, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object) => void
+        onUnload?: (this: void, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object) => void
+        onCustomCall?: (this: void, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: object) => unknown
+        onPacket?: (this: void, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: {
             client: NetworkClient
             packetData: object
         }) => void
-        onTick?: (this: null, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: {
+        onTick?: (this: void, inputJson: T, toolsCb: IOTypeToolsCb<InputStateObject>, cache: object, extraInfo: {
             playerInventory: Array<{
                 player: number
                 normal: ReturnType<Utils['getInventory']>
@@ -346,14 +346,16 @@ declare namespace CQTypes {
                 extra: ReturnType<Utils['getExtraInventory']>
             }>
         }) => void
-        getIcon?: (this: null, inputJson: T, toolsCb: IOTypeToolsLocalCb<InputStateObject>, extraInfo: {
+        getIcon?: (this: void, inputJson: T, toolsCb: IOTypeToolsLocalCb<InputStateObject>, extraInfo: {
             pos: [x: number, y: number]
             size: number
             prefix: string
+            setCloseListener?: (listener: () => void) => void
         }) => {[key: string]: UI.Elements} | Array<[string, UI.Elements]>
-        getDescription?: (this: null, inputJson: T, toolsCb: IOTypeToolsLocalCb<InputStateObject>, extraInfo: {
+        getDescription?: (this: void, inputJson: T, toolsCb: IOTypeToolsLocalCb<InputStateObject>, extraInfo: {
             posY: number
             prefix: string
+            setCloseListener?: (listener: () => void) => void
         }) => {
             maxY: number
             elements: {[key: string]: UI.Elements} | Array<[string, UI.Elements]>
@@ -370,30 +372,32 @@ declare namespace CQTypes {
      * Change the value of [[outputJson]] is not recommended except `resolveJson`
      */
     interface OutputTypeCb<T = IOTypes.OutputJson> {
-        resolveJson?: (this: null, outputJson: IOTypes.OutputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
-        onLoad?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object) => void
-        onUnload?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object) => void
-        onCustomCall?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: object) => unknown
-        onPacket?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
+        resolveJson?: (this: void, outputJson: IOTypes.OutputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
+        onLoad?: (this: void, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object) => void
+        onUnload?: (this: void, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object) => void
+        onCustomCall?: (this: void, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: object) => unknown
+        onPacket?: (this: void, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
             client: NetworkClient
             packetData: object
         }) => void
-        onFastReceive?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
+        onFastReceive?: (this: void, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
             operator?: Operator
             [key: string]: unknown
         }) => void
-        onReceive?: (this: null, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
+        onReceive?: (this: void, outputJson: T, toolsCb: IOTypeToolsCb<OutputStateObject>, cache: object, extraInfo: {
             operator?: Operator
             [key: string]: unknown
         }) => void
-        getIcon?: (this: null, outputJson: T, toolsCb: IOTypeToolsLocalCb<OutputStateObject>, extraInfo: {
+        getIcon?: (this: void, outputJson: T, toolsCb: IOTypeToolsLocalCb<OutputStateObject>, extraInfo: {
             pos: [x: number, y: number]
             size: number
             prefix: string
+            setCloseListener?: (listener: () => void) => void
         }) => {[key: string]: UI.Elements} | Array<[string, UI.Elements]>
-        getDescription?: (this: null, outputJson: T, toolsCb: IOTypeToolsLocalCb<OutputStateObject>, extraInfo: {
+        getDescription?: (this: void, outputJson: T, toolsCb: IOTypeToolsLocalCb<OutputStateObject>, extraInfo: {
             posY: number
             prefix: string
+            setCloseListener?: (listener: () => void) => void
         }) => {
             maxY: number
             elements: {[key: string]: UI.Elements} | Array<[string, UI.Elements]>
@@ -489,12 +493,13 @@ interface TranAPI {
     translation: {[lang: string]: {[str: string]: string}}
     addTranslation (str: string, params: {[lang: string]: string}): void
     getTranslation (str: string): {[lang: string]: string}
-    translate (str: string | {[lang: string]: string}): string
+    translate (str?: CQTypes.TextJson): string
 }
 
 interface Utils {
     voidFunc (): void
     log (message: string, type: string, hasAlert?: boolean): void
+    error (message: string, err: Error): void
     getUUID (): string
     md5 (str: string): string
     isObject (obj: any): obj is object
@@ -782,6 +787,14 @@ interface QuestUi {
         isClosed: () => boolean
         close: () => void
     }
+    openDescriptionUi (isInput: true, inputJson: CQTypes.IOTypes.InputJson, toolsCb: CQTypes.IOTypeToolsLocalCb<CQTypes.InputStateObject>):  {
+        isClosed: () => boolean
+        close: () => void
+    }
+    openDescriptionUi (isInput: false, outputJson: CQTypes.IOTypes.OutputJson, toolsCb: CQTypes.IOTypeToolsLocalCb<CQTypes.OutputStateObject>): {
+        isClosed: () => boolean
+        close: () => void
+    }
     openTeamUi (): void
     openQuestListUi (title: string, questList: Array<CQTypes.PathArray>, onSelect: (path: CQTypes.PathArray) => boolean): void
     openItemChooseUi (title: string, isValid: (item: ItemInstance) => boolean, onSelect: (item: ItemInstance) => void): void
@@ -797,6 +810,7 @@ interface QuestUiTools {
         blockingBackground?: boolean
         asGameOverlay?: boolean
         notTouchable?: boolean
+        hideNavigation?: boolean
     }>): {
         content: UI.Window['content']
         ui: UI.Window
@@ -818,7 +832,17 @@ interface QuestUiTools {
     getDependencyLine (posParent: [x: number, y: number], posChild: [x: number, y: number], width: number, color: number): Array<UI.DrawingElements & UI.Elements>
     getTextWidth (text: string, size: number): number
     resolveText (text: string, getWidthRatio: (str: string) => number): Array<string>
-    createAnimator (duration: number, cb: (animator: android.animation.ValueAnimator) => void): android.animation.ValueAnimator
+    resolveTextJsonToElements (textJson: CQTypes.TextJson, params: {
+        prefix: string
+        pos: [x: number, y: number, z?: number]
+        maxWidth: number
+        rowSpace: number
+        font: UI.FontDescription
+    }): {
+        maxY: number
+        elements: Array<[string, UI.Elements]>
+    }
+    createAnimator (duration: number, update: (animator: android.animation.ValueAnimator) => void): android.animation.ValueAnimator
 }
 
 interface Integration {

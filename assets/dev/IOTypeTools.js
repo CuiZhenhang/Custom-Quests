@@ -433,7 +433,7 @@ Callback.addCallback('ServerPlayerTick', Utils.debounce(function () {
             })
         })
     } catch (err) {
-        Utils.log('Error in Callback \'ServerPlayerTick\' (IOTypeTools.js):\n' + err, 'ERROR', true)
+        Utils.error('Error in Callback \'ServerPlayerTick\' (IOTypeTools.js):\n', err)
     }
 }, 500 /* 0.5s */))
 

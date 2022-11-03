@@ -25,7 +25,8 @@ QuestUi.openSelectionUi = function (title, selection) {
         }
     }, {
         closeOnBackPressed: true,
-        blockingBackground: true
+        blockingBackground: true,
+        hideNavigation: true
     })
     let location = ui.ui.getLocation()
     let content = ui.content
