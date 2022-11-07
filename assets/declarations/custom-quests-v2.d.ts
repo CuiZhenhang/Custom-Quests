@@ -137,7 +137,7 @@ declare namespace CQTypes {
         size: number | [id: questId, times: number]
         icon: Ref<IconJson> | [
             locked: Ref<IconJson>,
-            unlocked: Ref<IconJson>,
+            unfinished: Ref<IconJson>,
             finished: Ref<IconJson>
         ]
         parent?: Array<questId | [
@@ -202,7 +202,7 @@ declare namespace CQTypes {
         type: QuestJson['type']
         pos: [x: number, y: number]
         size: number
-        icon: [locked: IconJson, unlocked: IconJson, finished: IconJson]
+        icon: [locked: IconJson, unfinished: IconJson, finished: IconJson]
         parent: Array<[sourceId: sourceId, chapterId: chapterId, questId: questId, width?: number]>
         child: Array<PathArray>
         hidden: boolean
@@ -327,7 +327,7 @@ declare namespace CQTypes {
     }
 
     /**
-     * Change the value of [[inputJson]] is not recommended except `resolveJson`
+     * Modify [[inputJson]] is not allowed except `resolveJson`
      */
     interface InputTypeCb<T = IOTypes.InputJson> {
         resolveJson?: (this: void, inputJson: IOTypes.InputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
@@ -351,6 +351,7 @@ declare namespace CQTypes {
             size: number
             prefix: string
             setCloseListener?: (listener: () => void) => void
+            setReloadListener?: (listener: () => void) => void
         }) => {[key: string]: UI.Elements} | Array<[string, UI.Elements]>
         getDescription?: (this: void, inputJson: T, toolsCb: IOTypeToolsLocalCb<InputStateObject>, extraInfo: {
             posY: number
@@ -369,7 +370,7 @@ declare namespace CQTypes {
     }
 
     /**
-     * Change the value of [[outputJson]] is not recommended except `resolveJson`
+     * Modify [[outputJson]] is not allowed except `resolveJson`
      */
     interface OutputTypeCb<T = IOTypes.OutputJson> {
         resolveJson?: (this: void, outputJson: IOTypes.OutputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
@@ -393,6 +394,7 @@ declare namespace CQTypes {
             size: number
             prefix: string
             setCloseListener?: (listener: () => void) => void
+            setReloadListener?: (listener: () => void) => void
         }) => {[key: string]: UI.Elements} | Array<[string, UI.Elements]>
         getDescription?: (this: void, outputJson: T, toolsCb: IOTypeToolsLocalCb<OutputStateObject>, extraInfo: {
             posY: number
@@ -443,9 +445,6 @@ interface EnumObject {
 }
 
 interface Store {
-    /**
-     * Directly access to this property is not recommended
-     */
     saved: {
         players: {
             [player: number]: {
@@ -462,9 +461,6 @@ interface Store {
         playerList: {[saveId: CQTypes.saveId]: Array<number>}
         exist: {[saveId: CQTypes.saveId]: boolean}
     }
-    /**
-     * Directly access to this property is not recommended
-     */
     cache: {
         playerLoaded: {[player: number]: boolean},
         playerList: {
@@ -487,9 +483,6 @@ interface Store {
 
 interface TranAPI {
     lang: string
-    /**
-     * Directly access to this property is not recommended
-     */
     translation: {[lang: string]: {[str: string]: string}}
     addTranslation (str: string, params: {[lang: string]: string}): void
     getTranslation (str: string): {[lang: string]: string}
@@ -509,14 +502,8 @@ interface Utils {
     operate (a: number, operator: string, b: number, defaultValue?: boolean): boolean
     replace (str: string, replaceArray: Array<[key: string, str: string]>): string
     transferIdFromJson (id: CQTypes.ItemJson['id']): number
-    /**
-     * Directly access to this property is not recommended
-     */
     idFromItem: {[id: number]: string}
     transferIdFromItem (id: number): string
-    /**
-     * Directly access to this property is not recommended
-     */
     extraType: {[type: string]: CQTypes.extraTypeCb}
     setExtraTypeCb (type: string, extraTypeCb: CQTypes.extraTypeCb): void
     getExtraTypeCb (type: string, from: string): Function
@@ -527,7 +514,7 @@ interface Utils {
     transferItemFromItem (item: ItemInstance): CQTypes.ItemJson
     isItemExtraPassed (item: ItemInstance, extraJsonArray: CQTypes.ExtraJson[] | CQTypes.ExtraJson): boolean
     readContents (path: string): CQTypes.MainJson | {}
-    resolveRefs <T = unknown>(value: CQTypes.Ref<T>, refsArray: Array<{[refId: CQTypes.refId]: unknown}>): T
+    resolveRefs <T = unknown>(value: CQTypes.Ref<T>, refsArray: Array<{[refId: CQTypes.refId]: unknown}>): Nullable<T>
     resolveBitmap (bitmap: CQTypes.bitmap, bitmapNameObject: {[bitmapName: string]: boolean}): Nullable<CQTypes.bitmap>
     resolveTextJson (textJson: unknown): CQTypes.TextJson
     resolveIconJson (iconJson: CQTypes.Ref<CQTypes.IconJson>, refsArray: Array<{[refId: CQTypes.refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}): CQTypes.IconJson
@@ -540,9 +527,6 @@ interface Utils {
 }
 
 interface IOTypeTools {
-    /**
-     * Directly access to this property is not recommended
-     */
     inputType: {
         [type: string]: {
             name: CQTypes.TextJson
@@ -555,9 +539,6 @@ interface IOTypeTools {
     getInputTypeName (type: string): string
     getInputTypeCb (type: string): CQTypes.InputTypeCb
     getInputTypeConfig (type: string): Nullable<CQTypes.InputTypeConfig>
-    /**
-     * Directly access to this property is not recommended
-     */
     inputObject: {
         [inputId: CQTypes.inputId]: {
             saveId: CQTypes.saveId
@@ -568,9 +549,6 @@ interface IOTypeTools {
             onUnload?: () => void
         }
     }
-    /**
-     * Directly access to this property is not recommended
-     */
     typedInputList: {
         [saveId: CQTypes.saveId]: {
             [type: string]: Array<CQTypes.inputId>
@@ -588,9 +566,6 @@ interface IOTypeTools {
     callInputTypeCb (inputId: CQTypes.inputId, method: 'onTick', extraInfo: Parameters<Exclude<CQTypes.InputTypeCb['onTick'], undefined>>[3]): ReturnType<Exclude<CQTypes.InputTypeCb['onTick'], undefined>>
     getPlayerListByInputId (inputId: CQTypes.inputId, online?: boolean): number[]
     getInputJsonByInputId (inputId: CQTypes.inputId): Nullable<CQTypes.IOTypes.InputJson>
-    /**
-     * Directly access to this property is not recommended
-     */
     outputType: {
         [type: string]: {
             name: CQTypes.TextJson
@@ -603,9 +578,6 @@ interface IOTypeTools {
     getOutputTypeName (type: string): string
     getOutputTypeCb (type: string): CQTypes.OutputTypeCb
     getOutputTypeConfig (type: string): Nullable<CQTypes.OutputTypeConfig>
-    /**
-     * Directly access to this property is not recommended
-     */
     outputObject: {
         [outputId: CQTypes.outputId]: {
             saveId: CQTypes.saveId
@@ -616,9 +588,6 @@ interface IOTypeTools {
             onUnload?: () => void
         }
     }
-    /**
-     * Directly access to this property is not recommended
-     */
     typedOutputList: {
         [saveId: CQTypes.saveId]: {
             [type: string]: Array<CQTypes.outputId>
@@ -673,9 +642,6 @@ interface System {
 }
 
 interface ServerSystem {
-    /**
-     * Directly access to this property is not recommended
-     */
     json: CQTypes.AllMainJson
     resolvedJson: CQTypes.AllResolvedMainJson
     rootQuest: {
@@ -783,6 +749,7 @@ interface QuestUi {
         sendOutputPacket?: (index: number, packetData: object) => void
         openParentListUi?: () => void
         openChildListUi?: () => void
+        isReload?: boolean
     }): {
         isClosed: () => boolean
         close: () => void
@@ -832,7 +799,7 @@ interface QuestUiTools {
     getDependencyLine (posParent: [x: number, y: number], posChild: [x: number, y: number], width: number, color: number): Array<UI.DrawingElements & UI.Elements>
     getTextWidth (text: string, size: number): number
     resolveText (text: string, getWidthRatio: (str: string) => number): Array<string>
-    resolveTextJsonToElements (textJson: CQTypes.TextJson, params: {
+    resolveTextJsonToElements (textJson: Nullable<CQTypes.TextJson>, params: {
         prefix: string
         pos: [x: number, y: number, z?: number]
         maxWidth: number

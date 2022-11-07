@@ -1,6 +1,6 @@
 /// <reference path='../IOTypeTools.js'/>
 
-Network.addClientPacket('CustomQuests.output.message', function (packetData) {
+Network.addClientPacket('CustomQuests.outputType.message', function (packetData) {
     let message = ''
     if (typeof packetData.message === 'string') {
         message = packetData.message
@@ -21,6 +21,7 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
     },
     onPacket (outputJson, toolsCb, cache, extraInfo) {
         if (extraInfo.packetData.type !== 'receive') return
+        if (toolsCb.getState().state === EnumObject.outputState.received) return
         toolsCb.setState({
             operator: {
                 type: 'player',
@@ -47,7 +48,7 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
                 client.add(Network.getClientForPlayer(tPlayerList[Math.floor(Math.random() * tPlayerList.length)]))
             }
         }
-        client.send('CustomQuests.output.message', {
+        client.send('CustomQuests.outputType.message', {
             message: outputJson.message,
             isAlert: Boolean(outputJson.isAlert)
         })

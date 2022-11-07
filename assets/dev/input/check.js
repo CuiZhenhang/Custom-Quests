@@ -3,6 +3,7 @@
 IOTypeTools.setInputType('check', TranAPI.getTranslation('inputType.check'), {
     onPacket (inputJson, toolsCb, cache, extraInfo) {
         if (extraInfo.packetData.type !== 'check') return
+        if (toolsCb.getState().state === EnumObject.inputState.finished) return
         toolsCb.setState({}, {
             state: EnumObject.inputState.finished
         })
@@ -25,5 +26,5 @@ IOTypeTools.setInputType('check', TranAPI.getTranslation('inputType.check'), {
     }
 }, {
     allowRepeat: true,
-    allowGroup: false
+    allowGroup: true
 })

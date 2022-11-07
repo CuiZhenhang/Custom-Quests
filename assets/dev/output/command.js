@@ -14,6 +14,7 @@ IOTypeTools.setOutputType('command', TranAPI.getTranslation('outputType.command'
     },
     onPacket (outputJson, toolsCb, cache, extraInfo) {
         if (extraInfo.packetData.type !== 'receive') return
+        if (toolsCb.getState().state === EnumObject.outputState.received) return
         let player = extraInfo.client.getPlayerUid()
         toolsCb.setState({
             operator: {

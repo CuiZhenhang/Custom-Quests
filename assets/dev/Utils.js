@@ -262,7 +262,8 @@ const Utils = {
         if (!(/^ref:/i).test(value)) return value
         let that = this
         let refId = value.replace(/^ref:/i, '')
-        let ret = value
+        /** @type { T } */
+        let ret = null
         refsArray.some(function (refs) {
             if (!that.isObject(refs)) return false
             if (typeof refs[refId] !== 'undefined' && refs[refId] !== null) {

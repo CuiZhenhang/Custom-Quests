@@ -61,7 +61,6 @@ gui.childList.title=子任务列表
 
 
 inputType.group=任务组
-inputType.group.text=只需要完成一部分任务
 inputType.group.finished=已完成 {count}/{require} 个任务
 
 inputType.check=勾选

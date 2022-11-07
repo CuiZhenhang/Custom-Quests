@@ -96,7 +96,7 @@ const $DescriptionUi = {
             try {
                 listener()
             } catch (err) {
-                Utils.log('Error in callCloseListener (Description.js):\n' + err, 'ERROR', false)
+                Utils.error('Error in callCloseListener (Description.js):\n', err)
             }
         })
         this.closeListener.length = 0

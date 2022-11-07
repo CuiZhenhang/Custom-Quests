@@ -27,6 +27,7 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
     onPacket (inputJson, toolsCb, cache, extraInfo) {
         if (!inputJson.submit) return
         if (extraInfo.packetData.type !== 'submit') return
+        if (toolsCb.getState().state === EnumObject.inputState.finished) return
         let extra = Array.isArray(inputJson.extra)
         let player = extraInfo.client.getPlayerUid()
         let actor = new PlayerActor(player)

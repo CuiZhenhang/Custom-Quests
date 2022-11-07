@@ -5,19 +5,18 @@
 const $ScreenHeight = UI.getScreenHeight()
 const $Color = android.graphics.Color
 
-/** @type { <T = any>(x: T) => T } */
-const $SimpleFunc = function (x) { return x }
-
 const $QuestUi = {
     uuid: '',
+    /** @type { Nullable<CQTypes.QuestSaveData> } */
+    saveData: null,
     /** @type { Nullable<() => void> } */
     openParentListUi: null,
     /** @type { Nullable<() => void> } */
     openChildListUi: null,
-    /** @type { Nullable<ReturnType<QuestUi['openDescriptionUi']>> } */
-    descriptionUi: null,
     /** @type { Array<() => void> } */
     closeListener: [],
+    /** @type { Array<() => void> } */
+    reloadListener: [],
     questUi: QuestUiTools.createUi({
         location: {x: 200, y: ($ScreenHeight - 400) / 2, width: 600, height: 400, scrollY: 400},
         drawing: [
@@ -59,10 +58,8 @@ const $QuestUi = {
         }
     }, {
         onClose (ui) {
-            if ($QuestUi.descriptionUi && !$QuestUi.descriptionUi.isClosed()) {
-                $QuestUi.descriptionUi.close()
-            }
-            $QuestUi.callCloseListener()
+            $QuestUi.invokeCloseListener()
+            $QuestUi.saveData = null
         }
     }, {
         closeOnBackPressed: true,
@@ -71,48 +68,55 @@ const $QuestUi = {
     }),
     /** @type { QuestUi['openQuestUi'] } */
     open (questJson, saveData, params) {
+        this.saveData = saveData
         this.openParentListUi = params.openParentListUi || null
         this.openChildListUi = params.openChildListUi || null
-        this.callCloseListener()
+        if (!params.isReload) this.invokeCloseListener()
         let uuid = Utils.getUUID()
+        this.uuid = uuid
         let name = TranAPI.translate(questJson.inner.name)
-        let text = QuestUiTools.resolveText(TranAPI.translate(questJson.inner.text), this.getWidthRatio)
         let numIO = Math.max(questJson.inner.input.length, questJson.inner.output.length, 1)
+        let textElements = QuestUiTools.resolveTextJsonToElements(questJson.inner.text, {
+            prefix: uuid + '_desc_',
+            pos: [20, 160 + Math.ceil(numIO/5)*100],
+            maxWidth: 960,
+            rowSpace: 10,
+            font: {
+                color: $Color.BLACK,
+                size: 30
+            }
+        })
         this.questUi.clearNewElements(null, true)
         let location = this.questUi.ui.getLocation()
         let content = this.questUi.content
-        location.scrollY = (280 + Math.floor(numIO/5 - 0.1)*100 + 40*text.length) * (600/1000)
+        location.scrollY = (textElements.maxY + 20) * (600/1000)
         location.height = Math.min(location.scrollY, $ScreenHeight)
         location.y = ($ScreenHeight - location.height)/2
         content.drawing[1].height = location.scrollY * (1000/600)
         content.drawing[2].text = name
-        content.drawing[5].y2 = content.drawing[4].y2 = content.drawing[4].y1 = 250 + Math.floor(numIO/5 - 0.1)*100
+        content.drawing[5].y2 = content.drawing[4].y2 = content.drawing[4].y1 = 150 + Math.ceil(numIO/5)*100
         this.questUi.addElements(QuestUiTools.getQuestIcon(questJson, saveData, {
             pos: [20, 20],
             size: 70,
             prefix: uuid + '_icon_'
         }))
-        this.questUi.addElements(text.map(function (str, index) {
-            return [uuid + '_desc_' + index, {
-                type: 'text', text: str, font: {color: $Color.BLACK, size: 30},
-                x: 20, y: content.drawing[5].y2 + 10 + 40*index
-            }]
-        }))
+        this.questUi.addElements(textElements.elements)
         let that = this
         let sendInputPacket = typeof params.sendInputPacket === 'function' ? params.sendInputPacket : null
         questJson.inner.input.forEach(function (inputJson, index) {
+            if (!inputJson) return
             let getIcon = IOTypeTools.getInputTypeCb(inputJson.type).getIcon
             if (typeof getIcon !== 'function') return
-            let getState = $SimpleFunc.bind(null, Utils.deepCopy(saveData.input[index]) || { state: EnumObject.inputState.unfinished })
             let elements = getIcon(inputJson, {
-                getState: getState,
+                getState: that.getInputStateSafe.bind(that, index),
                 sendPacket: sendInputPacket ? sendInputPacket.bind(null, index) : null,
-                openDescription: QuestUi.openDescriptionUi.bind(QuestUi, true, inputJson, { getState: getState })
+                openDescription: QuestUi.openDescriptionUi.bind(QuestUi, true, inputJson, { getState: that.getInputStateSafe.bind(that, index) })
             }, {
                 pos: [96*(index % 5) + 20, 100*Math.floor(index/5) + 160],
                 size: 80,
                 prefix: uuid + '_input_' + index + '_',
-                setCloseListener: that.setCloseListener.bind(that)
+                setCloseListener: that.setCloseListener.bind(that),
+                setReloadListener: that.setReloadListener.bind(that)
             })
             if (!Utils.isObject(elements)) return
             that.questUi.addElements(elements)
@@ -126,18 +130,19 @@ const $QuestUi = {
         })
         let sendOutputPacket = typeof params.sendOutputPacket === 'function' ? params.sendOutputPacket : null
         questJson.inner.output.forEach(function (outputJson, index) {
+            if (!outputJson) return
             let getIcon = IOTypeTools.getOutputTypeCb(outputJson.type).getIcon
             if (typeof getIcon !== 'function') return
-            let getState = $SimpleFunc.bind(null, Utils.deepCopy(saveData.output[index]) || { state: EnumObject.outputState.unreceived })
             let elements = getIcon(outputJson, {
-                getState: getState,
+                getState: that.getOutputStateSafe.bind(that, index),
                 sendPacket: sendOutputPacket ? sendOutputPacket.bind(null, index) : null,
-                openDescription: QuestUi.openDescriptionUi.bind(QuestUi, false, outputJson, { getState: getState })
+                openDescription: QuestUi.openDescriptionUi.bind(QuestUi, false, outputJson, { getState: that.getOutputStateSafe.bind(that, index) })
             }, {
                 pos: [96*(index % 5) + 520, 100*Math.floor(index/5) + 160],
                 size: 80,
                 prefix: uuid + '_output_' + index + '_',
-                setCloseListener: that.setCloseListener.bind(that)
+                setCloseListener: that.setCloseListener.bind(that),
+                setReloadListener: that.setReloadListener.bind(that)
             })
             if (!Utils.isObject(elements)) return
             that.questUi.addElements(elements)
@@ -158,16 +163,25 @@ const $QuestUi = {
             }
         })
         this.questUi.open(true)
-        this.uuid = uuid
+        if (params.isReload) this.invokeReloadListener()
         return {
             isClosed: this.isClosed.bind(this, uuid),
             close: this.close.bind(this, uuid)
         }
     },
-    /** @type { (str: string) => number } */
-    getWidthRatio (str) {
-        if (typeof str !== 'string') return 1
-        return QuestUiTools.getTextWidth(str, 30) / 960
+    /** @type { (index: number) => CQTypes.InputStateObject } */
+    getInputStateSafe (index) {
+        if (!this.saveData || !this.saveData.input[index]) {
+            return { state: EnumObject.inputState.unfinished }
+        }
+        return Utils.deepCopy(this.saveData.input[index])
+    },
+    /** @type { (index: number) => CQTypes.OutputStateObject } */
+    getOutputStateSafe (index) {
+        if (!this.saveData || !this.saveData.output[index]) {
+            return { state: EnumObject.outputState.unreceived }
+        }
+        return Utils.deepCopy(this.saveData.output[index])
     },
     /** @type { (uuid: string) => boolean } */
     isClosed (uuid) {
@@ -184,15 +198,30 @@ const $QuestUi = {
         if (typeof listener !== 'function') return
         this.closeListener.push(listener)
     },
-    callCloseListener () {
+    invokeCloseListener () {
         this.closeListener.forEach(function (listener) {
             try {
                 listener()
             } catch (err) {
-                Utils.log('Error in callCloseListener (QuestUi.js):\n' + err, 'ERROR', false)
+                Utils.error('Error in invokeCloseListener (QuestUi.js):\n', err)
             }
         })
         this.closeListener.length = 0
+        this.reloadListener.length = 0
+    },
+    /** @type { (listener: () => void) => void } */
+    setReloadListener (listener) {
+        if (typeof listener !== 'function') return
+        this.reloadListener.push(listener)
+    },
+    invokeReloadListener () {
+        this.reloadListener.forEach(function (listener) {
+            try {
+                listener()
+            } catch (err) {
+                Utils.error('Error in invokeReloadListener (QuestUi.js):\n', err)
+            }
+        })
     }
 }
 

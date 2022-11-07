@@ -61,7 +61,6 @@ gui.childList.title=Child Quest List
 
 
 inputType.group=task group
-inputType.group.text=Only part of the task needs to be finished
 inputType.group.finished=Finished {count}/{require} tasks
 
 inputType.check=check

@@ -391,8 +391,8 @@ const $MainUi = {
         }
         ui.refresh()
     },
-    /** @type { (questId: Nullable<CQTypes.questId>) => void } */
-    openQuestUi (questId) {
+    /** @type { (questId: Nullable<CQTypes.questId>, isReload?: boolean) => void } */
+    openQuestUi (questId, isReload) {
         if (!questId) return
         let sourceId = this.sourceId
         let chapterId = this.chapterId
@@ -434,14 +434,15 @@ const $MainUi = {
                         that.updateChapterUi(path[1])
                         that.openQuestUi(path[2])
                     })
-                }
+                },
+                isReload: isReload
             })
             this.questUi.questId = questId
             this.questUi.isClosed = obj.isClosed
             this.questUi.close = obj.close
             this.questUi.updateRequest.exist = false
         } catch (err) {
-            Utils.log('Error in function \'$MainUi.openQuestUi\' (ui/MainUi.js):\n' + err, 'ERROR')
+            Utils.error('Error in function $MainUi.openQuestUi (ui/MainUi.js):\n', err)
         }
     },
     /** @type { (chapterId: Nullable<CQTypes.chapterId>) => void } */
@@ -496,11 +497,11 @@ Callback.addCallback('LocalTick', function () {
     }
     let time = Date.now()
     if (time - $MainUi.questUi.updateRequest.timeFirst >= 500 /* 0.5s */) {
-        $MainUi.openQuestUi($MainUi.questUi.questId)
+        $MainUi.openQuestUi($MainUi.questUi.questId, true)
         return
     }
     if (time - $MainUi.questUi.updateRequest.timeLast >= 100 /* 0.1s */) {
-        $MainUi.openQuestUi($MainUi.questUi.questId)
+        $MainUi.openQuestUi($MainUi.questUi.questId, true)
         return
     }
 })
