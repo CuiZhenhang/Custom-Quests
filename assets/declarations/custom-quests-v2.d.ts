@@ -17,7 +17,7 @@ declare namespace CQTypes {
     interface ItemJson {id: string | number, count?: number, data?: number, extra?: ExtraJson[]}
     interface IconJson {bitmap?: bitmap, darken?: boolean, id?: string | number, count?: number, data?: number, extra?: ExtraJson[]}
     type PathArray = [sourceId: sourceId, capterId: chapterId, questId: questId]
-    type Ref<T> = `ref:${string}` | T
+    type Ref<T> = `ref:${refId}` | T
 
     namespace IOTypes {
         interface InputJsonBase {
@@ -26,7 +26,6 @@ declare namespace CQTypes {
             [key: string]: any
         }
 
-        /** @todo */
         interface InputJson_group extends InputJsonBase {
             type: 'group'
             icon: Ref<IconJson>
@@ -85,13 +84,12 @@ declare namespace CQTypes {
             [key: string]: any
         }
 
-        /** @todo */
         interface OutputJson_group extends OutputJsonBase {
             type: 'group'
             icon: Ref<IconJson>
             list: Array<{
                 output: Ref<OutputJson>
-                weigth?: number
+                weight?: number
             }>
             count?: number
             isSelect?: boolean
@@ -327,7 +325,7 @@ declare namespace CQTypes {
     }
 
     /**
-     * Modify [[inputJson]] is not allowed except `resolveJson`
+     * Modify `inputJson` is not allowed except [[resolveJson]]
      */
     interface InputTypeCb<T = IOTypes.InputJson> {
         resolveJson?: (this: void, inputJson: IOTypes.InputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>
@@ -370,7 +368,7 @@ declare namespace CQTypes {
     }
 
     /**
-     * Modify [[outputJson]] is not allowed except `resolveJson`
+     * Modify `outputJson` is not allowed except [[resolveJson]]
      */
     interface OutputTypeCb<T = IOTypes.OutputJson> {
         resolveJson?: (this: void, outputJson: IOTypes.OutputJson, refsArray: Array<{[refId: refId]: unknown}>, bitmapNameObject: {[bitmapName: string]: boolean}) => Nullable<T>

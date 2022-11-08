@@ -89,6 +89,7 @@ inputType.kill.entity=Entity id: {id}, count: {count}
 inputType.kill.killed=Killed count: {count}
 
 outputType.group=reward group
+outputType.group.received=Received {count}/{total} rewards
 
 outputType.empty=no reward
 outputType.empty.text=No reward

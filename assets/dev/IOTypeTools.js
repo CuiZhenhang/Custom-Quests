@@ -151,7 +151,11 @@ const IOTypeTools = {
         if (!Array.isArray(typedInputList[type])) typedInputList[type] = []
         typedInputList[type].push(inputId)
         if (typeof inputType.cb.onLoad === 'function') {
-            inputType.cb.onLoad.call(null, inputObject.json, inputObject.toolsCb, inputObject.cache)
+            try {
+                inputType.cb.onLoad.call(null, inputObject.json, inputObject.toolsCb, inputObject.cache)
+            } catch (err) {
+                Utils.error('Error in loadInput (IOTypeTools.js):\n', err)
+            }
         }
     },
     unloadInput (inputId) {
@@ -160,10 +164,18 @@ const IOTypeTools = {
         let type = inputObject.json.type
         let inputType = this.inputType[type]
         if (typeof inputType.cb.onUnload === 'function') {
-            inputType.cb.onUnload.call(null, inputObject.json, inputObject.toolsCb, inputObject.cache)
+            try {
+                inputType.cb.onUnload.call(null, inputObject.json, inputObject.toolsCb, inputObject.cache)
+            } catch (err) {
+                Utils.error('Error in unloadInput (IOTypeTools.js):\n', err)
+            }
         }
         if (typeof inputObject.onUnload === 'function') {
-            inputObject.onUnload()
+            try {
+                inputObject.onUnload()
+            } catch (err) {
+                Utils.error('Error in unloadInput (IOTypeTools.js):\n', err)
+            }
         }
         delete this.inputObject[inputId]
         let list = this.typedInputList[inputObject.saveId][type]
@@ -184,7 +196,11 @@ const IOTypeTools = {
         let type = inputObject.json.type
         let inputType = this.inputType[type]
         if (typeof inputType.cb[method] === 'function') {
-            return inputType.cb[method].call(null, inputObject.json, inputObject.toolsCb, inputObject.cache, extraInfo)
+            try {
+                return inputType.cb[method].call(null, inputObject.json, inputObject.toolsCb, inputObject.cache, extraInfo)
+            } catch (err) {
+                Utils.error('Error in callInputTypeCb (IOTypeTools.js):\n', err)
+            }
         }
         return null
     },
@@ -192,7 +208,11 @@ const IOTypeTools = {
         if (!this.isInputIdLoaded(inputId)) return []
         let inputObject = this.inputObject[inputId]
         if (typeof inputObject.toolsCb.getPlayerList === 'function') {
-            return inputObject.toolsCb.getPlayerList(Boolean(online))
+            try {
+                return inputObject.toolsCb.getPlayerList(Boolean(online))
+            } catch (err) {
+                Utils.error('Error in getPlayerListByInputId (IOTypeTools.js):\n', err)
+            }
         }
         return []
     },
@@ -351,7 +371,11 @@ const IOTypeTools = {
         if (!Array.isArray(typedOutputList[type])) typedOutputList[type] = []
         typedOutputList[type].push(outputId)
         if (typeof outputType.cb.onLoad === 'function') {
-            outputType.cb.onLoad.call(null, outputObject.json, outputObject.toolsCb, outputObject.cache)
+            try {
+                outputType.cb.onLoad.call(null, outputObject.json, outputObject.toolsCb, outputObject.cache)
+            } catch (err) {
+                Utils.error('Error in loadOutput (IOTypeTools.js):\n', err)
+            }
         }
     },
     unloadOutput (outputId) {
@@ -360,10 +384,18 @@ const IOTypeTools = {
         let type = outputObject.json.type
         let outputType = this.outputType[type]
         if (typeof outputType.cb.onUnload === 'function') {
-            outputType.cb.onUnload.call(null, outputObject.json, outputObject.toolsCb, outputObject.cache)
+            try {
+                outputType.cb.onUnload.call(null, outputObject.json, outputObject.toolsCb, outputObject.cache)
+            } catch (err) {
+                Utils.error('Error in unloadOutput (IOTypeTools.js):\n', err)
+            }
         }
         if (typeof outputObject.onUnload === 'function') {
-            outputObject.onUnload()
+            try {
+                outputObject.onUnload()
+            } catch (err) {
+                Utils.error('Error in unloadOutput (IOTypeTools.js):\n', err)
+            }
         }
         delete this.outputObject[outputId]
         let list = this.typedOutputList[outputObject.saveId][type]
@@ -385,7 +417,11 @@ const IOTypeTools = {
         let type = outputObject.json.type
         let outputType = this.outputType[type]
         if (typeof outputType.cb[method] === 'function') {
-            return outputType.cb[method].call(null, outputObject.json, outputObject.toolsCb, outputObject.cache, extraInfo)
+            try {
+                return outputType.cb[method].call(null, outputObject.json, outputObject.toolsCb, outputObject.cache, extraInfo)
+            } catch (err) {
+                Utils.error('Error in callOutputTypeCb (IOTypeTools.js):\n', err)
+            }
         }
         return null
     },
@@ -393,7 +429,11 @@ const IOTypeTools = {
         if (!this.isOutputIdLoaded(outputId)) return []
         let outputObject = this.outputObject[outputId]
         if (typeof outputObject.toolsCb.getPlayerList === 'function') {
-            return outputObject.toolsCb.getPlayerList(Boolean(online))
+            try {
+                return outputObject.toolsCb.getPlayerList(Boolean(online))
+            } catch (err) {
+                Utils.error('Error in getPlayerListByOutputId (IOTypeTools.js):\n', err)
+            }
         }
         return []
     },

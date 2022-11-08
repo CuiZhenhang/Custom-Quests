@@ -146,13 +146,7 @@ const $QuestUi = {
             })
             if (!Utils.isObject(elements)) return
             that.questUi.addElements(elements)
-            if (saveData.inputState < EnumObject.questInputState.finished) {
-                that.questUi.addElements([[uuid + '_output_dot_' + index, {
-                    type: 'image', z: 10, width: 20, height: 20, bitmap: 'cq_dot_grey',
-                    x: 96*(index % 5) + 520 + 55,
-                    y: 100*Math.floor(index/5) + 160 + 5
-                }]])
-            } else {
+            if (saveData.inputState === EnumObject.questInputState.finished) {
                 if (!saveData.output[index] || saveData.output[index].state !== EnumObject.outputState.received) {
                     that.questUi.addElements([[uuid + '_output_dot_' + index, {
                         type: 'image', z: 10, width: 20, height: 20, bitmap: 'cq_dot_green',
@@ -160,6 +154,12 @@ const $QuestUi = {
                         y: 100*Math.floor(index/5) + 160 + 5
                     }]])
                 }
+            } else {
+                that.questUi.addElements([[uuid + '_output_dot_' + index, {
+                    type: 'image', z: 10, width: 20, height: 20, bitmap: 'cq_dot_grey',
+                    x: 96*(index % 5) + 520 + 55,
+                    y: 100*Math.floor(index/5) + 160 + 5
+                }]])
             }
         })
         this.questUi.open(true)

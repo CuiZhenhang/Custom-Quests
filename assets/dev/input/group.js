@@ -18,6 +18,9 @@ const $input_group_Tools = {
                 stateObj.list[index] = {
                     state: EnumObject.inputState.repeat_unfinished
                 }
+                if (!IOTypeTools.getInputTypeConfig(inputJson.list[index].type).allowRepeat) {
+                    stateObj.list[index].state = EnumObject.inputState.finished
+                }
             }
             delete stateObj.wasFinished
             stateObj.count = 0
@@ -55,10 +58,7 @@ const $input_group_Tools = {
     },
     /**
      * @param { CQTypes.IOTypeToolsCb<CQTypes.InputStateObject> } toolsCb 
-     * @param { Object } params 
-     * @param { number } params.index 
-     * @param { CQTypes.inputId } params.inputId 
-     * @param { () => void } params.updateState 
+     * @param { { index: number, inputId: CQTypes.inputId, updateState: () => void } } params 
      * @param { object } extraInfo 
      * @param { CQTypes.InputStateObject } inputStateObject 
      */
@@ -139,15 +139,14 @@ const $input_group_Tools = {
                 let inputJson = params[1], toolsCb = params[2]
                 let stateObj = toolsCb.getState()
                 let finished = stateObj.state === EnumObject.inputState.finished
-                let inputJsonList = inputJson.list
-                let yBelowLine = (150 + Math.ceil(Math.max(inputJsonList.length, 1) / 6) * 150)
+                let yBelowLine = (150 + Math.ceil(Math.max(inputJson.list.length, 1) / 6) * 150)
                 let description = QuestUiTools.resolveTextJsonToElements(inputJson.description, {
                     prefix: uuid + '_desc_',
                     pos: [50, yBelowLine + 15],
                     maxWidth: 900,
                     rowSpace: 10,
                     font: {
-                        color: android.graphics.Color.BLACK,
+                        color: Color.BLACK,
                         size: 30
                     }
                 })
@@ -166,7 +165,7 @@ const $input_group_Tools = {
                 content.drawing[5].y2 = content.drawing[5].y1 = yBelowLine
                 this.taskUi.addElements(description.elements)
                 let that = this
-                inputJsonList.forEach(function (inputJson, index) {
+                inputJson.list.forEach(function (inputJson, index) {
                     if (!inputJson || typeof inputJson === 'string') return
                     let getIcon = IOTypeTools.getInputTypeCb(inputJson.type).getIcon
                     if (typeof getIcon !== 'function') return
@@ -245,9 +244,7 @@ const $input_group_Tools = {
             /**
              * @param { CQTypes.IOTypes.InputJson } inputJson 
              * @param { CQTypes.IOTypeToolsLocalCb<CQTypes.InputStateObject> } toolsCb 
-             * @param { Object } setListener
-             * @param { (listener: () => void) => void = } setListener.setCloseListener 
-             * @param { (listener: () => void) => void = } setListener.setReloadListener 
+             * @param { { setCloseListener?: () => void, setReloadListener?: () => void } } setListener
              */
             open (inputJson, toolsCb, setListener) {
                 let uuid = Utils.getUUID()
@@ -280,6 +277,7 @@ IOTypeTools.setInputType('group', TranAPI.getTranslation('inputType.group'), {
             if (tInputJson) list.push(tInputJson)
         })
         inputJson.list = list
+        if (inputJson.count > list.length) inputJson.count = list.length
         return inputJson
     },
     onLoad (inputJson, toolsCb, cache) {
@@ -287,9 +285,10 @@ IOTypeTools.setInputType('group', TranAPI.getTranslation('inputType.group'), {
         if ($input_group_Tools.updateState(inputJson, toolsCb)) return
         cache.loaded = true
         cache.inputIdArray = []
+        let stateObj = toolsCb.getState()
         let updateState = $input_group_Tools.updateState.bind($input_group_Tools, inputJson, toolsCb)
         inputJson.list.forEach(function (tInputJson, index) {
-            if (!tInputJson) return
+            if (stateObj.list && stateObj.list[index] && stateObj.list[index].state === EnumObject.inputState.finished) return
             let params = {
                 index: index,
                 inputId: InvalidId,

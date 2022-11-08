@@ -89,6 +89,7 @@ inputType.kill.entity=生物 id：{id}，数量：{count}
 inputType.kill.killed=已击杀 {count} 个
 
 outputType.group=奖励组
+outputType.group.received=已领取 {count}/{total} 个奖励
 
 outputType.empty=无奖励
 outputType.empty.text=无奖励
