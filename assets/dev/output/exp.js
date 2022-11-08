@@ -14,6 +14,7 @@ IOTypeTools.setOutputType('exp', TranAPI.getTranslation('outputType.exp'), {
     },
     onPacket (outputJson, toolsCb, cache, extraInfo) {
         if (extraInfo.packetData.type !== 'receive') return
+        if (toolsCb.getState().state === EnumObject.outputState.received) return
         let player = extraInfo.client.getPlayerUid()
         toolsCb.setState({
             operator: {
@@ -30,20 +31,22 @@ IOTypeTools.setOutputType('exp', TranAPI.getTranslation('outputType.exp'), {
         })
     },
     onReceive (outputJson, toolsCb, cache, extraInfo) {
-        let player
-        if (Utils.isObject(extraInfo.operator)) {
-            if (extraInfo.operator.type === 'tileEntity') {
-                /** @todo */
-                return
+        /** @type { Array<number> } */
+        let playerList = []
+        if (outputJson.mutiReward) playerList = toolsCb.getPlayerList(true)
+        else {
+            if (Utils.isObject(extraInfo.operator) && extraInfo.operator.type === 'player') {
+                playerList.push(extraInfo.operator.player)
+            } else {
+                let tPlayerList = toolsCb.getPlayerList(true)
+                playerList.push(tPlayerList[Math.floor(Math.random() * tPlayerList.length)])
             }
-            player = extraInfo.operator.player
-        } else {
-            let playerList = toolsCb.getPlayerList(true)
-            player = playerList[Math.floor(Math.random() * playerList.length)]
         }
-        let actor = new PlayerActor(player)
-        if (outputJson.isLevel) actor.setLevel(actor.getLevel() + outputJson.value);
-        else actor.addExperience(outputJson.value)
+        playerList.forEach(function (player) {
+            let actor = new PlayerActor(player)
+            if (outputJson.isLevel) actor.setLevel(actor.getLevel() + outputJson.value)
+            else actor.addExperience(outputJson.value)
+        })
     },
     getIcon (outputJson, toolsCb, extraInfo) {
         let received = toolsCb.getState().state === EnumObject.outputState.received
@@ -51,13 +54,13 @@ IOTypeTools.setOutputType('exp', TranAPI.getTranslation('outputType.exp'), {
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: 'clear', source: { id: VanillaItemID.experience_bottle, count: outputJson.value },
+                bitmap: 'cq_clear', source: { id: VanillaItemID.experience_bottle, count: outputJson.value },
                 clicker: {
                     onClick: (!received) ? Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.outputState.received) return
-                        toolsCb.sendPacket({ type: 'receive' })
+                        if (typeof toolsCb.sendPacket === 'function') toolsCb.sendPacket({ type: 'receive' })
                     }, 500) : null,
-                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
+                    onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
                 }
             }]
         ]
@@ -68,7 +71,7 @@ IOTypeTools.setOutputType('exp', TranAPI.getTranslation('outputType.exp'), {
         let elements = [
             [prefix + 'slot', {
                 type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
-                bitmap: 'clear', source: {
+                bitmap: 'cq_clear', source: {
                     id: VanillaItemID.experience_bottle,
                     count: outputJson.value
                 }
@@ -79,17 +82,18 @@ IOTypeTools.setOutputType('exp', TranAPI.getTranslation('outputType.exp'), {
                 font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }]
         ]
-        QuestUiTools.resolveText(TranAPI.translate(outputJson.description), function (str) {
-            if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 30) / 900
-        }).forEach(function (str, index) {
-            elements.push([prefix + 'desc_' + index, {
-                type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 30 }
-            }])
-            maxY += 40
+        let description = QuestUiTools.resolveTextJsonToElements(outputJson.description, {
+            prefix: prefix + 'desc_',
+            pos: [50, maxY],
+            maxWidth: 900,
+            rowSpace: 10,
+            font: {
+                color: android.graphics.Color.BLACK,
+                size: 30
+            }
         })
-        maxY += 20
+        elements = elements.concat(description.elements)
+        maxY = description.maxY + 20
         return {
             maxY: maxY,
             elements: elements

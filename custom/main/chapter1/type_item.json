@@ -17,9 +17,9 @@
                 "data": 0,
                 "count": 20,
                 "description": {
-                    "en": "This task type requires the player to get certain items. \nFor this task, the player needs to get 20 oak planks.",
-                    "ru": "This task type requires the player to get certain items. \nFor this task, the player needs to get 20 oak planks.",
-                    "zh": "该任务类型需要玩家获得特定物品。\n对于该任务，需要玩家获得20个橡木木板。"
+                    "en": "This task type requires the player to get certain items. \nIf you have a newer version of RecipeViewer enabled, you can click or long press the icon above to view the recipe.\nFor this task, the player needs to get 20 oak planks.",
+                    "ru": "This task type requires the player to get certain items. \nIf you have a newer version of RecipeViewer enabled, you can click or long press the icon above to view the recipe.\nFor this task, the player needs to get 20 oak planks.",
+                    "zh": "该任务类型需要玩家获得特定物品。\n如果你启用了较新版本的RecipeViewer，你可以点击或长按上面的图标以查看配方。\n对于该任务，需要玩家获得20个橡木木板。"
                 }
             },
             {
@@ -41,9 +41,9 @@
                 "count": 3,
                 "autoReceive": true,
                 "description": {
-                    "en": "This reward type gives the player specific items. \nFor this reward, the player will be given 3 sticks when claiming it. \nIn addition, the reward is automatically claimed.",
-                    "ru": "This reward type gives the player specific items. \nFor this reward, the player will be given 3 sticks when claiming it. \nIn addition, the reward is automatically claimed.",
-                    "zh": "该奖励类型给予玩家特定物品。\n对于该奖励，在领取时会给玩家3个木棍。\n另外，该奖励自动领取。"
+                    "en": "This reward type gives the player specific items. \nIf you have a newer version of RecipeViewer enabled, you can click or long press the icon above to view the recipe.\nFor this reward, the player will be given 3 sticks when claiming it. \nIn addition, the reward is automatically claimed.",
+                    "ru": "This reward type gives the player specific items. \nIf you have a newer version of RecipeViewer enabled, you can click or long press the icon above to view the recipe.\nFor this reward, the player will be given 3 sticks when claiming it. \nIn addition, the reward is automatically claimed.",
+                    "zh": "该奖励类型给予玩家特定物品。\n如果你启用了较新版本的RecipeViewer，你可以点击或长按上面的图标以查看配方。\n对于该奖励，在领取时会给玩家3个木棍。\n另外，该奖励自动领取。"
                 }
             },
             {

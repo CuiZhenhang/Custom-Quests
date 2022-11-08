@@ -31,10 +31,10 @@ IOTypeTools.setInputType('visit_dimension', TranAPI.getTranslation('inputType.vi
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: (typeof inputJson.icon.bitmap === 'string') ? inputJson.icon.bitmap : 'clear',
+                bitmap: (typeof inputJson.icon.bitmap === 'string') ? inputJson.icon.bitmap : 'cq_clear',
                 source: Utils.transferItemFromJson(inputJson.icon),
                 clicker: {
-                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
+                    onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
                 }
             }]
         ]
@@ -55,17 +55,18 @@ IOTypeTools.setInputType('visit_dimension', TranAPI.getTranslation('inputType.vi
                 font: { color: android.graphics.Color.GRAY, size: 30, align: 1 }
             }]
         ]
-        QuestUiTools.resolveText(TranAPI.translate(inputJson.description), function (str) {
-            if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 30) / 900
-        }).forEach(function (str, index) {
-            elements.push([prefix + 'desc_' + index, {
-                type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 30 }
-            }])
-            maxY += 40
+        let description = QuestUiTools.resolveTextJsonToElements(inputJson.description, {
+            prefix: prefix + 'desc_',
+            pos: [50, maxY],
+            maxWidth: 900,
+            rowSpace: 10,
+            font: {
+                color: android.graphics.Color.BLACK,
+                size: 30
+            }
         })
-        maxY += 20
+        elements = elements.concat(description.elements)
+        maxY = description.maxY + 20
         return {
             maxY: maxY,
             elements: elements

@@ -33,7 +33,7 @@ const $AchievementUi = {
     popWaiting () {
         let now = Date.now()
         let ret = this.waiting.shift()
-        while (ret && ret.time < now - 30*1000 /* 30s */) ret = this.waiting.shift()
+        while (ret && ret.time < now - 20*1000 /* 20s */) ret = this.waiting.shift()
         if (!ret) return null
         return {
             icon: ret.icon,
@@ -57,11 +57,11 @@ const $AchievementUi = {
         let ui = this.achievementUi
         let display = this.display[index]
         display.exist = true
-        display.slot.bitmap = obj.icon.bitmap || 'clear'
+        display.slot.bitmap = obj.icon.bitmap || 'cq_clear'
         display.slot.source = Utils.transferItemFromJson(obj.icon)
         display.name.text = obj.name
         let that = this
-        QuestUiTools.createAnimator(1000, function (animator) {
+        QuestUiTools.createAnimator(1000 /* 1s */, function (animator) {
             let posX = 1000 - animator.getAnimatedValue() * 1000
             let deltaX = posX - display.bg.x
             display.bg.x += deltaX
@@ -74,8 +74,8 @@ const $AchievementUi = {
                 let time = 0
                 Updatable.addLocalUpdatable({
                     update () {
-                        if (++time < 60) return
-                        QuestUiTools.createAnimator(1000, function (animator) {
+                        if (++time < 60 /* 3s */) return
+                        QuestUiTools.createAnimator(1000 /* 1s */, function (animator) {
                             let posX = animator.getAnimatedValue() * 1000
                             let deltaX = posX - display.bg.x
                             display.bg.x += deltaX
@@ -105,7 +105,7 @@ const $AchievementUi = {
             let index = this.getEmptyDisplayIndex()
             if (index < 0) return
             let obj = this.popWaiting()
-            if (!Utils.isObject(obj)) return
+            if (!obj) return
             this.addDisplay(index, obj)
         }
     }
@@ -118,11 +118,11 @@ for (let index = 0; index < displayLength; index++) {
         exist: false,
         bg: {
             type: 'image', x: 0 + 2000, y: index * 200, z: 1,
-            bitmap: 'achievement_bg', width: 1000, height: 64 * bit
+            bitmap: 'cq_achievement_bg', width: 1000, height: 64 * bit
         },
         slot: {
             type: 'slot', x: 8 * bit + 2000, y: index * 200 + 8 * bit, z: 2,
-            size: 48 * bit, visual: true, bitmap: 'clear', source: {}
+            size: 48 * bit, visual: true, bitmap: 'cq_clear', source: {}
         },
         title: {
             type: 'text', x: 59 * bit + 2000, y: index * 200 + 12 * bit, z: 2,
@@ -138,7 +138,7 @@ for (let index = 0; index < displayLength; index++) {
         [index + '_bg', $AchievementUi.display[index].bg],
         [index + '_slot', $AchievementUi.display[index].slot],
         [index + '_title', $AchievementUi.display[index].title],
-        [index + '_name', $AchievementUi.display[index].name],
+        [index + '_name', $AchievementUi.display[index].name]
     ])
 }
 
@@ -157,9 +157,9 @@ Callback.addCallback('CustomQuests.onLocalQuestInputStateChanged', function (pat
     if (newState === oldState) return
     if (newState === EnumObject.questInputState.finished) {
         let config = Store.localCache.jsonConfig[path[0]]
-        if (!Utils.isObject(config) || !config.guiMessage) return
+        if (!config || !config.guiMessage) return
         let questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
-        if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
+        if (!questJson || questJson.type !== 'quest') return
         $AchievementUi.addWaiting({
             icon: questJson.icon[2],
             name: TranAPI.translate(questJson.inner.name)

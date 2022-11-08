@@ -1,6 +1,6 @@
 /// <reference path='../IOTypeTools.js'/>
 
-Network.addClientPacket('CustomQuests.output.message', function (packetData) {
+Network.addClientPacket('CustomQuests.outputType.message', function (packetData) {
     let message = ''
     if (typeof packetData.message === 'string') {
         message = packetData.message
@@ -21,7 +21,13 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
     },
     onPacket (outputJson, toolsCb, cache, extraInfo) {
         if (extraInfo.packetData.type !== 'receive') return
-        toolsCb.setState({}, {
+        if (toolsCb.getState().state === EnumObject.outputState.received) return
+        toolsCb.setState({
+            operator: {
+                type: 'player',
+                player: extraInfo.client.getPlayerUid()
+            }
+        }, {
             state: EnumObject.outputState.received
         })
     },
@@ -31,15 +37,18 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
         })
     },
     onReceive (outputJson, toolsCb, cache, extraInfo) {
-        /** @type { NetworkConnectedClientList } */
-        let client
-        if (outputJson.toAll) {
-            client = new NetworkConnectedClientList()
-            client.setupAllPlayersPolicy()
-        } else {
-            client = toolsCb.getConnectedClientList()
+        let client = new NetworkConnectedClientList()
+        if (outputJson.toAll) client.setupAllPlayersPolicy()
+        else if (outputJson.mutiReward) client = toolsCb.getConnectedClientList()
+        else {
+            if (Utils.isObject(extraInfo.operator) && extraInfo.operator.type === 'player') {
+                client.add(Network.getClientForPlayer(extraInfo.operator.player))
+            } else {
+                let tPlayerList = toolsCb.getPlayerList(true)
+                client.add(Network.getClientForPlayer(tPlayerList[Math.floor(Math.random() * tPlayerList.length)]))
+            }
         }
-        client.send('CustomQuests.output.message', {
+        client.send('CustomQuests.outputType.message', {
             message: outputJson.message,
             isAlert: Boolean(outputJson.isAlert)
         })
@@ -50,13 +59,13 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: 'reward_message',
+                bitmap: 'cq_reward_message',
                 clicker: {
                     onClick: (!received) ? Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.outputState.received) return
-                        toolsCb.sendPacket({ type: 'receive' })
+                        if (typeof toolsCb.sendPacket === 'function') toolsCb.sendPacket({ type: 'receive' })
                     }, 500) : null,
-                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
+                    onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
                 }
             }]
         ]
@@ -70,17 +79,18 @@ IOTypeTools.setOutputType('message', TranAPI.getTranslation('outputType.message'
                 font: { color: android.graphics.Color.BLACK, size: 30, align: 1 }
             }]
         ]
-        QuestUiTools.resolveText(TranAPI.translate(outputJson.description), function (str) {
-            if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 30) / 900
-        }).forEach(function (str, index) {
-            elements.push([prefix + 'desc_' + index, {
-                type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 30 }
-            }])
-            maxY += 40
+        let description = QuestUiTools.resolveTextJsonToElements(outputJson.description, {
+            prefix: prefix + 'desc_',
+            pos: [50, maxY],
+            maxWidth: 900,
+            rowSpace: 10,
+            font: {
+                color: android.graphics.Color.BLACK,
+                size: 30
+            }
         })
-        maxY += 20
+        elements = elements.concat(description.elements)
+        maxY = description.maxY + 20
         return {
             maxY: maxY,
             elements: elements

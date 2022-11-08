@@ -19,6 +19,7 @@ alert.no_team=You hava no team. \nPlease join or create a team.
 alert.fail.nameLength=Failed: Name length is illegal
 alert.fail.passwordLength=Failed: Password length is illegal
 alert.fail.passwordWrong=Failed: Password is wrong
+alert.fail.questHidden=Failed: This quest is not visible
 alert.fast_receive.description=Recivie rewards quickly
 alert.description.show_parent=View quests that this quest depends
 alert.description.show_child=View quests that depend this quest
@@ -60,6 +61,7 @@ gui.childList.title=Child Quest List
 
 
 inputType.group=task group
+inputType.group.finished=Finished {count}/{require} tasks
 
 inputType.check=check
 
@@ -79,15 +81,15 @@ inputType.location=location
 inputType.location.text=Reach the position
 inputType.location.dimensionId=Dimension id: {id}
 inputType.location.ignoreDimension=any dimension
+inputType.location.ignore=any
 
 inputType.kill=kill entity
 inputType.kill.text=Kill the entity
 inputType.kill.entity=Entity id: {id}, count: {count}
 inputType.kill.killed=Killed count: {count}
 
-outputType.random=random reward
-
-outputType.select=select reward
+outputType.group=reward group
+outputType.group.received=Received {count}/{total} rewards
 
 outputType.empty=no reward
 outputType.empty.text=No reward

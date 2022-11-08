@@ -93,7 +93,7 @@ function registerTaskType (API) {
         let saveId = API.ServerSystem.getSaveId(player)
         // get all task that we'll affect as an array
         // they're of our custom task type and loaded by this saveId
-        let inputIdArray = API.ServerSystem.getTypedInputId(saveId, typeId)
+        let inputIdArray = API.IOTypeTools.getAllInputIdByType(typeId, saveId)
         // iterate through this array
         inputIdArray.forEach(function (inputId) {
             // invoke the callback 'onCustomCall'

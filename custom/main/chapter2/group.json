@@ -1,0 +1,137 @@
+{
+    "type": "quest",
+    "id": "group",
+    "pos": [300, 400],
+    "size": 100,
+    "icon": {
+        "id": "vitem:iron_pickaxe"
+    },
+    "inner": {
+        "input": [
+            {
+                "type": "group",
+                "icon": {
+                    "id": "vitem:iron_pickaxe"
+                },
+                "count": 2,
+                "list": [
+                    {
+                        "type": "exp",
+                        "value": 3,
+                        "isLevel": true
+                    },
+                    "ref:submit_stone",
+                    "ref:have_coal"
+                ]
+            },
+            {
+                "type": "group",
+                "icon": {
+                    "id": "vitem:iron_sword"
+                },
+                "count": 1,
+                "list": [
+                    {
+                        "type": "group",
+                        "icon": {
+                            "id": "vitem:iron_sword"
+                        },
+                        "list": [
+                            {
+                                "type": "kill",
+                                "icon": {
+                                    "id": "vblock:skull",
+                                    "data": 4
+                                },
+                                "entityId": 33,
+                                "count": 1
+                            }
+                        ]
+                    },
+                    {
+                        "type": "check"
+                    }
+                ]
+            }
+        ],
+        "output": [
+            {
+                "type": "group",
+                "icon": {
+                    "id": "vitem:coal"
+                },
+                "count": 2,
+                "list": [
+                    {
+                        "output": {
+                            "type": "item",
+                            "id": "vitem:coal",
+                            "count": 8
+                        },
+                        "weight": 2
+                    },
+                    {
+                        "output": "ref:message",
+                        "weight": 5
+                    },
+                    {
+                        "output": "ref:empty",
+                        "weight": 3
+                    }
+                ]
+            },
+            {
+                "type": "group",
+                "icon": {
+                    "id": "vitem:iron_pickaxe"
+                },
+                "isSelect": true,
+                "count": 2,
+                "list": [
+                    {
+                        "output": {
+                            "type": "item",
+                            "id": "vitem:iron_sword"
+                        }
+                    },
+                    {
+                        "output": {
+                            "type": "item",
+                            "id": "vitem:iron_pickaxe"
+                        }
+                    },
+                    {
+                        "output": "ref:message"
+                    }
+                ]
+            }
+        ],
+        "name": {
+            "en": "Task group & Reward group",
+            "ru": "Task group & Reward group",
+            "zh": "任务组 & 奖励组"
+        },
+        "text": ""
+    },
+    "ref": {
+        "submit_stone": {
+            "type": "item",
+            "id": "vblock:cobblestone",
+            "count": 100,
+            "submit": true
+        },
+        "have_coal": {
+            "type": "item",
+            "id": "vitem:coal",
+            "count": 16
+        },
+        "message": {
+            "type": "message",
+            "mutiReward": true,
+            "message": "This is a piece of message"
+        },
+        "empty": {
+            "type": "empty"
+        }
+    }
+}

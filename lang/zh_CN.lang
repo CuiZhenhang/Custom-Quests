@@ -19,6 +19,7 @@ alert.no_team=您没有团队。\n请加入或创建一个团队。
 alert.fail.nameLength=失败：名称长度不合法
 alert.fail.passwordLength=失败：密码长度不合法
 alert.fail.passwordWrong=失败：密码错误
+alert.fail.questHidden=失败：该任务不可见
 alert.fast_receive.description=快速领取奖励
 alert.description.show_parent=查看此任务所依赖的任务
 alert.description.show_child=查看依赖此任务的任务
@@ -60,6 +61,7 @@ gui.childList.title=子任务列表
 
 
 inputType.group=任务组
+inputType.group.finished=已完成 {count}/{require} 个任务
 
 inputType.check=勾选
 
@@ -79,15 +81,15 @@ inputType.location=到达位置
 inputType.location.text=到达特定位置
 inputType.location.dimensionId=维度 id：{id}
 inputType.location.ignoreDimension=任意维度
+inputType.location.ignore=任意
 
 inputType.kill=击杀生物
 inputType.kill.text=击杀特定生物
 inputType.kill.entity=生物 id：{id}，数量：{count}
 inputType.kill.killed=已击杀 {count} 个
 
-outputType.random=随机奖励
-
-outputType.select=选择奖励
+outputType.group=奖励组
+outputType.group.received=已领取 {count}/{total} 个奖励
 
 outputType.empty=无奖励
 outputType.empty.text=无奖励

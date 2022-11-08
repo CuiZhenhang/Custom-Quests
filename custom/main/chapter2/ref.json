@@ -1,7 +1,7 @@
 {
     "type": "quest",
     "id": "ref",
-    "pos": [150, 200],
+    "pos": [150, 100],
     "size": 100,
     "icon": "ref:my_block_grass",
     "inner": {
@@ -17,9 +17,9 @@
             "zh": "ref"
         },
         "text": {
-            "en": "",
-            "ru": "",
-            "zh": "通过 ref 可重复使用描述，简化开发。"
+            "en": "The ref allows reuse of descriptions and simplifies development.",
+            "ru": "The ref allows reuse of descriptions and simplifies development.",
+            "zh": "通过ref可以重复使用描述，简化开发。"
         }
     }
 }

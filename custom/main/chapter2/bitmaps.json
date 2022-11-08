@@ -1,12 +1,15 @@
 {
     "type": "quest",
     "id": "bitmaps",
-    "pos": [260, 200],
+    "pos": [310, 260],
     "size": 80,
     "icon": [
-        { "bitmap": "ach3_0", "id": "vitem:stick" },
+        { "id": "vitem:stick" },
         { "bitmap": "ach3_0", "id": "vitem:stick" },
         { "bitmap": "ach3_1", "id": "vitem:stick" }
+    ],
+    "parent": [
+        "dependence"
     ],
     "inner": {
         "input": [
@@ -21,9 +24,9 @@
             "zh": "bitmaps"
         },
         "text": {
-            "en": "",
-            "ru": "",
-            "zh": ""
+            "en": "Quests can have different icons in 3 states: unlocked, unfinished and finished.",
+            "ru": "Quests can have different icons in 3 states: unlocked, unfinished and finished.",
+            "zh": "任务在未解锁、未完成和已完成3种状态可以有不同的图标。"
         }
     }
 }

@@ -43,14 +43,14 @@ const $MainUi = {
         location: { x: 0, y: 0, width: 1000, height: $ScreenHeight },
         drawing: [
             { type: 'background', color: $Color.TRANSPARENT },
-            { type: 'frame', x: 0, y: 0, width: 1000, height: $ScreenHeight, bitmap: 'classic_frame_bg_light', scale: 4 },
-            { type: 'frame', x: 0, y: 0, width: 1000, height: 60, bitmap: 'classic_frame_bg_light', scale: 4 },
+            { type: 'frame', x: 0, y: 0, width: 1000, height: $ScreenHeight, bitmap: 'classic_frame_bg_light', scale: 2 },
+            { type: 'frame', x: 0, y: 0, width: 1000, height: 60, bitmap: 'classic_frame_bg_light', scale: 2 },
             { type: 'text', text: '', x: 500, y: 30, font: { color: $Color.BLACK, align: 1, size: 20 } },
             { type: 'frame', x: 0, y: 60, width: 40, height: $ScreenHeight - 60, bitmap: 'classic_frame_bg_light', scale: 1 }
         ],
         elements: {
             close: { type: 'closeButton', x: 947, y: 12, bitmap: 'X', bitmap2: 'XPress', scale: 36 / 19 },
-            info: { type: 'button', x: 22, y: 12, bitmap: 'info', scale: 36 / 16,
+            info: { type: 'button', x: 22, y: 12, bitmap: 'cq_info', scale: 36 / 16,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         Utils.dialog({
@@ -59,7 +59,7 @@ const $MainUi = {
                     }, 500)
                 }
             },
-            team: { type: 'button', x: 72, y: 12, z: 1, bitmap: 'team', scale: 36 / 32,
+            team: { type: 'button', x: 72, y: 12, z: 1, bitmap: 'cq_team', scale: 36 / 32,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         QuestUi.openTeamUi()
@@ -73,12 +73,12 @@ const $MainUi = {
                 z: 2,
                 width: 36 * (20 / 80),
                 height: 36 * (20 / 80),
-                bitmap: 'remind'
+                bitmap: 'cq_remind'
             },
-            fast_receive: { type: 'button', x: 122, y: 12, bitmap: 'fast_receive', scale: 36 / 16,
+            fast_receive: { type: 'button', x: 122, y: 12, bitmap: 'cq_fast_receive', scale: 36 / 16,
                 clicker: {
                     onClick: Utils.debounce(function () {
-                        if (typeof $MainUi.sourceId === 'string' && Utils.isObject($MainUi.mainJson)) {
+                        if (typeof $MainUi.sourceId === 'string' && $MainUi.mainJson) {
                             ClientSystem.receiveAllQuest($MainUi.sourceId, {})
                         }
                     }, 1000),
@@ -87,14 +87,14 @@ const $MainUi = {
                     }, 500)
                 }
             },
-            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'clear', width: 32, height: ($ScreenHeight - 60) / 2,
+            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'cq_clear', width: 32, height: ($ScreenHeight - 60) / 2,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         $MainUi.openChapterListUi()
                     }, 500)
                 }
             },
-            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'arrow_right', scale: 32 / 64 }
+            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'cq_arrow_right', scale: 32 / 64 }
         }
     }, {
         onOpen (ui) {
@@ -106,7 +106,8 @@ const $MainUi = {
         }
     }, {
         closeOnBackPressed: true,
-        blockingBackground: true
+        blockingBackground: true,
+        hideNavigation: true
     }),
     chapterListUi: QuestUiTools.createUi({
         location: { x: 0, y: 60, width: 300, height: $ScreenHeight - 60, scrollY: 100 * (300/1000) },
@@ -120,14 +121,15 @@ const $MainUi = {
             group_frame: { type: 'frame', x: 140 + 2000, y: 0, z: 10, width: 860, height: 140, bitmap: 'classic_frame_bg_light', scale: 2 }
         }
     }, null, {
-        closeOnBackPressed: true
+        closeOnBackPressed: true,
+        hideNavigation: true
     }),
     chapterUi: QuestUiTools.createUi({
         location: { x: 40, y: 60, width: 960 , height: $ScreenHeight - 60, scrollY: 960 * (1/2) },
         drawing: [
             { type: 'background', color: $Color.TRANSPARENT },
             { type: 'frame', x: 0, y: 0, width: 1000, height: 1000 * (1/2), bitmap: 'classic_frame_bg_light', scale: 2 },
-            { type: 'bitmap', x: 0 + 2000, y: 0, width: 1000, height: 1000 * (1/2), bitmap: 'clear' }
+            { type: 'bitmap', x: 0 + 2000, y: 0, width: 1000, height: 1000 * (1/2), bitmap: 'cq_clear' }
         ],
         elements: {}
     }, {
@@ -144,7 +146,7 @@ const $MainUi = {
             this.chapterId = null
             this.chapterJson = null
             if (this.chapterListUi.isOpened()) this.chapterListUi.close()
-            if (!Utils.isObject(this.mainJson)) return
+            if (!this.mainJson) return
             this.mainUi.content.drawing[3].text = TranAPI.translate(this.mainJson.name)
             let empty = true
             for (let chapterId in this.mainJson.chapter) {
@@ -172,7 +174,7 @@ const $MainUi = {
             $MainUi.chapterGroup.newElements.length = 0
         }
         ui.content.drawing.splice(2)
-        ui.clearNewElements()
+        ui.clearNewElements(null, true)
         if (!Utils.isObject(this.mainJson)) {
             ui.open(true)
             return
@@ -199,7 +201,7 @@ const $MainUi = {
                 let groupJson = groupObj[chapterId]
                 ui.addElements([
                     [uuid + '_' + chapterId + '_icon', {
-                        type: 'slot', visual: true, bitmap: groupJson.icon.bitmap || 'clear',
+                        type: 'slot', visual: true, bitmap: groupJson.icon.bitmap || 'cq_clear',
                         source: Utils.transferItemFromJson(groupJson.icon),
                         darken: Boolean(groupJson.icon.darken),
                         x: 10, y: height + 10, z: 1, size: 120
@@ -210,7 +212,7 @@ const $MainUi = {
                         x: 140, y: height + 50, z: 1
                     }],
                     [uuid + '_' + chapterId + '_btn', {
-                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 120,
+                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'cq_clear', width: 980, height: 120,
                         clicker: {
                             onClick: Utils.debounce(this.toggleChapterGroup.bind(this, groupJson, height), 500)
                         }
@@ -223,7 +225,7 @@ const $MainUi = {
                 let chapterJson = this.mainJson.chapter[chapterId]
                 ui.addElements([
                     [uuid + '_' + chapterId + '_icon', {
-                        type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'clear',
+                        type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'cq_clear',
                         source: Utils.transferItemFromJson(chapterJson.icon),
                         darken: Boolean(chapterJson.icon.darken),
                         x: 10, y: height + 10, z: 1, size: 120
@@ -234,7 +236,7 @@ const $MainUi = {
                         x: 140, y: height + 50, z: 1
                     }],
                     [uuid + '_' + chapterId + '_btn', {
-                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 120,
+                        type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'cq_clear', width: 980, height: 120,
                         clicker: {
                             onClick: Utils.debounce(this.updateChapterUi.bind(this, chapterId), 500)
                         }
@@ -259,7 +261,7 @@ const $MainUi = {
         let ui = this.chapterListUi
         if (this.chapterGroup.exist) {
             ui.content.elements['group_frame'].x = 140 + 2000
-            ui.clearNewElements(this.chapterGroup.newElements)
+            ui.clearNewElements(this.chapterGroup.newElements, true)
             this.chapterGroup.exist = false
             this.chapterGroup.newElements.length = 0
             if (this.chapterGroup.chapterId === groupJson.list[0]) {
@@ -269,7 +271,7 @@ const $MainUi = {
             }
             this.chapterGroup.chapterId = null
         }
-        if (!Utils.isObject(this.mainJson)) return
+        if (!this.mainJson) return
         this.chapterGroup.exist = true
         this.chapterGroup.chapterId = groupJson.list[0]
         let listHeight = 0
@@ -277,7 +279,7 @@ const $MainUi = {
         let that = this
         groupJson.list.forEach(function (chapterId) {
             let chapterJson = that.mainJson.chapter[chapterId]
-            if (!Utils.isObject(chapterJson)) return
+            if (!chapterJson) return
             that.chapterGroup.newElements.push(
                 uuid + '_group_' + chapterId + '_icon',
                 uuid + '_group_' + chapterId + '_name',
@@ -285,7 +287,7 @@ const $MainUi = {
             )
             ui.addElements([
                 [uuid + '_group_' + chapterId + '_icon', {
-                    type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'clear',
+                    type: 'slot', visual: true, bitmap: chapterJson.icon.bitmap || 'cq_clear',
                     source: Utils.transferItemFromJson(chapterJson.icon),
                     darken: Boolean(chapterJson.icon.darken),
                     x: 150, y: height + 140 + listHeight + 10, z: 11, size: 120
@@ -296,7 +298,7 @@ const $MainUi = {
                     x: 280, y: height + 140 + listHeight + 50, z: 11
                 }],
                 [uuid + '_group_' + chapterId + '_btn', {
-                    type: 'image', x: 150, y: height + 140 + listHeight + 10, z: 12, bitmap: 'clear', width: 840, height: 120,
+                    type: 'image', x: 150, y: height + 140 + listHeight + 10, z: 12, bitmap: 'cq_clear', width: 840, height: 120,
                     clicker: {
                         onClick: Utils.debounce(that.updateChapterUi.bind(that, chapterId), 500)
                     }
@@ -311,15 +313,14 @@ const $MainUi = {
     },
     /** @type { (chapterId: Nullable<CQTypes.chapterId>) => void } */
     updateChapterUi (chapterId) {
-        if (!Utils.isObject(this.mainJson)) return
+        if (!this.mainJson) return
         if (typeof chapterId !== 'string') return
         this.chapterId = chapterId
         this.chapterJson = this.mainJson.chapter[chapterId]
         this.chapterUiUpdateRequest.exist = false
         let ui = this.chapterUi
-        ui.content.drawing.splice(3)
-        ui.clearNewElements()
-        if (!Utils.isObject(this.chapterJson)) {
+        ui.clearNewElements(null, true)
+        if (!this.chapterJson) {
             ui.refresh()
             return
         }
@@ -333,7 +334,7 @@ const $MainUi = {
             } else {
                 ui.content.drawing[1].x = 0
                 ui.content.drawing[2].x = 0 + 2000
-                ui.content.drawing[2].bitmap = 'clear'
+                ui.content.drawing[2].bitmap = 'cq_clear'
             }
             if (typeof this.chapterJson.background[1] === 'number') {
                 ui.ui.getLocation().scrollY = 960 * this.chapterJson.background[1]
@@ -347,12 +348,12 @@ const $MainUi = {
             ui.content.drawing[2].height = ui.content.drawing[1].height = 1000 * (1/2)
             ui.content.drawing[1].x = 0
             ui.content.drawing[2].x = 0 + 2000
-            ui.content.drawing[2].bitmap = 'clear'
+            ui.content.drawing[2].bitmap = 'cq_clear'
         }
         let uuid = Utils.getUUID()
         let that = this
         for (let questId in this.chapterJson.quest) {
-            let questJson = Utils.deepCopy(this.chapterJson.quest[questId])
+            let questJson = this.chapterJson.quest[questId]
             if (questJson.type === 'custom') {
                 let elements = Array.isArray(questJson.elem) ? questJson.elem : [questJson.elem]
                 ui.addElements(elements.map(function (elem, index) {
@@ -361,11 +362,11 @@ const $MainUi = {
             } else if (questJson.type === 'quest') {
                 let posChild = [questJson.pos[0] + questJson.size/2, questJson.pos[1] + questJson.size/2]
                 let saveData = System.getQuestSaveData(Store.localCache.resolvedJson, Store.localCache.saveData, this.sourceId, chapterId, questId)
-                if (saveData.inputState === EnumObject.questInputState.locked && questJson.hidden) return
+                if (saveData.inputState === EnumObject.questInputState.locked && questJson.hidden) continue
                 questJson.parent.forEach(function (path) {
                     if (path[0] !== that.sourceId || path[1] !== that.chapterId) return
                     let tQuestJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
-                    if (!Utils.isObject(tQuestJson) || tQuestJson.type !== 'quest') return
+                    if (!tQuestJson || tQuestJson.type !== 'quest') return
                     let posParent = [tQuestJson.pos[0] + tQuestJson.size/2, tQuestJson.pos[1] + tQuestJson.size/2]
                     let tInputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, path[0], path[1], path[2])
                     if (tInputState === EnumObject.questInputState.locked && tQuestJson.hidden) return
@@ -375,9 +376,10 @@ const $MainUi = {
                         else if (saveData.inputState === EnumObject.questInputState.unfinished) color = $Color.rgb(0, 200, 200)
                         else color = $Color.rgb(200, 200, 0)
                     }
-                    QuestUiTools.getDependencyLine(posParent, posChild, path[3], color).forEach(function (drawing) {
-                        ui.content.drawing.push(drawing)
-                    })
+                    let elements = QuestUiTools.getDependencyLine(posParent, posChild, path[3], color)
+                    ui.addElements(elements.map(function (elem, index) {
+                        return [uuid + '_' + questId + '_from_' + path[2] + '_' + index, elem]
+                    }))
                 })
                 ui.addElements(QuestUiTools.getQuestIcon(questJson, saveData, {
                     prefix: uuid + '_' + questId + '_',
@@ -389,15 +391,15 @@ const $MainUi = {
         }
         ui.refresh()
     },
-    /** @type { (questId: Nullable<CQTypes.questId>) => void } */
-    openQuestUi (questId) {
+    /** @type { (questId: Nullable<CQTypes.questId>, isReload?: boolean) => void } */
+    openQuestUi (questId, isReload) {
         if (!questId) return
         let sourceId = this.sourceId
         let chapterId = this.chapterId
         if (typeof sourceId !== 'string' || typeof chapterId !== 'string') return
         try {
             let questJson = System.getQuestJson(Store.localCache.resolvedJson, sourceId, chapterId, questId)
-            if (!Utils.isObject(questJson) || questJson.type !== 'quest') return
+            if (!questJson || questJson.type !== 'quest') return
             let saveData = System.getQuestSaveData(Store.localCache.resolvedJson, Store.localCache.saveData, sourceId, chapterId, questId)
             let that = this
             let obj = QuestUi.openQuestUi(questJson, saveData, {
@@ -405,17 +407,26 @@ const $MainUi = {
                 sendOutputPacket: ClientSystem.sendOutputPacket.bind(ClientSystem, sourceId, chapterId, questId),
                 openParentListUi: function () {
                     QuestUi.openQuestListUi(TranAPI.translate('gui.parentList.title'), questJson.parent, function (path) {
+                        let questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
+                        if (!questJson || questJson.type !== 'quest') return true
+                        if (questJson.hidden) {
+                            let inputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, path[0], path[1], path[2])
+                            if (inputState === EnumObject.questInputState.locked) {
+                                alert(TranAPI.translate('alert.fail.questHidden'))
+                                return true
+                            }
+                        }
                         that.open(path[0])
                         that.updateChapterUi(path[1])
                         that.openQuestUi(path[2])
                     })
                 },
                 openChildListUi: function () {
-                    let questList = questJson.child.filter(function (pathArray) {
-                        let questJson = System.getQuestJson(Store.localCache.resolvedJson, pathArray[0], pathArray[1], pathArray[2])
-                        if (!questJson) return false
+                    let questList = questJson.child.filter(function (path) {
+                        let questJson = System.getQuestJson(Store.localCache.resolvedJson, path[0], path[1], path[2])
+                        if (!questJson || questJson.type !== 'quest') return false
                         if (!questJson.hidden) return true
-                        let inputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, pathArray[0], pathArray[1], pathArray[2])
+                        let inputState = System.getQuestInputState(Store.localCache.resolvedJson, Store.localCache.saveData, path[0], path[1], path[2])
                         return inputState !== EnumObject.questInputState.locked
                     })
                     QuestUi.openQuestListUi(TranAPI.translate('gui.childList.title'), questList, function (path) {
@@ -423,14 +434,15 @@ const $MainUi = {
                         that.updateChapterUi(path[1])
                         that.openQuestUi(path[2])
                     })
-                }
+                },
+                isReload: isReload
             })
             this.questUi.questId = questId
             this.questUi.isClosed = obj.isClosed
             this.questUi.close = obj.close
             this.questUi.updateRequest.exist = false
         } catch (err) {
-            Utils.log('Error in function \'$MainUi.openQuestUi\' (ui/MainUi.js):\n' + err, 'ERROR')
+            Utils.error('Error in function $MainUi.openQuestUi (ui/MainUi.js):\n', err)
         }
     },
     /** @type { (chapterId: Nullable<CQTypes.chapterId>) => void } */
@@ -457,6 +469,8 @@ const $MainUi = {
     }
 }
 
+QuestUi.open = $MainUi.open.bind($MainUi)
+
 Callback.addCallback('LocalTick', function () {
     if (!$MainUi.chapterUiUpdateRequest.exist) return
     if (!$MainUi.chapterUi.isOpened()) {
@@ -464,11 +478,11 @@ Callback.addCallback('LocalTick', function () {
         return
     }
     let time = Date.now()
-    if (time - $MainUi.chapterUiUpdateRequest.timeFirst >= 1000 /* 1s */) {
+    if (time - $MainUi.chapterUiUpdateRequest.timeFirst >= 500 /* 0.5s */) {
         $MainUi.updateChapterUi($MainUi.chapterId)
         return
     }
-    if (time - $MainUi.chapterUiUpdateRequest.timeLast >= 200 /* 0.2s */) {
+    if (time - $MainUi.chapterUiUpdateRequest.timeLast >= 100 /* 0.1s */) {
         $MainUi.updateChapterUi($MainUi.chapterId)
         return
     }
@@ -482,12 +496,12 @@ Callback.addCallback('LocalTick', function () {
         return
     }
     let time = Date.now()
-    if (time - $MainUi.questUi.updateRequest.timeFirst >= 1000 /* 1s */) {
-        $MainUi.openQuestUi($MainUi.questUi.questId)
+    if (time - $MainUi.questUi.updateRequest.timeFirst >= 500 /* 0.5s */) {
+        $MainUi.openQuestUi($MainUi.questUi.questId, true)
         return
     }
-    if (time - $MainUi.questUi.updateRequest.timeLast >= 200 /* 0.2s */) {
-        $MainUi.openQuestUi($MainUi.questUi.questId)
+    if (time - $MainUi.questUi.updateRequest.timeLast >= 100 /* 0.1s */) {
+        $MainUi.openQuestUi($MainUi.questUi.questId, true)
         return
     }
 })
@@ -529,11 +543,10 @@ Callback.addCallback('CustomQuests.onLocalCacheChanged', function (packetData, o
         $MainUi.addQuestUiUpdateRequest($MainUi.questUi.questId)
     }
     if (Utils.isObject(packetData.team) || packetData.team === null) {
-        let hasTeam = Utils.isObject(packetData.team)
+        let hasTeam = packetData.team !== null
         $MainUi.mainUi.content.elements['team_remind'].x = 72 + 36 * (55 / 80) + (hasTeam ? 2000 : 0)
         $MainUi.mainUi.refresh()
     }
 })
-QuestUi.open = $MainUi.open.bind($MainUi)
 
 })()

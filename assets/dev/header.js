@@ -7,7 +7,7 @@ IMPORT('ChargeItem')
 const Setting = (function () {
     let Setting = {
         giveBook: __config__.getBool('give_book'),
-        path: __config__.getString('contents.path'),
+        path: __config__.getString('contents.path') || 'custom',
         saveForTeam: __config__.getBool('save.for_team')
     }
     return Setting
@@ -89,12 +89,10 @@ Saver.addSavesScope('CustomQuests-v2', function (scope) {
     if (!Utils.isObject(scope)) return
     Store.saved = scope
     for (let saveId in Store.saved.data) {
-        if (!Utils.isObject(Store.saved.data[saveId])) continue
+        if (!Store.saved.data[saveId]) continue
+        if (ServerSystem.isTeamSaveId(saveId) !== Setting.saveForTeam) continue
         System.validateSaveData(ServerSystem.resolvedJson, Store.saved.data[saveId])
     }
 }, function () {
-    return JSON.parse(JSON.stringify(Store.saved, function (key, value) {
-        if (value === null) return undefined
-        return value
-    }))
+    return Store.saved
 })

@@ -27,6 +27,7 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
     onPacket (inputJson, toolsCb, cache, extraInfo) {
         if (!inputJson.submit) return
         if (extraInfo.packetData.type !== 'submit') return
+        if (toolsCb.getState().state === EnumObject.inputState.finished) return
         let extra = Array.isArray(inputJson.extra)
         let player = extraInfo.client.getPlayerUid()
         let actor = new PlayerActor(player)
@@ -64,7 +65,7 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
                 let items = obj.extra[cache.key]
                 if (!Array.isArray(items)) return false
                 let passedCount = 0
-                succ = items.some(function (item) {
+                return items.some(function (item) {
                     if (Utils.isItemExtraPassed(item, inputJson.extra)){
                         passedCount += item.count
                         if (passedCount >= inputJson.count) return true
@@ -93,14 +94,14 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'clear',
+                bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'cq_clear',
                 source: source,
                 clicker: {
                     onClick: (submit && !finished) ? Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.inputState.finished) return
-                        toolsCb.sendPacket({ type: 'submit' })
+                        if (typeof toolsCb.sendPacket === 'function') toolsCb.sendPacket({ type: 'submit' })
                     }, 500) : null,
-                    onLongClick: Utils.debounce(toolsCb.openDescription, 500)
+                    onLongClick: typeof toolsCb.openDescription === 'function' ? Utils.debounce(toolsCb.openDescription, 500) : null
                 }
             }],
             [extraInfo.prefix + 'text', submit ? {
@@ -109,7 +110,7 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
                 y: pos[1] + (40 / 80) * extraInfo.size,
                 z: 2,
                 text: Number(finished ? inputJson.count : (stateObj.count || 0)) + '/' + Number(inputJson.count),
-                font: { color: android.graphics.Color.WHITE, size: 20, align: 1 }
+                font: { color: android.graphics.Color.WHITE, size: (20 / 80) * extraInfo.size, align: 1 }
             } : null]
         ]
     },
@@ -120,7 +121,7 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
         let elements = [
             [prefix + 'slot', {
                 type: 'slot', visual: true, x: 440, y: extraInfo.posY + 10, size: 120,
-                bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'clear',
+                bitmap: (typeof inputJson.bitmap === 'string') ? inputJson.bitmap : 'cq_clear',
                 source: source,
                 clicker: {
                     onClick: Utils.debounce(function () { Integration.openRecipeUI(source, false) }, 500),
@@ -145,17 +146,18 @@ IOTypeTools.setInputType('item', TranAPI.getTranslation('inputType.item'), {
             }])
             maxY += 40
         }
-        QuestUiTools.resolveText(TranAPI.translate(inputJson.description), function (str) {
-            if (typeof str !== 'string') return 1
-            return QuestUiTools.getTextWidth(str, 30) / 900
-        }).forEach(function (str, index) {
-            elements.push([prefix + 'desc_' + index, {
-                type: 'text', x: 50, y: maxY, text: str,
-                font: { color: android.graphics.Color.BLACK, size: 30 }
-            }])
-            maxY += 40
+        let description = QuestUiTools.resolveTextJsonToElements(inputJson.description, {
+            prefix: prefix + 'desc_',
+            pos: [50, maxY],
+            maxWidth: 900,
+            rowSpace: 10,
+            font: {
+                color: android.graphics.Color.BLACK,
+                size: 30
+            }
         })
-        maxY += 20
+        elements = elements.concat(description.elements)
+        maxY = description.maxY + 20
         return {
             maxY: maxY,
             elements: elements

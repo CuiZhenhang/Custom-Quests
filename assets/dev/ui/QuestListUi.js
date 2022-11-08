@@ -13,20 +13,20 @@ const $QuestListUi = {
     questList: [],
     /** @type { QuestListObject } */
     questListObject: {},
-    /** @type { Nullable<(path: CQTypes.PathArray) => void> } */
+    /** @type { Nullable<(path: CQTypes.PathArray) => boolean> } */
     onSelect: null,
     mainUi: QuestUiTools.createUi({
         location: { x: 0, y: 0, width: 1000, height: $ScreenHeight },
         drawing: [
             { type: 'background', color: $Color.TRANSPARENT },
-            { type: 'frame', x: 0, y: 0, width: 1000, height: $ScreenHeight, bitmap: 'classic_frame_bg_light', scale: 4 },
-            { type: 'frame', x: 0, y: 0, width: 1000, height: 60, bitmap: 'classic_frame_bg_light', scale: 4 },
+            { type: 'frame', x: 0, y: 0, width: 1000, height: $ScreenHeight, bitmap: 'classic_frame_bg_light', scale: 2 },
+            { type: 'frame', x: 0, y: 0, width: 1000, height: 60, bitmap: 'classic_frame_bg_light', scale: 2 },
             { type: 'text', text: '', x: 500, y: 30, font: { color: $Color.BLACK, align: 1, size: 20 } },
             { type: 'frame', x: 0, y: 60, width: 40, height: $ScreenHeight - 60, bitmap: 'classic_frame_bg_light', scale: 1 }
         ],
         elements: {
             close: { type: 'closeButton', x: 947, y: 12, bitmap: 'X', bitmap2: 'XPress', scale: 36 / 19 },
-            info: { type: 'button', x: 22, y: 12, bitmap: 'info', scale: 36 / 16,
+            info: { type: 'button', x: 22, y: 12, bitmap: 'cq_info', scale: 36 / 16,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         Utils.dialog({
@@ -35,14 +35,14 @@ const $QuestListUi = {
                     }, 500)
                 }
             },
-            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'clear', width: 32, height: ($ScreenHeight - 60) / 2,
+            show_list_btn: { type: 'image', x: 4, y: 60 + ($ScreenHeight - 60) / 4, z: 2, bitmap: 'cq_clear', width: 32, height: ($ScreenHeight - 60) / 2,
                 clicker: {
                     onClick: Utils.debounce(function () {
                         $QuestListUi.sourceListUi.open()
                     }, 500)
                 }
             },
-            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'arrow_right', scale: 32 / 64 }
+            show_list: { type: 'image', x: 8, y: 60 + ($ScreenHeight - 60) / 2 - 16, z: 1, bitmap: 'cq_arrow_right', scale: 32 / 64 }
         }
     }, {
         onOpen (ui) {
@@ -54,7 +54,8 @@ const $QuestListUi = {
         }
     }, {
         closeOnBackPressed: true,
-        blockingBackground: true
+        blockingBackground: true,
+        hideNavigation: true
     }),
     sourceListUi: QuestUiTools.createUi({
         location: { x: 0, y: 60, width: 300, height: $ScreenHeight - 60, scrollY: 100 * (300/1000) },
@@ -67,7 +68,8 @@ const $QuestListUi = {
             title: { type: 'text', x: 60, y: 30, text: TranAPI.translate('gui.questList.sourceList'), font: { color: $Color.BLACK, size: 40 } }
         }
     }, null, {
-        closeOnBackPressed: true
+        closeOnBackPressed: true,
+        hideNavigation: true
     }),
     questListUi: QuestUiTools.createUi({
         location: { x: 40, y: 60, width: 960 , height: $ScreenHeight - 60, scrollY: $ScreenHeight - 60 },
@@ -102,12 +104,12 @@ const $QuestListUi = {
     updateSourceListUi () {
         let ui = this.sourceListUi
         ui.content.drawing.splice(2)
-        ui.clearNewElements()
+        ui.clearNewElements(null, true)
         let height = 100
         let uuid = Utils.getUUID()
         for (let sourceId in this.questListObject) {
             let mainJson = Store.localCache.resolvedJson[sourceId]
-            if (!Utils.isObject(mainJson)) continue
+            if (!mainJson) continue
             ui.addElements([
                 [uuid + '_' + sourceId + '_name', {
                     type: 'text', text: TranAPI.translate(mainJson.name),
@@ -115,7 +117,7 @@ const $QuestListUi = {
                     x: 500, y: height + 10, z: 1
                 }],
                 [uuid + '_' + sourceId + '_btn', {
-                    type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'clear', width: 980, height: 100,
+                    type: 'image', x: 10, y: height + 10, z: 2, bitmap: 'cq_clear', width: 980, height: 100,
                     clicker: {
                         onClick: Utils.debounce(this.updateQuestListUi.bind(this, sourceId), 500)
                     }
@@ -138,8 +140,8 @@ const $QuestListUi = {
         let ui = this.questListUi
         let mainQuestListObject = this.questListObject[sourceId]
         let mainJson = Store.localCache.resolvedJson[sourceId]
-        ui.clearNewElements()
-        if (!mainQuestListObject || !Utils.isObject(mainJson)) {
+        ui.clearNewElements(null, true)
+        if (!mainQuestListObject || !mainJson) {
             ui.content.elements['name'].text = TranAPI.translate('gui.questList.empty')
             ui.refresh()
             return
@@ -172,7 +174,9 @@ const $QuestListUi = {
                                     ['{name}', name]
                                 ])
                             }, function () {
-                                if (typeof that.onSelect === 'function') that.onSelect(pathArray)
+                                if (typeof that.onSelect === 'function') {
+                                    if (that.onSelect(pathArray)) return
+                                }
                                 that.mainUi.close()
                             })
                         }, 500),
@@ -200,7 +204,7 @@ const $QuestListUi = {
         })
         for (let sourceId in obj) {
             let mainJson = Store.localCache.resolvedJson[sourceId]
-            if (!Utils.isObject(mainJson)) {
+            if (!mainJson) {
                 delete obj[sourceId]
                 continue
             }
@@ -211,7 +215,7 @@ const $QuestListUi = {
             if (Array.isArray(mainJson.group)) {
                 mainJson.group.forEach(function (groupJson) {
                     if (groupJson.list.length === 0) return
-                    if (Utils.isObject(groupObj[groupJson.list[0]])) return
+                    if (groupObj[groupJson.list[0]]) return
                     groupObj[groupJson.list[0]] = groupJson.list
                     groupJson.list.forEach(function (chapterId) {
                         visInGroup[chapterId] = true
@@ -261,6 +265,7 @@ const $QuestListUi = {
         return questListObject
     }
 }
+
 QuestUi.openQuestListUi = $QuestListUi.open.bind($QuestListUi)
 
 })()

@@ -3,6 +3,7 @@
 IOTypeTools.setInputType('check', TranAPI.getTranslation('inputType.check'), {
     onPacket (inputJson, toolsCb, cache, extraInfo) {
         if (extraInfo.packetData.type !== 'check') return
+        if (toolsCb.getState().state === EnumObject.inputState.finished) return
         toolsCb.setState({}, {
             state: EnumObject.inputState.finished
         })
@@ -13,11 +14,11 @@ IOTypeTools.setInputType('check', TranAPI.getTranslation('inputType.check'), {
         return [
             [extraInfo.prefix + 'main', {
                 type: 'slot', visual: true, x: pos[0], y: pos[1], z: 1, size: extraInfo.size,
-                bitmap: finished ? 'task_check' : 'task_check_gray',
+                bitmap: finished ? 'cq_task_check' : 'cq_task_check_gray',
                 clicker: {
                     onClick: finished ? null : Utils.debounce(function () {
                         if (toolsCb.getState().state === EnumObject.inputState.finished) return
-                        toolsCb.sendPacket({ type: 'check' })
+                        if (typeof toolsCb.sendPacket === 'function') toolsCb.sendPacket({ type: 'check' })
                     }, 500)
                 }
             }]
@@ -25,5 +26,5 @@ IOTypeTools.setInputType('check', TranAPI.getTranslation('inputType.check'), {
     }
 }, {
     allowRepeat: true,
-    allowGroup: false
+    allowGroup: true
 })

@@ -18,6 +18,14 @@ const QuestUi = {
             close: function () {}
         }
     },
+    openDescriptionUi (isInput, ioJson, toolsCb) {
+        return {
+            isClosed: function () {
+                return true
+            },
+            close: function () {}
+        }
+    },
     openTeamUi () {},
     openQuestListUi (title, questList, onSelect) {},
     openItemChooseUi (title, isValid, onSelect) {},
@@ -27,13 +35,15 @@ const QuestUi = {
 /** @type { QuestUiTools } */
 const QuestUiTools = {
     createUi (content, eventListener, option) {
+        if (!Utils.isObject(option)) option = {}
         /** @type { ReturnType<QuestUiTools['createUi']> } */
         let ret = {
             content: content,
             ui: new UI.Window(content),
             newElements: [],
+            binElements: [],
             addElements (elementsObj) {
-                if (!Utils.isObject(ret.content.elements) || !Utils.isObject(elementsObj)) return
+                if (!ret.content.elements || !Utils.isObject(elementsObj)) return
                 if (Array.isArray(elementsObj)) {
                     elementsObj.forEach(function (elements) {
                         ret.newElements.push(elements[0])
@@ -46,42 +56,74 @@ const QuestUiTools = {
                     }
                 }
             },
-            clearNewElements (newElements) {
-                if (!Utils.isObject(ret.content.elements)) return
-                let elements = ret.content.elements
-                if (!Array.isArray(newElements)) {
-                    ret.newElements.forEach(function (key) {
-                        if (Utils.isObject(elements[key])) {
-                            for (let ekey in elements[key]) {
-                                elements[key][ekey] = null
-                            }
+            clearNewElements (newElements, lazy) {
+                if (!ret.content.elements) return
+                try {
+                    if (lazy) {
+                        if (!Array.isArray(newElements)) {
+                            ret.binElements = ret.binElements.concat(ret.newElements)
+                            ret.newElements.length = 0
+                        } else {
+                            newElements.forEach(function (key) {
+                                let index = ret.newElements.indexOf(key)
+                                if (index < 0) return
+                                ret.binElements.push(key)
+                                ret.newElements.splice(index, 1)
+                            })
                         }
-                        elements[key] = null
-                    })
-                    ret.newElements.length = 0
-                } else {
-                    newElements.forEach(function (key) {
-                        let index = ret.newElements.indexOf(key)
-                        if (index < 0) return
-                        if (Utils.isObject(elements[key])) {
-                            for (let ekey in elements[key]) {
-                                elements[key][ekey] = null
-                            }
+                    } else {
+                        let elements = ret.content.elements
+                        let elementMap = ret.ui.getElements()
+                        let provider = ret.ui.getElementProvider()
+                        if (!Array.isArray(newElements)) {
+                            ret.newElements.forEach(function (key) {
+                                delete elements[key]
+                                provider.removeElement(elementMap.get(key))
+                            })
+                            ret.newElements.length = 0
+                        } else {
+                            newElements.forEach(function (key) {
+                                let index = ret.newElements.indexOf(key)
+                                if (index < 0) return
+                                delete elements[key]
+                                provider.removeElement(elementMap.get(key))
+                                ret.newElements.splice(index, 1)
+                            })
                         }
-                        elements[key] = null
-                        ret.newElements.splice(index, 1)
-                    })
+                    }
+                } catch (err) {
+                    Utils.error('Error in clearNewElements (QuestUi.js):\n', err)
                 }
             },
             refresh () {
-                if (ret.ui.isOpened()) {
-                    ret.ui.updateWindowLocation()
-                    if (typeof ret.ui.updateScrollDimensions === 'function') {
-                        ret.ui.updateScrollDimensions()
-                    }
+                try {
+                    let elements = ret.content.elements
+                    let elementMap = ret.ui.getElements()
+                    let provider = ret.ui.getElementProvider()
+                    ret.binElements.forEach(function (key) {
+                        if (ret.newElements.indexOf(key) >= 0) return
+                        if (typeof elements[key] === 'undefined') return
+                        delete elements[key]
+                        provider.removeElement(elementMap.get(key))
+                    })
+                    ret.binElements.length = 0
+                } catch (err) {
+                    Utils.error('Error in refresh (QuestUi.js):\n', err)
                 }
-                ret.ui.invalidateAllContent()
-                ret.ui.forceRefresh()
+                try {
+                    if (ret.ui.isOpened()) {
+                        ret.ui.updateWindowLocation()
+                        if (typeof ret.ui.updateScrollDimensions === 'function') {
+                            ret.ui.updateScrollDimensions()
+                        }
+                    }
+                    ret.ui.getContentProvider().refreshDrawing()
+                    ret.ui.getContentProvider().refreshElements()
+                    ret.ui.getElementProvider().invalidateAll()
+                    ret.ui.forceRefresh()
+                } catch (err) {
+                    Utils.error('Error in refresh (QuestUi.js):\n', err)
+                }
             },
             open (refresh) {
                 if (refresh) ret.refresh()
@@ -91,8 +133,33 @@ const QuestUiTools = {
             isOpened () { return ret.ui.isOpened() }
         }
         let listener = Utils.isObject(eventListener) ? eventListener : {}
+        let needListen = Boolean(option.hideNavigation)
         ret.ui.setEventListener({
             onOpen () {
+                if (needListen) {
+                    needListen = false
+                    UI.getContext().runOnUiThread(new java.lang.Runnable({
+                        run () {
+                            // https://developer.android.google.cn/training/system-ui/status?hl=zh-cn
+                            /** @type { (visibility: number) => void } */
+                            let updateVisibility = function (visibility) {
+                                if (!(visibility & android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION)) {
+                                    ret.ui.layout.setVisibility(
+                                        android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                                        | android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                                        | android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                                        | android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                                    )
+                                }
+                            }
+                            ret.ui.layout.setOnSystemUiVisibilityChangeListener({
+                                onSystemUiVisibilityChange (visibility) {
+                                    updateVisibility(visibility)
+                                }
+                            })
+                        }
+                    }))
+                }
                 if (typeof listener.onOpen === 'function') {
                     listener.onOpen(ret)
                 }
@@ -103,7 +170,6 @@ const QuestUiTools = {
                 }
             }
         })
-        if (!Utils.isObject(option)) option = {}
         if (option.closeOnBackPressed) ret.ui.setCloseOnBackPressed(true)
         if (option.blockingBackground) ret.ui.setBlockingBackground(true)
         if (option.asGameOverlay) ret.ui.setAsGameOverlay(true)
@@ -112,29 +178,27 @@ const QuestUiTools = {
     },
     getQuestIcon (questJson, saveData, option) {
         if (!Array.isArray(option.pos)) option.pos = questJson.pos
-        if (typeof option.pos[0] !== 'number') option.pos[0] = questJson.pos[0]
-        if (typeof option.pos[1] !== 'number') option.pos[1] = questJson.pos[1]
         if (typeof option.size !== 'number') option.size = questJson.size
         let icon = questJson.icon[0]
-        if (saveData.inputState > EnumObject.questInputState.locked) icon = questJson.icon[1]
-        if (saveData.inputState == EnumObject.questInputState.finished) icon = questJson.icon[2]
-        let overBitmap = 'clear'
+        if (saveData.inputState !== EnumObject.questInputState.locked) icon = questJson.icon[1]
+        if (saveData.inputState === EnumObject.questInputState.finished) icon = questJson.icon[2]
+        let overBitmap = 'cq_clear'
         switch (saveData.inputState) {
             case EnumObject.questInputState.unfinished:
             case EnumObject.questInputState.repeat_unfinished: {
-                overBitmap = 'dot_blue'
+                overBitmap = 'cq_dot_blue'
                 break
             }
             case EnumObject.questInputState.finished: {
                 if (saveData.outputState !== EnumObject.questOutputState.received) {
-                    overBitmap = 'remind'
+                    overBitmap = 'cq_remind'
                 }
                 break
             }
         }
         return [
             [option.prefix + 'main', {
-                type: 'slot', visual: true, bitmap: icon.bitmap || 'clear',
+                type: 'slot', visual: true, bitmap: icon.bitmap || 'cq_clear',
                 source: Utils.transferItemFromJson(icon), darken: Boolean(icon.darken),
                 x: option.pos[0], y: option.pos[1], z: 1, size: option.size,
                 clicker: option.clicker
@@ -155,53 +219,75 @@ const QuestUiTools = {
         let RectF = android.graphics.RectF
         let Paint = android.graphics.Paint
         let nullPaint = new Paint()
-        let lineBitmap = android.graphics.Bitmap.createBitmap(20 * 64, 64, android.graphics.Bitmap.Config.ARGB_8888)
-        let lineSrc = new Rect(0, 0, 20 * 64, 64)
+        let lineBitmap = android.graphics.Bitmap.createBitmap(100 * 64, 64, android.graphics.Bitmap.Config.ARGB_8888)
+        let lineSrc = new Rect(0, 0, 100 * 64, 64)
         Callback.addCallback('PostLoaded', function () {
-            let bitmap = UI.TextureSource.getNullable('dependency')
+            let bitmap = UI.TextureSource.getNullable('cq_dependency')
             if (bitmap === null) return
             let canvas = new android.graphics.Canvas(lineBitmap)
-            for (let x = 0; x < 20; x++) {
+            for (let x = 0; x < 100; x++) {
                 canvas.drawBitmap(bitmap, x * 64, 0, nullPaint)
             }
         })
         return function (posParent, posChild, width, color) {
             if (typeof width !== 'number' || width <= 0) width = 10
-            let argb = [(color >>> 24) & 0xff, (color >>> 16) & 0xff, (color >>> 8) & 0xff, (color >>> 0) & 0xff]
-            if (argb[0] > 0xcc) argb[0] = 0xcc
             let deltaPos = [posChild[0] - posParent[0], posChild[1] - posParent[1]]
             let dis = Math.sqrt(deltaPos[0] * deltaPos[0] + deltaPos[1] * deltaPos[1])
             if (dis <= width) return []
-            let angle = Math.acos(Math.max(Math.min(deltaPos[0]/dis, 1), -1)) * (180 / Math.PI)
+            let angle = Math.acos(Math.max(Math.min(deltaPos[0] / dis, 1), -1)) * (180 / Math.PI)
             if (deltaPos[1] < 0) angle = -angle
-            return [{
-                type: 'custom',
-                onDraw: function (canvas, scale) {
-                    let paint = new Paint()
-                    paint.setStyle(Paint.Style.FILL)
-                    paint.setAntiAlias(true)
-                    paint.setARGB(argb[0], argb[1], argb[2], argb[3])
-                    canvas.save()
-                    canvas.translate(posParent[0] * scale, posParent[1] * scale)
-                    canvas.rotate(angle)
-                    canvas.translate(0, -width * scale / 2)
-                    canvas.drawRect(new RectF(0, 0, dis * scale, width * scale), paint)
+            let argb = [(color >>> 24) & 0xff, (color >>> 16) & 0xff, (color >>> 8) & 0xff, (color >>> 0) & 0xff]
+            if (argb[0] > 0xcc) argb[0] = 0xcc
+            let paint = new Paint()
+            paint.setStyle(Paint.Style.FILL)
+            paint.setAntiAlias(true)
+            paint.setARGB(argb[0], argb[1], argb[2], argb[3])
+            /** @type { (canvas: android.graphics.Canvas, scale: number) => void } */
+            let draw = function (canvas, scale) {
+                let realWidth = width * scale
+                canvas.save()
+                canvas.translate(posParent[0] * scale, posParent[1] * scale)
+                canvas.rotate(angle)
+                canvas.translate(0, -realWidth / 2)
+                canvas.drawRect(new RectF(0, 0, dis * scale, realWidth), paint)
+                if (dis <= 100 * width) {
+                    canvas.drawBitmap(
+                        lineBitmap,
+                        new Rect(0, 0, Math.floor(dis / width * 64), 64),
+                        new RectF(0, 0, dis * scale, realWidth),
+                        nullPaint
+                    )
+                } else {
                     let left = 0
-                    for (let w = dis / width; w > 0; w -= 20) {
-                        if (w <= 20) {
-                            canvas.drawBitmap(lineBitmap,
+                    for (let w = dis / width; w > 0; w -= 100) {
+                        if (w <= 100) {
+                            canvas.drawBitmap(
+                                lineBitmap,
                                 new Rect(0, 0, Math.floor(w * 64), 64),
-                                new RectF(left * scale, 0, (left + w * width) * scale, width * scale),
-                                nullPaint)
+                                new RectF(left * scale, 0, (left + w * width) * scale, realWidth),
+                                nullPaint
+                            )
                             break
                         } else {
-                            canvas.drawBitmap(lineBitmap, lineSrc,
-                                new RectF(left * scale, 0, (left + 20 * width) * scale, width * scale),
-                                nullPaint)
-                            left += 20 * width
+                            canvas.drawBitmap(
+                                lineBitmap,
+                                lineSrc,
+                                new RectF(left * scale, 0, (left + 100 * width) * scale, realWidth),
+                                nullPaint
+                            )
+                            left += 100 * width
                         }
                     }
-                    canvas.restore()
+                }
+                canvas.restore()
+            }
+            return [{
+                type: 'custom',
+                onDraw: draw,
+                custom: {
+                    onDraw: function (element, canvas, scale) {
+                        draw(canvas, scale)
+                    }
                 }
             }]
         }
@@ -323,14 +409,46 @@ const QuestUiTools = {
             return ret
         }
     })(),
-    createAnimator (duration, cb) {
+    resolveTextJsonToElements (textJson, params) {
+        if (typeof textJson !== 'string' && !Utils.isObject(textJson)) {
+            return {
+                maxY: params.pos[1],
+                elements: []
+            }
+        }
+        let size = params.font.size || 20
+        let that = this
+        let text = TranAPI.translate(textJson)
+        let maxY = params.pos[1]
+        /** @type { Array<[string, UI.Elements]> } */
+        let elements = []
+        this.resolveText(text, function (str) {
+            if (typeof str !== 'string') return 1
+            return that.getTextWidth(str, size) / params.maxWidth
+        }).forEach(function (str, index) {
+            elements.push([params.prefix + 'text_' + index, {
+                type: 'text',
+                x: params.pos[0],
+                y: maxY,
+                z: params.pos[2],
+                text: str,
+                font: params.font
+            }])
+            maxY += size + params.rowSpace
+        })
+        return {
+            maxY: maxY,
+            elements: elements
+        }
+    },
+    createAnimator (duration, update) {
         if (typeof duration !== 'number' || duration < 0) return
-        if (typeof cb !== 'function') return
+        if (typeof update !== 'function') return
         let animator = android.animation.ValueAnimator.ofFloat([0, 1])
         animator.setDuration(duration)
         animator.addUpdateListener({
             onAnimationUpdate (animator) {
-                cb(animator)
+                update(animator)
             }
         })
         UI.getContext().runOnUiThread(new java.lang.Runnable({

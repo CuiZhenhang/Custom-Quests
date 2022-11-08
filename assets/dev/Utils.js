@@ -8,9 +8,17 @@ const Utils = {
         if (hasAlert) alert(msg)
         Logger.Log(msg, type)
     },
+    error (message, err) {
+        this.log(message + err, 'ERROR', false)
+        if (err instanceof java.lang.Throwable) {
+            Logger.LogError(err)
+        } else if (this.isObject(err) && err.stack) {
+            Logger.Log(err.stack, 'ERROR')
+        }
+    },
     getUUID () {
         let uuid = String(java.util.UUID.randomUUID().toString()).split('-')
-        let time = (Date.now() % 65535).toString(16)
+        let time = (Date.now() & 0xffff).toString(16)
         while (time.length < 4) time = '0' + time
         return uuid[0] + uuid[1] + time
     },
@@ -22,7 +30,7 @@ const Utils = {
             let ret = new java.math.BigInteger(1, secretBytes).toString(16)
             return String(ret)
         } catch (err) {
-            this.log('Error in md5 (Utils.js):\n' + err, 'ERROR', false)
+            this.error('Error in md5 (Utils.js):\n', err)
             return 'error-md5'
         }
     },
@@ -43,13 +51,20 @@ const Utils = {
         if (typeof func !== 'function') return func
         if (typeof delay !== 'number' || isNaN(delay)) return func
         let time = 0
-        return function () {
+        return function (args) {
             let now = Date.now()
-            let ret
-            if (now >= time) ret = func.apply(ths, arguments)
-            else if (typeof func2 === 'function') ret = func2.apply(ths, arguments)
-            time = now + delay
-            return ret
+            if (now >= time) {
+                time = now + delay
+                return func.apply(ths, arguments)
+            } else if (typeof func2 === 'function') {
+                return func2.apply(ths, arguments)
+            }
+        }
+    },
+    safeResult (func, ths) {
+        let that = this
+        return function (args) {
+            return that.deepCopy(func.apply(ths, arguments))
         }
     },
     operate (a, operator, b, defaultValue) {
@@ -211,7 +226,7 @@ const Utils = {
                             try {
                                 mainJson.main[indexChapter] = FileTools.ReadJSON(path + pathChapter) || {}
                             } catch (err) {
-                                that.log('Error in readContents:\n' + err, 'ERROR')
+                                that.error('Error in readContents: (Utils.js)\n', err)
                                 mainJson.main[indexChapter] = {}
                             }
                         }
@@ -222,7 +237,7 @@ const Utils = {
                                     try {
                                         chapterJson.quest[indexQuest] = FileTools.ReadJSON(path + pathQuest) || {}
                                     } catch (err) {
-                                        that.log('Error in readContents:\n' + err, 'ERROR')
+                                        that.error('Error in readContents: (Utils.js)\n', err)
                                         chapterJson.quest[indexQuest] = {}
                                     }
                                 }
@@ -238,7 +253,7 @@ const Utils = {
                 that.log('Failed to read contents:\nThere is no files: ' + path, 'WARN', true)
             }
         } catch (err) {
-            that.log('Error in readContents:\n' + err, 'ERROR', true)
+            that.error('Error in readContents: (Utils.js)\n', err)
         }
         return {}
     },
@@ -247,7 +262,8 @@ const Utils = {
         if (!(/^ref:/i).test(value)) return value
         let that = this
         let refId = value.replace(/^ref:/i, '')
-        let ret = value
+        /** @type { T } */
+        let ret = null
         refsArray.some(function (refs) {
             if (!that.isObject(refs)) return false
             if (typeof refs[refId] !== 'undefined' && refs[refId] !== null) {
@@ -256,7 +272,7 @@ const Utils = {
             }
             return false
         })
-        return ret
+        return this.deepCopy(ret)
     },
     resolveBitmap (bitmap, bitmapNameObject) {
         if (typeof bitmap !== 'string') return null
@@ -278,7 +294,7 @@ const Utils = {
         return ''
     },
     resolveIconJson (iconJson, refsArray, bitmapNameObject) {
-        let ret = this.deepCopy(this.resolveRefs(iconJson, refsArray))
+        let ret = this.resolveRefs(iconJson, refsArray)
         if (!this.isObject(ret)) return {}
         if (typeof ret.bitmap === 'string') {
             ret.bitmap = this.resolveBitmap(ret.bitmap, bitmapNameObject)
@@ -293,7 +309,7 @@ const Utils = {
             let bitmap = android.graphics.BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.length)
             UI.TextureSource.put(name, bitmap)
         } catch (err) {
-            this.log('Error in putTextureSourceFromBase64', 'ERROR', false)
+            this.error('Error in putTextureSourceFromBase64 (Utils.js)\n', err)
         }
     },
     getInput ({text, hint, title, button, mutiLine}, cb){
@@ -353,18 +369,18 @@ const Utils = {
         }))
     },
     getInventory (player) {
-		let inventory = []
-		let actor = new PlayerActor(player)
-		for (let i = 0; i < 36; i++) {
-			inventory[i] = actor.getInventorySlot(i)
-		}
-		return inventory
+        let inventory = []
+        let actor = new PlayerActor(player)
+        for (let i = 0; i < 36; i++) {
+            inventory[i] = actor.getInventorySlot(i)
+        }
+        return inventory
     },
     getSortInventory (inventory) {
         /** @type { ReturnType<Utils['getSortInventory']> } */
-		let sortInventory = {}
-		inventory.forEach(function (item) {
-			if (item.id === 0) return
+        let sortInventory = {}
+        inventory.forEach(function (item) {
+            if (item.id === 0) return
             if (sortInventory[item.id + ':' + item.data]) {
                 sortInventory[item.id + ':' + item.data] += item.count
                 if(item.data !== -1) sortInventory[item.id + ':-1'] += item.count
@@ -372,8 +388,8 @@ const Utils = {
                 sortInventory[item.id + ':' + item.data] = item.count
                 sortInventory[item.id + ':-1'] = item.count
             }
-		})
-		return sortInventory
+        })
+        return sortInventory
     },
     getExtraInventory (inventory) {
         /** @type { ReturnType<Utils['getExtraInventory']> } */

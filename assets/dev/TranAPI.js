@@ -23,6 +23,7 @@ const TranAPI = {
         return ret
     },
     translate (str) {
+        if (str === undefined) return ''
         if (typeof str === 'string') {
             if (this.translation[this.lang] && typeof this.translation[this.lang][str] === 'string') {
                 return this.translation[this.lang][str]
@@ -39,7 +40,7 @@ const TranAPI = {
     }
 }
 
-; (function intTranslation () {
+; (function () {
     let QB = {
         book: {},
         admin: {},

@@ -10,7 +10,7 @@ Network.addServerPacket('CustomQuests.Server.sendIOPacket', function (client, pa
     if (!Utils.isObject(packetData.data)) return
     let saveId = ServerSystem.getSaveId(client.getPlayerUid())
     if (!ServerSystem.isSaveIdValid(saveId)) {
-        if (Setting.saveForTeam && !Utils.isObject(ServerSystem.getTeam(client.getPlayerUid()))) {
+        if (Setting.saveForTeam && !ServerSystem.getTeam(client.getPlayerUid())) {
             client.send('CustomQuests.Client.alert', {
                 text: ['$alert.no_team']
             })
@@ -43,7 +43,7 @@ Network.addServerPacket('CustomQuests.Server.receiveAllQuest', function (client,
     let player = client.getPlayerUid()
     let saveId = ServerSystem.getSaveId(player)
     if (!ServerSystem.isSaveIdValid(saveId)) {
-        if (Setting.saveForTeam && !Utils.isObject(ServerSystem.getTeam(client.getPlayerUid()))) {
+        if (Setting.saveForTeam && !ServerSystem.getTeam(client.getPlayerUid())) {
             client.send('CustomQuests.Client.alert', {
                 text: ['$alert.no_team']
             })
@@ -70,7 +70,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
         case 'join': {
             if (typeof packetData.teamId !== 'string') return
             let team = ServerSystem.getTeam(packetData.teamId)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             if (packetData.password !== team.password) {
                 client.send('CustomQuests.Client.alert', {
                     text: ['$alert.fail.passwordWrong']
@@ -87,7 +87,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
         case 'setState': {
             if (typeof packetData.state !== 'number') return
             let team = ServerSystem.getTeam(player)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             ServerSystem.setPlayerStateForTeam(team.id, player, packetData.state)
             ServerSystem.updateTeam(team.id)
             break
@@ -96,7 +96,7 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
             let teamId = packetData.teamId
             if (typeof teamId !== 'string') {
                 let team = ServerSystem.getTeam(player)
-                if (!Utils.isObject(team)) return
+                if (!team) return
                 teamId = team.id
             }
             ServerSystem.deleteTeam(teamId)
@@ -105,33 +105,33 @@ Network.addServerPacket('CustomQuests.Server.TeamTools', function (client, packe
         case 'changeBitmap': {
             if (!Utils.isObject(packetData.bitmap)) return
             let team = packetData.teamId ? ServerSystem.getTeam(packetData.teamId) : ServerSystem.getTeam(player)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             Store.saved.team[team.id].bitmap = packetData.bitmap
             ServerSystem.updateTeam(team.id)
             new NetworkConnectedClientList()
                 .setupAllPlayersPolicy()
                 .send('CustomQuests.Client.setLocalCache', {
-                    teamList: ServerSystem.getTeamList(),
+                    teamList: ServerSystem.getTeamList()
                 })
             break
         }
         case 'rename': {
             if (typeof packetData.name !== 'string') return
             let team = packetData.teamId ? ServerSystem.getTeam(packetData.teamId) : ServerSystem.getTeam(player)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             Store.saved.team[team.id].name = packetData.name
             ServerSystem.updateTeam(team.id)
             new NetworkConnectedClientList()
                 .setupAllPlayersPolicy()
                 .send('CustomQuests.Client.setLocalCache', {
-                    teamList: ServerSystem.getTeamList(),
+                    teamList: ServerSystem.getTeamList()
                 })
             break
         }
         case 'changePassword': {
             if (typeof packetData.password !== 'string') return
             let team = packetData.teamId ? ServerSystem.getTeam(packetData.teamId) : ServerSystem.getTeam(player)
-            if (!Utils.isObject(team)) return
+            if (!team) return
             Store.saved.team[team.id].password = packetData.password
             ServerSystem.updateTeam(team.id)
             break
@@ -202,7 +202,7 @@ Network.addClientPacket('CustomQuests.Client.setLocalCache', function (packetDat
             oldLocalCache
         )
     } catch (err) {
-        Utils.log('Error in Callback \'CustomQuests.onLocalCacheChanged\' (network.js):\n' + err, 'ERROR', true)
+        Utils.error('Error in Callback \'CustomQuests.onLocalCacheChanged\' (network.js):\n', err)
     }
 })
 
@@ -229,7 +229,7 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                         Utils.deepCopy(extraInfo)
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalInputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalInputStateChanged\' (network.js):\n', err)
                 }
             },
             onQuestInputStateChanged (newQuestInputState, oldQuestInputState) {
@@ -240,7 +240,7 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                         oldQuestInputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n', err)
                 }
             },
             onQuestOutputStateChanged (newQuestOutputState, oldQuestOutputState) {
@@ -251,7 +251,7 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                         oldQuestOutputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n', err)
                 }
             },
             onChildQuestInputStateChanged (pathArray, newQuestInputState, oldQuestInputState) {
@@ -262,7 +262,7 @@ Network.addClientPacket('CustomQuests.Client.setInputState', function (packetDat
                         oldQuestInputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalQuestInputStateChanged\' (network.js):\n', err)
                 }
             }
         }
@@ -292,7 +292,7 @@ Network.addClientPacket('CustomQuests.Client.setOutputState', function (packetDa
                         Utils.deepCopy(extraInfo)
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalOutputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalOutputStateChanged\' (network.js):\n', err)
                 }
             },
             onQuestOutputStateChanged (newQuestOutputState, oldQuestOutputState) {
@@ -303,7 +303,7 @@ Network.addClientPacket('CustomQuests.Client.setOutputState', function (packetDa
                         oldQuestOutputState
                     )
                 } catch (err) {
-                    Utils.log('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n' + err, 'ERROR', true)
+                    Utils.error('Error in Callback \'CustomQuests.onLocalQuestOutputStateChanged\' (network.js):\n', err)
                 }
             }
         }
