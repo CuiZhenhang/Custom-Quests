@@ -423,6 +423,7 @@ IOTypeTools.setOutputType('group', TranAPI.getTranslation('outputType.group'), {
         outputJson.list.forEach(function (obj) {
             if (!Utils.isObject(obj)) return
             let weight = typeof obj.weight === 'number' ? obj.weight : 1
+            if (weight < 0) weight = 0
             let tOutputJson = Utils.resolveRefs(obj.output, refsArray)
             if (!Utils.isObject(tOutputJson) || typeof tOutputJson.type !== 'string') return
             let config = IOTypeTools.getOutputTypeConfig(tOutputJson.type)
